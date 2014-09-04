@@ -112,7 +112,7 @@ class HtmlContentExtractor(object):
                 self.extract(child, depth+0.1)
 
     def extra_score(self, cur_node, len_type='major_len'):
-        if isinstance(cur_node, navigable_string):
+        if isinstance(cur_node, NavigableString):
             return 0
         if getattr(cur_node, len_type, None) is not None:
             return getattr(cur_node, len_type)
@@ -169,7 +169,7 @@ class HtmlContentExtractor(object):
                 del tag['id']
                 if tag.name in ignore_tags:
                     trashcan.append(tag)
-            elif isinstance(tag, navigable_string) and type(tag) is not navigable_string:
+            elif isinstance(tag, NavigableString) and type(tag) is not NavigableString:
                 # tag.extract()
                 trashcan.append(tag)
 
@@ -206,7 +206,7 @@ def page_content_parser(url):
     if resp.info().getmaintype() == 'text':
         return HtmlContentExtractor(resp)
     elif resp.info().gettype() == 'application/vnd.ms-excel':
-        return excel_parser(cont)
+        return excel_parser(resp)
     elif resp.info().gettype() == 'application/msword':
         get_main_content = lambda self : u'再等等，或许下辈子我会看懂<a target="_blank" href="http://download.microsoft.com/download/0/B/E/0_bE8_bDD7-e5_e8-422_a-ABFD-4342_eD7_aD886/Word97-2007_binary_file_format%28doc%29_specification.pdf">word的格式</a>。'
         get_title_prefix = lambda self : u'[DOC]'
