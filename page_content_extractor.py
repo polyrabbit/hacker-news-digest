@@ -2,13 +2,11 @@
 import os
 import sys
 import re
-import httplib21
 from urlparse import urljoin
 import urllib2
 import cStringIO
 from PIL import Image
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
-import httplib21
 from excel_parser import excel_parser
 from nothing import Nothing
 
@@ -75,7 +73,7 @@ class ImgArea(object):
         return width * height
 
     def to_text_len(self):
-        return self.img_area_px/self.scale
+        return self.img_area_px / self.scale
  
 class HtmlContentExtractor(object):
 
