@@ -12,14 +12,14 @@ from nothing import Nothing
 
 #beautifulsoup will convert all tag names to lower-case
 candidate_tags = frozenset(['a', 'caption', 'dl', 'dt', 'dd', 'div', 'ol', 'li', 'ul', 'p', 'pre', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'br', 'h1', 'h2'])
-ignore_tags = frozenset(['option', 'script', 'noscript', 'style', 'iframe'])
+ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 minor_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|shoutbox|sidebar|sponsor|vote', re.IGNORECASE)
 major_patt = re.compile(r'article|entry|post|column|main|content|section|title|text', re.IGNORECASE)
 
 def is_candidate_tag(node):
     return node.name in candidate_tags
 def is_ignored_tag(node):
-    return node.name in ignore_tags
+    return node.name in ignored_tags
 def is_major_tag(node):
     return major_patt.search(node.get('id', '')+''.join(node.get('class', [])))
 def is_minor_tag(node):
@@ -87,6 +87,7 @@ class HtmlContentExtractor(object):
 
         self.title = doc.title
         self.base_url = resp.geturl()
+        self.purge(doc)
         self.extract(doc)
 
         # clean ups
@@ -159,13 +160,20 @@ class HtmlContentExtractor(object):
         cur_node.img_len = img_len
         return img_len
 
+    def purge(self, doc):
+        for tname in ignored_tags:
+            for d in doc.find_all(tname):
+                d.decompose()
+        for style_links in doc.find_all('link', attrs={'type': 'text/css'}):
+            style_links.decompose()
+
     def clean_up_html(self):
         trashcan = []
         for tag in self.article.descendants:
             if isinstance(tag, Tag):
                 del tag['class']
                 del tag['id']
-                if tag.name in ignore_tags:
+                if tag.name in ignored_tags:
                     trashcan.append(tag)
             elif isinstance(tag, NavigableString) and type(tag) is not NavigableString:
                 # tag.extract()
@@ -212,9 +220,13 @@ def page_content_parser(url):
     else:
         raise TypeError('I have no idea how the %s is formatted' % resp.info().gettype())
 
+def test_purge():
+    html_doc = """
+    <html>good</html>
+    """
+    HtmlContentExtractor.purge(object(), BS(html_doc))
+
 if __name__ == '__main__':
-    import httplib2
-    # httplib2.debuglevel = 4
     page_url = 'http://www.infzm.com/content/81698'
     page_url = 'http://meiriyiwen.com/'
     page_url = 'http://cmse.dhu.edu.cn/content_view_ctrl.do?content_iD=5b64ce823b7f7060013b87bcdc590005'
@@ -225,6 +237,7 @@ if __name__ == '__main__':
     # page_url = 'http://youth.dhu.edu.cn/content.asp?id=1993'
     # page_url = 'http://www2.dhu.edu.cn/dhuxxxt/xinwenwang/shownews.asp?id=18750'
     # page_url = 'http://www2.dhu.edu.cn/dhuxxxt/xinwenwang/shownews.asp?id=18826'
-    page = page_content_parser(page_url)
-    c =page.get_main_content()
-    print (c.encode('utf-8'))
+    # page = page_content_parser(page_url)
+    # c =page.get_main_content()
+    # print (c.encode('utf-8'))
+    test_purge()

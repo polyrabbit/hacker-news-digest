@@ -1,4 +1,4 @@
 beautifulsoup4
 lxml
 cchardet
-PIL
+pillow
