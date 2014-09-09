@@ -1,29 +1,28 @@
 ﻿#coding=utf-8
-import os
-import sys
 import re
 from urlparse import urljoin
 import urllib2
 import cStringIO
 from PIL import Image
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
-from excel_parser import excel_parser
-from nothing import Nothing
 
-#beautifulsoup will convert all tag names to lower-case
-candidate_tags = frozenset(['a', 'caption', 'dl', 'dt', 'dd', 'div', 'ol', 'li', 'ul', 'p', 'pre', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'br', 'h1', 'h2'])
+# Beautifulsoup will convert all tag names to lower-case
+candidate_tags = frozenset(['a', 'caption', 'dl', 'dt', 'dd', 'div', 'ol',
+    'li', 'ul', 'p', 'pre', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'br', 'h1', 'h2'])
 ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
-minor_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|shoutbox|sidebar|sponsor|vote', re.IGNORECASE)
-major_patt = re.compile(r'article|entry|post|column|main|content|section|title|text', re.IGNORECASE)
+negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
+    'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
+positive_patt = re.compile(r'article|entry|post|column|main|content|'
+    'section|title|text', re.IGNORECASE)
 
 def is_candidate_tag(node):
     return node.name in candidate_tags
 def is_ignored_tag(node):
     return node.name in ignored_tags
-def is_major_tag(node):
-    return major_patt.search(node.get('id', '')+''.join(node.get('class', [])))
-def is_minor_tag(node):
-    return node.name == 'a' or minor_patt.search(node.get('id', '')+''.join(node.get('class', [])))
+def is_positive_node(node):
+    return positive_patt.search(node.get('id', '')+''.join(node.get('class', [])))
+def is_negative_node(node):
+    return node.name == 'a' or negative_patt.search(node.get('id', '')+''.join(node.get('class', [])))
 
 def cut_off(nodes):
     return filter(lambda n: isinstance(n, Tag) and not is_ignored_tag(n), nodes)
@@ -115,7 +114,7 @@ class HtmlContentExtractor(object):
             return 0
         if getattr(cur_node, len_type, None) is not None:
             return getattr(cur_node, len_type)
-        check_tag = is_major_tag if len_type=='major_len' else is_minor_tag
+        check_tag = is_positive_node if len_type=='major_len' else is_negative_node
         if check_tag(cur_node):
             setattr(cur_node, len_type, self.text_len(cur_node) + self.img_area_len(cur_node))
             return getattr(cur_node, len_type)
@@ -222,9 +221,11 @@ def page_content_parser(url):
 
 def test_purge():
     html_doc = """
-    <html>good</html>
+    <html>good<script>whatever</script></html>
     """
-    HtmlContentExtractor.purge(object(), BS(html_doc))
+    doc = BS(html_doc)
+    HtmlContentExtractor.purge.im_func(object(), doc)
+    assert doc.find('script') is None
 
 if __name__ == '__main__':
     page_url = 'http://www.infzm.com/content/81698'
