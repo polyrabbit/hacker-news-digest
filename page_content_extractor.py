@@ -6,6 +6,10 @@ import cStringIO
 from PIL import Image
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 
+"""
+https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
+"""
+
 # Beautifulsoup will convert all tag names to lower-case
 candidate_tags = frozenset(['a', 'caption', 'dl', 'dt', 'dd', 'div', 'ol',
     'li', 'ul', 'p', 'pre', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'br', 'h1', 'h2'])
@@ -30,7 +34,7 @@ def cut_off(nodes):
 class ImgArea(object):
 
     def __init__(self, bs_node):
-        self.bs_node = bs_node      
+        self.bs_node = bs_node
         self.scale = 22*22
         self.img_area_px = self.calc_area()
 
@@ -73,7 +77,7 @@ class ImgArea(object):
 
     def to_text_len(self):
         return self.img_area_px / self.scale
- 
+
 class HtmlContentExtractor(object):
 
     def __init__(self, resp):
@@ -99,7 +103,7 @@ class HtmlContentExtractor(object):
             img_len = self.img_area_len(cur_node)
             bonus = self.extra_score(cur_node, 'major_len')
             penalty = self.extra_score(cur_node, 'minor_len')
-            score = (text_len+img_len-penalty*0.8+bonus)*(depth**1.5) # yes 1.5 is a big number
+            score = (text_len + img_len - penalty*0.8 + bonus)*(depth**1.5) # yes 1.5 is a big number
             # cur_node.score = score
 
             if score > self.max_score:
@@ -162,9 +166,9 @@ class HtmlContentExtractor(object):
     def purge(self, doc):
         for tname in ignored_tags:
             for d in doc.find_all(tname):
-                d.decompose()
+                d.extract()  # decompose calls extract with some more steps
         for style_links in doc.find_all('link', attrs={'type': 'text/css'}):
-            style_links.decompose()
+            style_links.extract()
 
     def clean_up_html(self):
         trashcan = []
