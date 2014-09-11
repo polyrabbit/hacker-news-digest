@@ -13,14 +13,14 @@ ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
-    'section|title|text', re.IGNORECASE)
+    'section|text', re.IGNORECASE)
 
 def is_candidate_tag(node):
     return node.name in candidate_tags
 def is_ignored_tag(node):
     return node.name in ignored_tags
 def is_positive_node(node):
-    return positive_patt.search(node.get('id', '')+''.join(node.get('class', [])))
+    return positive_patt.search(node.get('id', '')+''.join(node.get('class', []))+node.name)
 def is_negative_node(node):
     return node.name == 'a' or negative_patt.search(node.get('id', '')+''.join(node.get('class', [])))
 
@@ -87,13 +87,13 @@ class HtmlContentExtractor(object):
         self.title = doc.title
         self.base_url = resp.geturl()
         self.purge(doc)
-        self.extract(doc)
+        self.calc_best_node(doc)
 
         # clean ups
         self.clean_up_html()
         self.relative_path2_abs_url()
 
-    def extract(self, cur_node, depth=0.1):
+    def calc_best_node(self, cur_node, depth=0.1):
         if is_candidate_tag(cur_node):
             text_len = self.text_len(cur_node)
             img_len = self.img_area_len(cur_node)
@@ -107,9 +107,10 @@ class HtmlContentExtractor(object):
 
         for child in cur_node.children: # the direct children, not descendants
             if isinstance(child, Tag):
-                self.extract(child, depth+0.1)
+                self.calc_best_node(child, depth+0.1)
 
     def extra_score(self, cur_node, len_type='major_len'):
+        # Should be called affect
         if isinstance(cur_node, NavigableString):
             return 0
         if getattr(cur_node, len_type, None) is not None:
