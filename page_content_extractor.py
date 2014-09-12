@@ -23,10 +23,6 @@ def is_candidate_tag(node):
     return node.name in candidate_tags
 def is_ignored_tag(node):
     return node.name in ignored_tags
-def is_positive_node(node):
-    return positive_patt.search(node.get('id', '')+''.join(node.get('class', []))+node.name)
-def is_negative_node(node):
-    return node.name == 'a' or negative_patt.search(node.get('id', '')+''.join(node.get('class', [])))
 
 def cut_off(nodes):
     return filter(lambda n: isinstance(n, Tag) and not is_ignored_tag(n), nodes)
@@ -82,7 +78,7 @@ class HtmlContentExtractor(object):
 
     def __init__(self, resp):
         self.max_score = 0
-        self.article = Nothing() # if there being no tags, it can return nothing.
+        self.article = None # if there being no tags, it can return nothing.
         charset = resp.info().getparam('charset') # or None
         # what's the more elegent way?
         # dom_tree = BS(cont.replace('<br>', '<br />'), from_encoding=charset)
@@ -101,9 +97,8 @@ class HtmlContentExtractor(object):
         if is_candidate_tag(cur_node):
             text_len = self.text_len(cur_node)
             img_len = self.img_area_len(cur_node)
-            bonus = self.extra_score(cur_node, 'major_len')
-            penalty = self.extra_score(cur_node, 'minor_len')
-            score = (text_len + img_len - penalty*0.8 + bonus)*(depth**1.5) # yes 1.5 is a big number
+            impact_factor = self.semantic_effect(cur_node)
+            score = (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
             # cur_node.score = score
 
             if score > self.max_score:
@@ -113,32 +108,36 @@ class HtmlContentExtractor(object):
             if isinstance(child, Tag):
                 self.calc_best_node(child, depth+0.1)
 
-    def extra_score(self, cur_node, len_type='major_len'):
-        # Should be called affect
-        if isinstance(cur_node, NavigableString):
-            return 0
-        if getattr(cur_node, len_type, None) is not None:
-            return getattr(cur_node, len_type)
-        check_tag = is_positive_node if len_type=='major_len' else is_negative_node
-        if check_tag(cur_node):
-            setattr(cur_node, len_type, self.text_len(cur_node) + self.img_area_len(cur_node))
-            return getattr(cur_node, len_type)
+    def semantic_effect(self, node):
+        # The most important part
+        # returns 1 means no effect
+        # 2 means positive
+        # .2 means negative
+        if isinstance(node, NavigableString):
+            return 1
 
-        extra_len = 0
-        for node in cut_off(cur_node.children):
-            if check_tag(node):
-                setattr(node, len_type, self.text_len(node) + self.img_area_len(cur_node))
-            else:
-                self.extra_score(node, len_type)
-            extra_len += getattr(node, len_type)
-        setattr(cur_node, len_type, extra_len)
-        return extra_len
+        def _any(iter, func):
+            for i in iter:
+                if func(i):
+                    return True
+            return False
+
+        if _any([node.get('id', ''), node.name] + node.get('class', []),
+                negative_patt.search):
+            return .2
+
+        if _any([node.get('id', ''), node.name] + node.get('class', []),
+                positive_patt.search):
+            return 2
+
+        return 1
 
     def text_len(self, cur_node):
         """
         Calc the total the length of text in a node, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
+        # Damn beautifusoup! soup.nonexist will always return None
         if getattr(cur_node, 'text_len', None) is not None:
             return cur_node.text_len
         text_len = 0
@@ -148,7 +147,8 @@ class HtmlContentExtractor(object):
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(node, NavigableString)
             elif type(node) is NavigableString:
-                text_len += len(node.string.strip())
+                text_len += len(node.string.strip()) + node.string.count(',')\
+                        + node.string.count(u'，')  # Chinese comma
         cur_node.text_len = text_len
         return text_len
 
@@ -224,6 +224,8 @@ def page_content_parser(url):
     else:
         raise TypeError('I have no idea how the %s is formatted' % resp.info().gettype())
 
+import tempfile
+
 def test_purge():
     html_doc = """
     <html>good<script>whatever</script></html>
@@ -231,6 +233,30 @@ def test_purge():
     doc = BS(html_doc)
     HtmlContentExtractor.purge.im_func(object(), doc)
     assert doc.find('script') is None
+
+#TODO test when html_doc is empty
+def test_text_len_with_comma():
+    html_doc = u"""
+    <html>good,，<script>whatever</script></html>
+    """
+    with tempfile.NamedTemporaryFile() as fd:
+        fd.write(html_doc.encode('utf-8'))
+        fd.seek(0)
+        resp = urllib2.urlopen('file://%s' % fd.name)
+        doc = BS(html_doc, from_encoding='utf-8')
+        length = HtmlContentExtractor(resp).text_len(doc)
+        assert length == 8
+
+def test_semantic_affect():
+    assert HtmlContentExtractor.semantic_effect.im_func(object(),
+            BS('<article>good</article>').article) == 2
+    assert HtmlContentExtractor.semantic_effect.im_func(object(),
+            BS('<p>good</p>').p) == 1
+    assert HtmlContentExtractor.semantic_effect.im_func(object(),
+            BS('<p class="conteNt">good</p>').p) == 2
+    assert HtmlContentExtractor.semantic_effect.im_func(object(),
+            BS('<p class="comment">good</p>').p) == .2
+
 
 if __name__ == '__main__':
     page_url = 'http://www.infzm.com/content/81698'
@@ -247,3 +273,5 @@ if __name__ == '__main__':
     # c =page.get_main_content()
     # print (c.encode('utf-8'))
     test_purge()
+    test_text_len_with_comma()
+    test_semantic_affect()
