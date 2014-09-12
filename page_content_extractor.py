@@ -11,21 +11,11 @@ https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
 """
 
 # Beautifulsoup will convert all tag names to lower-case
-candidate_tags = frozenset(['a', 'caption', 'dl', 'dt', 'dd', 'div', 'ol',
-    'li', 'ul', 'p', 'pre', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'td', 'br', 'h1', 'h2'])
 ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
     'section|text', re.IGNORECASE)
-
-def is_candidate_tag(node):
-    return node.name in candidate_tags
-def is_ignored_tag(node):
-    return node.name in ignored_tags
-
-def cut_off(nodes):
-    return filter(lambda n: isinstance(n, Tag) and not is_ignored_tag(n), nodes)
 
 class ImgArea(object):
 
@@ -94,15 +84,14 @@ class HtmlContentExtractor(object):
         self.relative_path2_abs_url()
 
     def calc_best_node(self, cur_node, depth=0.1):
-        if is_candidate_tag(cur_node):
-            text_len = self.text_len(cur_node)
-            img_len = self.img_area_len(cur_node)
-            impact_factor = self.semantic_effect(cur_node)
-            score = (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
-            # cur_node.score = score
+        text_len = self.text_len(cur_node)
+        img_len = self.img_area_len(cur_node)
+        impact_factor = self.semantic_effect(cur_node)
+        score = (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
+        # cur_node.score = score
 
-            if score > self.max_score:
-                self.max_score, self.article = score, cur_node
+        if score > self.max_score:
+            self.max_score, self.article = score, cur_node
 
         for child in cur_node.children: # the direct children, not descendants
             if isinstance(child, Tag):
@@ -142,7 +131,7 @@ class HtmlContentExtractor(object):
             return cur_node.text_len
         text_len = 0
         for node in cur_node.children:
-            if isinstance(node, Tag) and not is_ignored_tag(node):
+            if isinstance(node, Tag):
                 text_len += self.text_len(node)
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(node, NavigableString)
@@ -159,7 +148,7 @@ class HtmlContentExtractor(object):
         if cur_node.name == 'img':
             img_len = ImgArea(cur_node).to_text_len()
         else:
-            for node in cut_off(cur_node.children):
+            for node in cur_node.find_all('img', recursive=False):  # only search children first
                 img_len += self.img_area_len(node)
         cur_node.img_len = img_len
         return img_len
@@ -172,19 +161,13 @@ class HtmlContentExtractor(object):
             style_links.extract()
 
     def clean_up_html(self):
-        trashcan = []
         for tag in self.article.descendants:
             if isinstance(tag, Tag):
                 del tag['class']
                 del tag['id']
-                if tag.name in ignored_tags:
-                    trashcan.append(tag)
+            # <!-- comment -->
             elif isinstance(tag, NavigableString) and type(tag) is not NavigableString:
-                # tag.extract()
-                trashcan.append(tag)
-
-        # map(lambda t: getattr(t, 'decompose', t.extract)(), trashcan)
-        [getattr(t, 'decompose', t.extract)() for t in trashcan if t.__dict__]
+                tag.extract()
 
     def relative_path2_abs_url(self):
         def _rp2au(soup, tp):
@@ -207,12 +190,11 @@ class HtmlContentExtractor(object):
     def get_title(self):
         return self.title.string
 
-    def get_title_prefix(self):
-        return ''
-
 # dispatcher
 def page_content_parser(url):
-    resp  = urllib2.urlopen(url)
+    req = urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
+        'Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'})
+    resp  = urllib2.urlopen(req)
     if resp.info().getmaintype() == 'text':
         return HtmlContentExtractor(resp)
     elif resp.info().gettype() == 'application/vnd.ms-excel':
@@ -237,7 +219,7 @@ def test_purge():
 #TODO test when html_doc is empty
 def test_text_len_with_comma():
     html_doc = u"""
-    <html>good,，<script>whatever</script></html>
+    <html>good,，</html>
     """
     with tempfile.NamedTemporaryFile() as fd:
         fd.write(html_doc.encode('utf-8'))
