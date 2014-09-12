@@ -15,19 +15,24 @@ ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
-    'section|text', re.IGNORECASE)
+    'section|text|preview', re.IGNORECASE)
 
-class ImgArea(object):
+class WebImage(object):
+    url = None
+    MIN_BYTES_SIZE = 4000
+    MAX_BYTES_SIZE = 15*1024*1024
+    SCALE_FROM_IMG_TO_TEXT = 22 * 22
 
-    def __init__(self, bs_node):
-        self.bs_node = bs_node
-        self.scale = 22*22
-        self.img_area_px = self.calc_area()
+    def __init__(self, base_url, img_node):
+        if img_node.get('src') is None:
+            'fuck me'
+        self.base_url = base_url
+        self.url = urljoin(base_url, img_node['src'])
+        self.img_area_px = self.equivalent_text_len()
 
-    def calc_area(self):
-        minpix = 55 # mind the side-bar pics
-        height = self.bs_node.get('height', Nothing()).strip().rstrip('px')
-        width = self.bs_node.get('width', Nothing()).strip().rstrip('px')
+    def equivalent_text_len(self):
+        height = self.img_node.get('height', '').strip().rstrip('px')
+        width = self.img_node.get('width', '').strip().rstrip('px')
 
         # if you use percentage in height or width,
         # in most cases it cannot be the main-content
@@ -44,7 +49,7 @@ class ImgArea(object):
         if not (height and width):
             fp = cStringIO.stringIO()
             try:
-                w, h = Image.open(urllib2.urlope(self.bs_node['src'])).size
+                w, h = Image.open(urllib2.urlope(self.img_node['src'])).size
             except:
                 h = w = 1.0
             finally:
@@ -64,11 +69,23 @@ class ImgArea(object):
     def to_text_len(self):
         return self.img_area_px / self.scale
 
+    def is_candidate_image(self):
+        pass
+
+    # See https://github.com/grangier/python-goose
+    def is_banner_dimension(self, width, height):
+        """
+        returns true if we think this is kind of a bannery dimension
+        like 600 / 100 = 6 may be a fishy dimension for a good image
+        """
+        dimension = 1.0 * width / height
+        return dimension > 5 or dimension< .2
+
 class HtmlContentExtractor(object):
 
     def __init__(self, resp):
-        self.max_score = 0
-        self.article = None # if there being no tags, it can return nothing.
+        self.max_score = -1
+        self.article = None # default to an empty doc, if there are no tags.
         charset = resp.info().getparam('charset') # or None
         # what's the more elegent way?
         # dom_tree = BS(cont.replace('<br>', '<br />'), from_encoding=charset)
@@ -85,7 +102,9 @@ class HtmlContentExtractor(object):
 
     def calc_best_node(self, cur_node, depth=0.1):
         text_len = self.text_len(cur_node)
-        img_len = self.img_area_len(cur_node)
+        # img_len = self.img_area_len(cur_node)
+        #TODO take image as a factor
+        img_len = 0
         impact_factor = self.semantic_effect(cur_node)
         score = (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
         # cur_node.score = score
@@ -146,7 +165,7 @@ class HtmlContentExtractor(object):
             return cur_node.img_len
         img_len = 0
         if cur_node.name == 'img':
-            img_len = ImgArea(cur_node).to_text_len()
+            img_len = WebImage(self.base_url, cur_node).to_text_len()
         else:
             for node in cur_node.find_all('img', recursive=False):  # only search children first
                 img_len += self.img_area_len(node)
@@ -190,6 +209,9 @@ class HtmlContentExtractor(object):
     def get_title(self):
         return self.title.string
 
+    def get_summary(self):
+        pass
+
 # dispatcher
 def page_content_parser(url):
     req = urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
@@ -216,7 +238,6 @@ def test_purge():
     HtmlContentExtractor.purge.im_func(object(), doc)
     assert doc.find('script') is None
 
-#TODO test when html_doc is empty
 def test_text_len_with_comma():
     html_doc = u"""
     <html>good,，</html>
@@ -229,6 +250,15 @@ def test_text_len_with_comma():
         length = HtmlContentExtractor(resp).text_len(doc)
         assert length == 8
 
+def test_parsing_empty_response():
+    html_doc = u"""
+    """
+    with tempfile.NamedTemporaryFile() as fd:
+        fd.write(html_doc.encode('utf-8'))
+        fd.seek(0)
+        resp = urllib2.urlopen('file://%s' % fd.name)
+        assert HtmlContentExtractor(resp).article.text == ''
+
 def test_semantic_affect():
     assert HtmlContentExtractor.semantic_effect.im_func(object(),
             BS('<article>good</article>').article) == 2
@@ -239,6 +269,11 @@ def test_semantic_affect():
     assert HtmlContentExtractor.semantic_effect.im_func(object(),
             BS('<p class="comment">good</p>').p) == .2
 
+def test_page_extract():
+    # e = page_content_parser('http://www.wired.com/2014/09/feds-yahoo-fine-prism/')
+    # e = page_content_parser('http://meiriyiwen.com')
+    e = page_content_parser('http://youth.dhu.edu.cn/content.asp?id=1951')
+    print e.get_article() #.get_text(strip=True, types=(NavigableString,))[:100]
 
 if __name__ == '__main__':
     page_url = 'http://www.infzm.com/content/81698'
@@ -257,3 +292,5 @@ if __name__ == '__main__':
     test_purge()
     test_text_len_with_comma()
     test_semantic_affect()
+    test_parsing_empty_response()
+    # test_page_extract()
