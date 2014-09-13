@@ -1,14 +1,13 @@
 ﻿#coding=utf-8
 import re
+import logging
 from urlparse import urljoin
 import urllib2
-import cStringIO
-from PIL import Image
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 
-"""
-https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
-"""
+import imgsz
+
+logger = logging.getLogger(__name__)
 
 # Beautifulsoup will convert all tag names to lower-case
 ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
@@ -18,53 +17,47 @@ positive_patt = re.compile(r'article|entry|post|column|main|content|'
     'section|text|preview', re.IGNORECASE)
 
 class WebImage(object):
-    url = None
+    is_possible = False
     MIN_BYTES_SIZE = 4000
     MAX_BYTES_SIZE = 15*1024*1024
-    SCALE_FROM_IMG_TO_TEXT = 22 * 22
+    SCALE_FROM_IMG_TO_TEXT = 22*22
 
     def __init__(self, base_url, img_node):
         if img_node.get('src') is None:
-            'fuck me'
+            logger.debug('No src')
+            return
         self.base_url = base_url
-        self.url = urljoin(base_url, img_node['src'])
-        self.img_area_px = self.equivalent_text_len()
+        width, height = self.get_size(img_node)
+        # self.img_area_px = self.equivalent_text_len()
+        if not (width and height):
+            return
+        if self.is_banner_dimension(width, height):
+            logger.debug('Failed on is_banner_dimension check')
+            return
+        if not self.check_image_bytesize():
+            logger.debug('Failed on image_bytesize check')
+            return
+        self.is_possible = True
 
-    def equivalent_text_len(self):
-        height = self.img_node.get('height', '').strip().rstrip('px')
-        width = self.img_node.get('width', '').strip().rstrip('px')
+    def get_size(self, inode):
+        height = inode.get('height', '').strip().rstrip('px')
+        width = inode.get('width', '').strip().rstrip('px')
+        
+        if width.isdigit() and height.isdigit():
+            return int(width), int(height)
 
-        # if you use percentage in height or width,
-        # in most cases it cannot be the main-content
-        if height.endswith('%') or width.endswith('%'):
-            return 0
-        try: height = int(height)
-        except: height = 0
-        try: width = int(width)
-        except: width = 0
-
-        if 0 < height <= minpix or 0 < width <= minpix:
-            return 0
-
-        if not (height and width):
-            fp = cStringIO.stringIO()
-            try:
-                w, h = Image.open(urllib2.urlope(self.img_node['src'])).size
-            except:
-                h = w = 1.0
-            finally:
-                hdw = h/float(w) # we need float here
-                if not (height or width):
-                    height, width = h, w # no need to convert
-                elif not height:
-                    height = int(hdw*width)
-                else:
-                    width = int(hdw*height)
-                fp.close()
-
-        if height <= minpix or width <= minpix:
-            return 0
-        return width * height
+        url = urljoin(self.base_url, inode['src'])
+        try:
+            self.raw_data = urllib2.urlopen(self.build_request(url)).read()
+            return imgsz.fromstring(self.raw_data)[1:]
+        except IOError as e:
+            logger.debug(e)
+            return 0, 0
+    
+    def build_request(self, url):
+        return urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
+                'Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
+                'Referer': self.base_url})
 
     def to_text_len(self):
         return self.img_area_px / self.scale
@@ -81,8 +74,19 @@ class WebImage(object):
         dimension = 1.0 * width / height
         return dimension > 5 or dimension< .2
 
-class HtmlContentExtractor(object):
+    def check_image_bytesize(self):
+        return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
 
+    def save(self, fp):
+        if isinstance(fp, basestring):
+            fp = open(fp, 'wb')
+        fp.write(self.raw_data)
+        fp.close()
+
+class HtmlContentExtractor(object):
+    """
+    see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
+    """
     def __init__(self, resp):
         self.max_score = -1
         self.article = None # default to an empty doc, if there are no tags.
@@ -209,71 +213,28 @@ class HtmlContentExtractor(object):
     def get_title(self):
         return self.title.string
 
-    def get_summary(self):
-        pass
+    def get_summary(self, head=200):
+        first_header = self.article.find(name=re.compile(r'h\d'))
+        if first_header:
+            first_header.extract()
+        return self.article.get_text(strip=True, types=(NavigableString,))[:head]
+
+    def get_top_image(self):
+        for img_node in self.article.find_all('img'):
+            img = WebImage(self.base_url, img_node)
+            if img.is_possible:
+                return img
+        return None
 
 # dispatcher
-def page_content_parser(url):
+def legendary_parser_factory(url):
     req = urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
         'Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'})
     resp  = urllib2.urlopen(req)
     if resp.info().getmaintype() == 'text':
+        logger.debug('Get an %s to parse', resp.info().gettype())
         return HtmlContentExtractor(resp)
-    elif resp.info().gettype() == 'application/vnd.ms-excel':
-        return excel_parser(resp)
-    elif resp.info().gettype() == 'application/msword':
-        get_main_content = lambda self : u'再等等，或许下辈子我会看懂<a target="_blank" href="http://download.microsoft.com/download/0/B/E/0_bE8_bDD7-e5_e8-422_a-ABFD-4342_eD7_aD886/Word97-2007_binary_file_format%28doc%29_specification.pdf">word的格式</a>。'
-        get_title_prefix = lambda self : u'[DOC]'
-        return type('ms_word', (), {'get_main_content':get_main_content, 'get_title_prefix':get_title_prefix})()
-    else:
-        raise TypeError('I have no idea how the %s is formatted' % resp.info().gettype())
-
-import tempfile
-
-def test_purge():
-    html_doc = """
-    <html>good<script>whatever</script></html>
-    """
-    doc = BS(html_doc)
-    HtmlContentExtractor.purge.im_func(object(), doc)
-    assert doc.find('script') is None
-
-def test_text_len_with_comma():
-    html_doc = u"""
-    <html>good,，</html>
-    """
-    with tempfile.NamedTemporaryFile() as fd:
-        fd.write(html_doc.encode('utf-8'))
-        fd.seek(0)
-        resp = urllib2.urlopen('file://%s' % fd.name)
-        doc = BS(html_doc, from_encoding='utf-8')
-        length = HtmlContentExtractor(resp).text_len(doc)
-        assert length == 8
-
-def test_parsing_empty_response():
-    html_doc = u"""
-    """
-    with tempfile.NamedTemporaryFile() as fd:
-        fd.write(html_doc.encode('utf-8'))
-        fd.seek(0)
-        resp = urllib2.urlopen('file://%s' % fd.name)
-        assert HtmlContentExtractor(resp).article.text == ''
-
-def test_semantic_affect():
-    assert HtmlContentExtractor.semantic_effect.im_func(object(),
-            BS('<article>good</article>').article) == 2
-    assert HtmlContentExtractor.semantic_effect.im_func(object(),
-            BS('<p>good</p>').p) == 1
-    assert HtmlContentExtractor.semantic_effect.im_func(object(),
-            BS('<p class="conteNt">good</p>').p) == 2
-    assert HtmlContentExtractor.semantic_effect.im_func(object(),
-            BS('<p class="comment">good</p>').p) == .2
-
-def test_page_extract():
-    # e = page_content_parser('http://www.wired.com/2014/09/feds-yahoo-fine-prism/')
-    # e = page_content_parser('http://meiriyiwen.com')
-    e = page_content_parser('http://youth.dhu.edu.cn/content.asp?id=1951')
-    print e.get_article() #.get_text(strip=True, types=(NavigableString,))[:100]
+    raise TypeError('I have no idea how the %s is formatted' % resp.info().gettype())
 
 if __name__ == '__main__':
     page_url = 'http://www.infzm.com/content/81698'
@@ -286,11 +247,6 @@ if __name__ == '__main__':
     # page_url = 'http://youth.dhu.edu.cn/content.asp?id=1993'
     # page_url = 'http://www2.dhu.edu.cn/dhuxxxt/xinwenwang/shownews.asp?id=18750'
     # page_url = 'http://www2.dhu.edu.cn/dhuxxxt/xinwenwang/shownews.asp?id=18826'
-    # page = page_content_parser(page_url)
+    # page = legendary_parser_factory(page_url)
     # c =page.get_main_content()
     # print (c.encode('utf-8'))
-    test_purge()
-    test_text_len_with_comma()
-    test_semantic_affect()
-    test_parsing_empty_response()
-    # test_page_extract()
