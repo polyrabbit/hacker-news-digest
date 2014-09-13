@@ -1,4 +1,4 @@
-#coding=utf-8
+#coding: utf-8
 import logging
 import unittest
 from unittest import TestCase
