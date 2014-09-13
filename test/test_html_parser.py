@@ -4,7 +4,9 @@ import unittest
 from unittest import TestCase
 import tempfile
 
+from bs4 import BeautifulSoup as BS
 from page_content_extractor import *
+from page_content_extractor.html import *
 
 class PageContentExtractorTestCase(TestCase):
 
