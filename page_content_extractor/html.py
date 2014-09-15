@@ -27,16 +27,18 @@ class WebImage(object):
             logger.debug('No src')
             return
         self.base_url = base_url
+        img_node['src'] = urljoin(self.base_url, img_node['src'])
         width, height = self.get_size(img_node)
         # self.img_area_px = self.equivalent_text_len()
         if not (width and height):
-            logger.debug('Failed no width or height found')
+            logger.debug('Failed no width or height found, %s', img_node['src'])
             return
         if self.is_banner_dimension(width, height):
-            logger.debug('Failed on is_banner_dimension check')
+            logger.debug('Failed on is_banner_dimension check %s', img_node['src'])
             return
         if not self.check_image_bytesize():
-            logger.debug('Failed on image_bytesize check')
+            logger.debug('Failed on image_bytesize check, size is %s, %s',
+                    len(getattr(self, 'raw_data', '')), img_node['src'])
             return
         self.is_possible = True
 
@@ -53,7 +55,6 @@ class WebImage(object):
             return 0, 0
 
     def fetch_img(self, url):
-        url = urljoin(self.base_url, url)
         try:
             resp = urllib2.urlopen(self.build_request(url))
             # meta info
