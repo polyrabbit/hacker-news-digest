@@ -188,13 +188,18 @@ class HtmlContentExtractor(object):
             style_links.extract()
 
     def clean_up_html(self):
+        trashcan = []
         for tag in self.article.descendants:
             if isinstance(tag, Tag):
                 del tag['class']
                 del tag['id']
             # <!-- comment -->
             elif isinstance(tag, NavigableString) and type(tag) is not NavigableString:
-                tag.extract()
+                # Definitely should not modify the iter while looping
+                # tag.extract()
+                trashcan.append(tag)
+        for t in trashcan:
+            t.extract()
 
     def relative_path2_abs_url(self):
         def _rp2au(soup, tp):

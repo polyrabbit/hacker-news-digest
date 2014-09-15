@@ -1,4 +1,5 @@
 #coding: utf-8
+import os.path
 import logging
 import unittest
 from unittest import TestCase
@@ -66,12 +67,20 @@ class PageContentExtractorTestCase(TestCase):
         img = WebImage('http://www.douban.com/', BS(html_doc).img)
         print img.is_possible
 
-    def test_page_extract(self):
-        # e = legendary_parser_factory('http://www.wired.com/2014/09/feds-yahoo-fine-prism/')
-        # e = legendary_parser_factory('http://meiriyiwen.com')
+    def test_simple_page_extract(self):
         e = legendary_parser_factory('http://www.infzm.com/content/81698')
         print e.get_summary()
-        e.get_top_image().save('/tmp/downimg')
+        # e.get_top_image().save('/tmp/downimg')
+
+    def test_clean_up_html_not_modify_iter_while_looping(self):
+        resp = urllib2.urlopen('file://%s' % os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            'fixtures/kim.com.html'))
+        try:
+            HtmlContentExtractor(resp)
+        except AttributeError as e:
+            self.fail('%s, maybe delete something while looping.' % e)
+        
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
