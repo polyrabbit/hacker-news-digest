@@ -21,6 +21,7 @@ class WebImage(object):
     MIN_BYTES_SIZE = 4000
     MAX_BYTES_SIZE = 15*1024*1024
     SCALE_FROM_IMG_TO_TEXT = 22*22
+    raw_data = ''
 
     def __init__(self, base_url, img_node):
         if img_node.get('src') is None:
@@ -36,9 +37,11 @@ class WebImage(object):
         if self.is_banner_dimension(width, height):
             logger.debug('Failed on is_banner_dimension check %s', img_node['src'])
             return
+        if not self.raw_data:
+            self.fetch_img(img_node['src'])
         if not self.check_image_bytesize():
             logger.debug('Failed on image_bytesize check, size is %s, %s',
-                    len(getattr(self, 'raw_data', '')), img_node['src'])
+                    len(self.raw_data), img_node['src'])
             return
         self.is_possible = True
 
@@ -87,9 +90,7 @@ class WebImage(object):
         return dimension > 5 or dimension< .2
 
     def check_image_bytesize(self):
-        if getattr(self, 'raw_data', None):
-            return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
-        return False
+        return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
 
     def save(self, fp):
         if isinstance(fp, basestring):
@@ -242,6 +243,7 @@ class HtmlContentExtractor(object):
         for img_node in self.article.find_all('img'):
             img = WebImage(self.base_url, img_node)
             if img.is_possible:
+                logger.debug('Found a top image %s', img.url)
                 return img
         return None
 

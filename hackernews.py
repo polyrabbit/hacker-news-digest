@@ -67,7 +67,9 @@ class HackerNews(object):
             title = title_dom.a.get_text(strip=True)
             logger.debug('Gotta %s', title)
             url = title_dom.a['href']
-            comhead = title_dom.span.get_text(strip=True).strip('()')
+            # In case of a discussion on hacker news, such as
+            # 9.  Let discuss here
+            comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
 
             children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
             if len(children_of_subtext_dom) == 1:
@@ -80,7 +82,8 @@ class HackerNews(object):
                 score = re.search('\d+', children_of_subtext_dom[0].get_text(strip=True)).group()
                 author = children_of_subtext_dom[2].get_text()
                 submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[3]).group()
-                comment_cnt = re.search('\d+', children_of_subtext_dom[4].get_text())
+                # In case of no comments yet
+                comment_cnt = re.search('\d+', children_of_subtext_dom[4].get_text()) or 0
                 comment_url = children_of_subtext_dom[4]['href']
 
             items.append(dict(
