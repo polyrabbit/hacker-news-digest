@@ -48,7 +48,11 @@ class WebImage(object):
 
         url = urljoin(self.base_url, inode['src'])
         try:
-            self.raw_data = urllib2.urlopen(self.build_request(url)).read()
+            resp = urllib2.urlopen(self.build_request(url))
+            # meta info
+            self.url = url
+            self.raw_data = resp.read()
+            self.content_type = resp.info.getmaintype()
             return imgsz.fromstring(self.raw_data)[1:]
         except IOError as e:
             logger.debug(e)
