@@ -7,6 +7,7 @@ import urllib2
 import os
 if 'SERVER_SOFTWARE' not in os.environ:
     os.environ['sae.storage.path'] = '/tmp'
+    os.environ['HTTP_HOST'] = 'localhost'
 
 import sae.kvdb
 from sae.storage import Bucket
