@@ -30,6 +30,7 @@ class WebImage(object):
         width, height = self.get_size(img_node)
         # self.img_area_px = self.equivalent_text_len()
         if not (width and height):
+            logger.debug('Failed no width or height found')
             return
         if self.is_banner_dimension(width, height):
             logger.debug('Failed on is_banner_dimension check')
@@ -46,17 +47,23 @@ class WebImage(object):
         if width.isdigit() and height.isdigit():
             return int(width), int(height)
 
-        url = urljoin(self.base_url, inode['src'])
+        if self.fetch_img(inode['src']):
+            return imgsz.fromstring(self.raw_data)[1:]
+        else:
+            return 0, 0
+
+    def fetch_img(self, url):
+        url = urljoin(self.base_url, url)
         try:
             resp = urllib2.urlopen(self.build_request(url))
             # meta info
             self.url = url
             self.raw_data = resp.read()
             self.content_type = resp.info.getmaintype()
-            return imgsz.fromstring(self.raw_data)[1:]
+            return True
         except IOError as e:
             logger.debug(e)
-            return 0, 0
+            return False
     
     def build_request(self, url):
         return urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
@@ -79,7 +86,9 @@ class WebImage(object):
         return dimension > 5 or dimension< .2
 
     def check_image_bytesize(self):
-        return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
+        if getattr(self, 'raw_data', None):
+            return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
+        return False
 
     def save(self, fp):
         if isinstance(fp, basestring):
