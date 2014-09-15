@@ -59,7 +59,7 @@ class WebImage(object):
             # meta info
             self.url = url
             self.raw_data = resp.read()
-            self.content_type = resp.info.getmaintype()
+            self.content_type = resp.info().getmaintype()
             return True
         except IOError as e:
             logger.debug(e)
