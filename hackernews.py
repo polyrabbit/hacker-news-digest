@@ -4,6 +4,10 @@ import logging
 from urlparse import urljoin
 import urllib2
 
+import os
+if 'SERVER_SOFTWARE' not in os.environ:
+    os.environ['sae.storage.path'] = '/tmp'
+
 import sae.kvdb
 from sae.storage import Bucket
 from bs4 import BeautifulSoup as BS
