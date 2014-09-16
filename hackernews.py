@@ -37,13 +37,16 @@ class HackerNews(object):
             # Use news url as the key
             if not kv.get(news['url']):
                 logger.debug("Fetching %s", news['url'])
-                article = legendary_parser_factory(news['url'])
-                news['summary'] = article.get_summary()
-                tm = article.get_top_image()
-                if tm:
-                    bucket.put_object(tm.url, tm.raw_data, tm.content_type)
-                    news['img_id'] = tm.url
-                    news['img_src'] = bucket.generate_url(tm.url)
+                try:
+                    article = legendary_parser_factory(news['url'])
+                    news['summary'] = article.get_summary()
+                    tm = article.get_top_image()
+                    if tm:
+                        bucket.put_object(tm.url, tm.raw_data, tm.content_type)
+                        news['img_id'] = tm.url
+                        news['img_src'] = bucket.generate_url(tm.url)
+                except Exception as e:
+                    logger.info('Failed to fetch %s, %s', news['url'], e)
             else:
                 logger.debug('Found %s', news['url'])
 
