@@ -45,6 +45,7 @@ class HackerNews(object):
                         bucket.put_object(tm.url, tm.raw_data, tm.content_type)
                         news['img_id'] = tm.url
                         news['img_src'] = bucket.generate_url(tm.url)
+                    kv.set(news['url'], news)
                 except Exception as e:
                     logger.info('Failed to fetch %s, %s', news['url'], e)
             else:
