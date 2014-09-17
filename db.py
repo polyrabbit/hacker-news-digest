@@ -97,7 +97,7 @@ class Storage(object):
         try:
             cur.execute('update %s set %s where %s' % (self.table_name,
                 ', '.join(map(lambda k: k+'=%s', kwargs.keys())),
-                self.pk+'=%s'), (kwargs.values())+(pk,))
+                self.pk+'=%s'), kwargs.values()+[pk])
             conn.commit()
         except psycopg2.DatabaseError as e:
             logger.info('Failed to update %s(%s), %s', self.table_name, pk, e)
