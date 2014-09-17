@@ -95,10 +95,9 @@ class Storage(object):
             conn.rollback()
     def update(self, pk, **kwargs):
         try:
-            # TODO, too dangerous here
             cur.execute('update %s set %s where %s' % (self.table_name,
-                ', '.join(map(lambda v: "%s='%s'" % (v[0], unicode(v[1]).replace("'", "''") if v[1] else None), kwargs.items())),
-                "%s='%s'" % (self.pk, unicode(pk).replace("'", "''") if pk else None)))
+                ', '.join(map(lambda k: k+'=%s', kwargs.keys())),
+                self.pk+'=%s'), (kwargs.values())+(pk,))
             conn.commit()
         except psycopg2.DatabaseError as e:
             logger.info('Failed to update %s(%s), %s', self.table_name, pk, e)
