@@ -18,8 +18,9 @@ positive_patt = re.compile(r'article|entry|post|column|main|content|'
 
 class WebImage(object):
     is_possible = False
+    MIN_PX = 50
     MIN_BYTES_SIZE = 4000
-    MAX_BYTES_SIZE = 15*1024*1024
+    MAX_BYTES_SIZE = 2*1024*1024
     SCALE_FROM_IMG_TO_TEXT = 22*22
     raw_data = ''
 
@@ -34,8 +35,8 @@ class WebImage(object):
         if not (width and height):
             logger.debug('Failed no width or height found, %s', img_node['src'])
             return
-        if self.is_banner_dimension(width, height):
-            logger.debug('Failed on is_banner_dimension check %s', img_node['src'])
+        if not self.check_dimension(width, height):
+            logger.debug('Failed on dimension check %s', img_node['src'])
             return
         if not self.raw_data:
             self.fetch_img(img_node['src'])
@@ -63,7 +64,7 @@ class WebImage(object):
             # meta info
             self.url = url
             self.raw_data = resp.read()
-            self.content_type = resp.info().getmaintype()
+            self.content_type = resp.info().gettype()
             return True
         except IOError as e:
             logger.debug(e)
@@ -81,13 +82,15 @@ class WebImage(object):
         pass
 
     # See https://github.com/grangier/python-goose
-    def is_banner_dimension(self, width, height):
+    def check_dimension(self, width, height):
         """
         returns true if we think this is kind of a bannery dimension
         like 600 / 100 = 6 may be a fishy dimension for a good image
         """
+        if width < self.MIN_PX or height < self.MIN_PX:
+            return False
         dimension = 1.0 * width / height
-        return dimension > 5 or dimension< .2
+        return .2 < dimension > 5
 
     def check_image_bytesize(self):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE

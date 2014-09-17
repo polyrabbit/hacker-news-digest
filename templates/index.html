@@ -14,7 +14,7 @@
 <span class="dtstamp author" ><span class="updated">{{ news.submit_time }}</span></span><span class="auth-t" style="background: url(http://2.bp.blogspot.com/-LNkSKENK-U8/UfVYEOqYJsI/AAAAAAAAByU/R4ZqPDRf7tg/s1600/theauthor.png) no-repeat 0 1px transparent; min-height: 16px; padding: 0 10px 0px 5px;margin-left: 10px;"></span>
 <span itemprop="author" itemscope="itemscope" itemtype="http://schema.org/Person">
 <span class="author vcard byline">
-<a class="email" href="http://thehackernews.com/p/authors.html" itemprop="url" rel="author">
+    <a class="email" href="{{ news.author_link }}" itemprop="url" rel="author">
 <span class="fn contributor" itemprop="name" style="text-decoration:none;">
     {{ news.author }}
 </span>
@@ -35,8 +35,12 @@
 </div>
 <div class="post-body entry-content" style="padding:0 5px;">
 <p>
-</p><div id="summary1434968035940655754"><span style="float:left"><img style="border-radius: 7px;margin-top:5px;margin-right: 8px;border: 1px solid #F7F7F7;" src="{{ news.img_src }}" width="220px" height="160px"></span><div style="padding: 5px 0 0 5px;">
-        {{ news.summary }}
+</p><div id="summary1434968035940655754"><span style="float:left">
+{% if news.img_id %}
+    <img style="border-radius: 7px;margin-top:5px;margin-right: 8px;border: 1px solid #F7F7F7;" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
+{% endif %}
+</span><div style="padding: 5px 0 0 5px;">
+    {{ news.summary }}
 </div></div>
 <div style="clear: both;"></div>
 </div>
