@@ -3,10 +3,10 @@ from flask import Flask, render_template, abort
 
 from db import ImageStorage, HnStorage, SnStorage
 
-app = Flask(__name__)
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
+app = Flask(__name__)
 
 imstore = ImageStorage()
 hnstore = HnStorage()
