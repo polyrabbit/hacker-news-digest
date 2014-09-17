@@ -35,7 +35,7 @@ class HackerNews(object):
                 _news = news.copy()
                 self.storage.update(pk=_news.pop('url'), **_news)
             else:
-                logger.debug("Fetching %s", news['url'])
+                logger.info("Fetching %s", news['url'])
                 try:
                     article = legendary_parser_factory(news['url'])
                     news['summary'] = article.get_summary()
@@ -52,7 +52,7 @@ class HackerNews(object):
         new_links = frozenset(n['url'] for n in news_list)
         for news in self.storage.get_all():
             if news['url'] not in new_links:
-                logger.debug('Removing %s', news['url'])
+                logger.info('Removing %s', news['url'])
                 # if 'img_id' in news:
                 #     bucket.delete_object(news['img_id'])
                 self.storage.delete(url=news['url'])
@@ -70,7 +70,7 @@ class HackerNews(object):
             title_dom = subtext_dom.previous_sibling.find('td', class_='title', align=False)
 
             title = title_dom.a.get_text(strip=True)
-            logger.debug('Gotta %s', title)
+            logger.info('Gotta %s', title)
             url = title_dom.a['href']
             # In case of a discussion on hacker news, such as
             # 9.  Let discuss here
