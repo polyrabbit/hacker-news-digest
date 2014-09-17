@@ -36,7 +36,8 @@ class WebImage(object):
             logger.debug('Failed no width or height found, %s', img_node['src'])
             return
         if not self.check_dimension(width, height):
-            logger.debug('Failed on dimension check %s', img_node['src'])
+            logger.debug('Failed on dimension check(width=%s height=%s) %s',
+                    width, height, img_node['src'])
             return
         if not self.raw_data:
             self.fetch_img(img_node['src'])
@@ -90,7 +91,7 @@ class WebImage(object):
         if width < self.MIN_PX or height < self.MIN_PX:
             return False
         dimension = 1.0 * width / height
-        return .2 < dimension > 5
+        return .2 < dimension < 5
 
     def check_image_bytesize(self):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
