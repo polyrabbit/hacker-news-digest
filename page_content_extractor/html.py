@@ -237,11 +237,11 @@ class HtmlContentExtractor(object):
     def get_title(self):
         return self.title.string
 
-    def get_summary(self, head=200):
+    def get_summary(self):
         first_header = self.article.find(name=re.compile(r'h\d'))
         if first_header:
             first_header.extract()
-        return self.article.get_text(strip=True, types=(NavigableString,))[:head]
+        return self.article.get_text(strip=True, types=(NavigableString,))
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):

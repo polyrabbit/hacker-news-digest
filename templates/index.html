@@ -40,7 +40,7 @@
     <img style="border-radius: 7px;margin-top:5px;margin-right: 8px;border: 1px solid #F7F7F7;" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
 {% endif %}
 </span><div style="padding: 5px 0 0 5px;">
-    {{ news.summary }}
+    {{ news.summary|truncate(200, True) }}
 </div></div>
 <div style="clear: both;"></div>
 </div>
