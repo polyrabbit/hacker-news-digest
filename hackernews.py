@@ -31,7 +31,8 @@ class HackerNews(object):
             # Use news url as the key
             if self.storage.exist(url=news['url']):
                 logger.info('Updating %s', news['url'])
-                _news = news.copy()  # We need the url so we can't pop it here
+                # We need the url so we can't pop it here
+                _news = news.copy()
                 self.storage.update(pk=_news.pop('url'), **_news)
             else:
                 logger.debug("Fetching %s", news['url'])
