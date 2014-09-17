@@ -1,4 +1,3 @@
-import os
 import logging
 from flask import Flask, render_template, abort
 
@@ -32,5 +31,6 @@ def image(img_id):
     return str(img['raw_data']), 200, {'Content-Type': img['content_type']}
 
 if __name__ == "__main__":
-    app.run(port=os.environ.get('PORT', 5000))
+    import os
+    app.run(debug=False, port=os.environ.get("PORT", 5000), processes=2)
 
