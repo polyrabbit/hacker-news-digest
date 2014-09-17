@@ -39,9 +39,9 @@ class HackerNews(object):
                         news['img_id'] = md5(tm.url).hexdigest()
                         self.im_storage.put(id=news['img_id'], raw_data=tm.raw_data,
                                 content_type=tm.content_type)
-                    self.storage.put(**news)
                 except Exception as e:
                     logger.info('Failed to fetch %s, %s', news['url'], e)
+                self.storage.put(**news)
             else:
                 logger.debug('Found %s', news['url'])
 
