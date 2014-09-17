@@ -93,6 +93,16 @@ class Storage(object):
         except psycopg2.DatabaseError as e:
             logger.info('Failed to save %s, %s', kwargs[self.pk], e)
             conn.rollback()
+    def update(self, pk, **kwargs):
+        try:
+            # TODO, too dangerous here
+            cur.execute('update %s set %s where %s' % (self.table_name,
+                ', '.join(map(lambda v: "%s='%s'" % (v[0], v[1]), kwargs.items())),
+                "%s='%s'" % (self.pk, pk)))
+            conn.commit()
+        except psycopg2.DatabaseError as e:
+            logger.info('Failed to update %s(%s), %s', self.table_name, pk, e)
+            conn.rollback()
 
     def delete(self, **kwargs):
         k, v = kwargs.items()[0]
@@ -100,7 +110,7 @@ class Storage(object):
             cur.execute('delete from %s where %s=%s' % (self.table_name, k, '%s'), (v,))
             conn.commit()
         except psycopg2.DatabaseError as e:
-            logger.info('Failed to delete %s, %s', kwargs[self.pk], e)
+            logger.info('Failed to delete %s(%s), %s', self.table_name, kwargs[self.pk], e)
             conn.rollback()
 
 class ImageStorage(Storage):

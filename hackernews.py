@@ -29,7 +29,11 @@ class HackerNews(object):
         # add new items
         for news in news_list:
             # Use news url as the key
-            if not self.storage.exist(url=news['url']):
+            if self.storage.exist(url=news['url']):
+                logger.info('Updating %s', news['url'])
+                _news = news.copy()  # We need the url so we can't pop it here
+                self.storage.update(pk=_news.pop('url'), **_news)
+            else:
                 logger.debug("Fetching %s", news['url'])
                 try:
                     article = legendary_parser_factory(news['url'])
@@ -42,8 +46,6 @@ class HackerNews(object):
                 except Exception as e:
                     logger.info('Failed to fetch %s, %s', news['url'], e)
                 self.storage.put(**news)
-            else:
-                logger.debug('Found %s', news['url'])
 
         # clean up old items
         new_links = frozenset(n['url'] for n in news_list)
