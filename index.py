@@ -1,3 +1,4 @@
+import os
 import logging
 from flask import Flask, abort
 from flask import render_template
@@ -26,4 +27,4 @@ def startupnews():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=os.environ.get('PORT', 5000))
