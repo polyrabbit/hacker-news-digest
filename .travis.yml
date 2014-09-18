@@ -5,8 +5,6 @@ services:
   - postgresql
 install:
   - pip install -r requirements.txt
-env:
-  - PRISM_DEBUG=1
 script:  python -m unittest discover ./test
 notifications:
   email: false
