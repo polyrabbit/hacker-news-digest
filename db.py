@@ -6,9 +6,6 @@ import urlparse
 
 logger = logging.getLogger(__name__)
 
-urlparse.uses_netloc.append("postgres")
-url = urlparse.urlparse(os.environ["DATABASE_URL"])
-
 schemes = [
 """
 create table if not exists image(
@@ -59,6 +56,9 @@ create table if not exists startupnews(
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
+urlparse.uses_netloc.append("postgres")
+url = urlparse.urlparse(os.environ.get("DATABASE_URL", 
+    'postgress://postgres:@localhost:5432/postgres'))
 conn = psycopg2.connect(
     database=url.path[1:],
     user=url.username,
