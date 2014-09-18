@@ -1,12 +1,12 @@
 language: python
 python:
   - "2.7"
-addons:
-  - postgresql: "9.3"
+services:
+  - postgresql
 install:
   - pip install -r requirements.txt
 env:
   - PRISM_DEBUG=1
 script:  python -m unittest discover ./test
-# notifications:
-#   email: false
+notifications:
+  email: false
