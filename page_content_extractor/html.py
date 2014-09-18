@@ -241,7 +241,7 @@ class HtmlContentExtractor(object):
         first_header = self.article.find(name=re.compile(r'h\d'))
         if first_header:
             first_header.extract()
-        return self.article.get_text(separator=' ', strip=True, types=(NavigableString,))
+        return self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):
