@@ -38,7 +38,7 @@ def image(img_id):
 @app.route('/update/<what>')
 @app.route('/update')
 def update(what=None):
-    if request.args.get('key') != os.environ.get('DATABASE_URL'):
+    if request.args.get('key') != os.environ.get('HN_UPDATE_KEY'):
         abort(404)
     if what == 'hackernews' or what is None:
         Popen(['python', 'hackernews.py'])
