@@ -4,8 +4,6 @@ from subprocess import Popen
 
 from flask import Flask, render_template, abort, request
 
-from hackernews import HackerNews
-from startupnews import StartupNews
 from db import ImageStorage, HnStorage, SnStorage
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
@@ -41,6 +39,8 @@ def update(what=None):
     if request.args.get('key') != os.environ.get('HN_UPDATE_KEY'):
         abort(404)
     if what == 'hackernews' or what is None:
+        # Spawn another process so it doesn't
+        # account for dyno hours.
         Popen(['python', 'hackernews.py'])
     if what == 'startupnews' or what is None:
         Popen(['python', 'startupnews.py'])
