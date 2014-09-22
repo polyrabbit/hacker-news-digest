@@ -3,7 +3,7 @@ import logging
 from subprocess import Popen
 
 from flask import (
-    Flask, render_template, abort, request, send_from_directory
+    Flask, render_template, abort, request, send_from_directory, send_file
 )
 
 from db import ImageStorage, HnStorage, SnStorage
@@ -33,6 +33,8 @@ def image(img_id):
     img = imstore.get(id=img_id)
     if not img:
        abort(404)
+    from cStringIO import StringIO
+    return send_file(StringIO(str(img['raw_data'])), img['content_type'])
     return str(img['raw_data']), 200, {'Content-Type': img['content_type']}
 
 @app.route('/update/<what>')
