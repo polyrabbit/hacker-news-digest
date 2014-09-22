@@ -2,7 +2,9 @@ import os
 import logging
 from subprocess import Popen
 
-from flask import Flask, render_template, abort, request
+from flask import (
+    Flask, render_template, abort, request, send_from_directory
+)
 
 from db import ImageStorage, HnStorage, SnStorage
 
@@ -45,6 +47,10 @@ def update(what=None):
     if what == 'startupnews' or what is None:
         Popen(['python', 'startupnews.py'])
     return 'Great success!'
+
+@app.route('/favicon.ico')
+def static_files():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
