@@ -1,1 +1,1 @@
-web: python index.py
+web: python db.py && python index.py

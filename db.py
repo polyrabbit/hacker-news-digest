@@ -5,7 +5,7 @@ import psycopg2.extras
 import urlparse
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import (
         create_engine, 
         Table, Column, Integer, String, MetaData, ForeignKey
@@ -66,7 +66,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 engine = create_engine(os.environ.get("DATABASE_URL", 
     'postgres://postgres@localhost:5432/postgres')\
             .replace('postgres://', 'postgresql://'))
-Session = sessionmaker(bind=engine)
+Session = scoped_session(sessionmaker(bind=engine))
 session = Session()
 
 Base = declarative_base()
