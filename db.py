@@ -70,6 +70,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 Base = declarative_base()
+
 class HackerNewsTable(Base):
     __tablename__ = 'hackernews'
 
@@ -93,6 +94,9 @@ class HackerNewsTable(Base):
 #     __tablename__ = 'startupnews'
 
 print session.query(HackerNewsTable).first()
+
+def sync_db():
+    Base.metadata.create_all(engine)
 
 # urlparse.uses_netloc.append("postgres")
 # url = urlparse.urlparse(os.environ.get("DATABASE_URL", 
@@ -172,7 +176,5 @@ print session.query(HackerNewsTable).first()
 #     table_name = 'startupnews'
 #     pk = 'url'
 
-# if __name__ == '__main__':
-    # ImageStorage().put(id='uuu', raw_data='rrrrr', content_type='ccccc')
-    # print ImageStorage().get_all()[0]['raw_data']
-
+if __name__ == '__main__':
+    sync_db()
