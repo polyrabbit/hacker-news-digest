@@ -21,9 +21,6 @@ class HackerNews(object):
     storage = HnStorage()
     im_storage = ImageStorage()
 
-    def __init__(self):
-        self.items = []
-
     def update(self):
         news_list = self.parse_news_list()
         # add new items
@@ -44,11 +41,11 @@ class HackerNews(object):
                         self.im_storage.put(raw_data=tm.raw_data,
                                 content_type=tm.content_type)
                 except Exception as e:
-                    logger.info('Failed to fetch %s, %s', news['url'], e)
+                    logger.error('Failed to fetch %s, exception: %s', news['url'], e)
                 self.storage.put(**news)
 
         # clean up old items
-        self.storage.remove_except((n['url'] for n in news_list))
+        self.storage.remove_except([n['url'] for n in news_list])
 
     def parse_news_list(self):
         req = urllib2.Request(self.end_point, headers={'User-Agent':
@@ -100,6 +97,9 @@ class HackerNews(object):
                 comment_url = urljoin(self.end_point, comment_url)
             ))
         return items
+
+    def get_all(self):
+        return self.storage.get_all()
 
 import unittest
 

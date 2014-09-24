@@ -5,8 +5,9 @@ import psycopg2.extras
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import (
-        create_engine, SQLAlchemyError, Sequence,
+        create_engine, Sequence,
         Column, Integer, String, ForeignKey, LargeBinary
     )
 
@@ -39,14 +40,14 @@ class HackerNewsTable(Base):
     comment_cnt = Column(Integer)
     comment_url = Column(String)
     summary = Column(String)
-    img_id = Column(String, ForeignKey('image.id'))
+    img_id = Column(Integer, ForeignKey('image.id'))
 
-    image = relationship('image', cascade='delete, delete-orphan')
+    image = relationship('Image', cascade='delete')
 
     def __repr__(self):
         return u"%s<%s>" % (self.title, self.url)
 
-class StartupNewsTable(HackerNewsTable):
+class StartupNewsTable(Base):
     __tablename__ = 'startupnews'
 
     rank = Column(Integer)
@@ -60,9 +61,9 @@ class StartupNewsTable(HackerNewsTable):
     comment_cnt = Column(Integer)
     comment_url = Column(String)
     summary = Column(String)
-    img_id = Column(String, ForeignKey('image.id'))
+    img_id = Column(Integer, ForeignKey('image.id'))
 
-    image = relationship('image', cascade='delete, delete-orphan')
+    image = relationship('Image', cascade='delete')
 
     def __repr__(self):
         return u"%s<%s>" % (self.title, self.url)
@@ -85,7 +86,7 @@ class Storage(object):
     def __init__(self):
         self.pk = self.model.__mapper__.primary_key[0]
         self.session = Session()
-        self.tablename = self.model.__tablename__
+        self.table_name = self.model.__tablename__
 
     def get(self, pk):
         return self.session.query(self.model).get(pk)
@@ -98,7 +99,7 @@ class Storage(object):
             self.session.commit()
         # except psycopg2.IntegrityError as e:
         except SQLAlchemyError as e:
-            logger.info('Failed to save %s, %s', kwargs[self.pk], e)
+            logger.error('Failed to save %s, %s', kwargs[self.pk], e)
             self.session.rollback()
 
     def update(self, pk, **kwargs):
@@ -106,7 +107,7 @@ class Storage(object):
             self.session.query(self.model).filter(self.pk==pk).update(kwargs)
             self.session.commit()
         except SQLAlchemyError as e:
-            logger.info('Failed to update %s(%s), %s', self.table_name, pk, e)
+            logger.error('Failed to update %s(%s), %s', self.table_name, pk, e)
             self.session.rollback()
 
     def delete(self, pk):
@@ -114,37 +115,31 @@ class Storage(object):
             self.session.query(self.model).filter(self.pk==pk).delete()
             self.session.commit()
         except SQLAlchemyError as e:
-            logger.info('Failed to delete %s(%s), %s', self.table_name, pk, e)
+            logger.error('Failed to delete %s(%s), %s', self.table_name, pk, e)
             self.session.rollback()
 
     def remove_except(self, keys):
         try:
-            self.session.query(self.model).filter(~self.pk.in_(keys)).delete()
+            # See http://stackoverflow.com/questions/7892618/sqlalchemy-delete-subquery
+            rcnt = self.session.query(self.model).filter(~self.pk.in_(keys)).delete(
+                    synchronize_session=False)
+            logger.info('Removed %s items from %s', rcnt, self.table_name)
             self.session.commit()
         except SQLAlchemyError as e:
-            logger.info('Failed to delete %s(%s), %s', self.table_name,
-                    ', '.join(keys), e)
+            logger.error('Failed to clean old urls in %s, %s', self.table_name, e)
             self.session.rollback()
 
 class ImageStorage(Storage):
-    table_name = 'image'
-    pk = 'id'
-
-    def put(self, **kwargs):
-        if 'raw_data' in kwargs:
-            kwargs['raw_data'] = psycopg2.Binary(kwargs['raw_data'])
-        return super(ImageStorage, self).put(**kwargs)
-
+    model = Image
 
 class HnStorage(Storage):
     model = HackerNewsTable
 
     def get_all(self):
-        self.session.query(self.model).all()
+        return self.session.query(self.model).all()
 
 class SnStorage(HnStorage):
     model = StartupNewsTable
 
-if __name__ == '__main__':
-    sync_db()
+sync_db()
 

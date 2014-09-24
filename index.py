@@ -7,6 +7,8 @@ from flask import (
 )
 
 from db import ImageStorage, HnStorage, SnStorage
+from hackernews import HackerNews
+from startupnews import StartupNews
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -14,19 +16,19 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 imstore = ImageStorage()
-hnstore = HnStorage()
-snstore = SnStorage()
+hn = HackerNews()
+sn = StartupNews()
 
 @app.route("/hackernews")
 @app.route('/')
 def hackernews():
     return render_template('index.html', title='Hacker News',
-            news_list=hnstore.get_all())
+            news_list=hn.get_all())
 
 @app.route("/startupnews")
 def startupnews():
     return render_template('index.html', title='Startup News',
-            news_list=snstore.get_all())
+            news_list=sn.get_all())
 
 @app.route('/img/<img_id>')
 def image(img_id):
@@ -37,17 +39,15 @@ def image(img_id):
     return send_file(StringIO(str(img.raw_data)), img.content_type)
     return str(img['raw_data']), 200, {'Content-Type': img['content_type']}
 
-@app.route('/update/<what>')
-@app.route('/update')
+@app.route('/update/<what>', methods=['POST'])
+@app.route('/update', methods=['POST'])
 def update(what=None):
-    if request.args.get('key') != os.environ.get('HN_UPDATE_KEY'):
-        abort(404)
+    if request.form.get('key') != os.environ.get('HN_UPDATE_KEY'):
+        abort(401)
     if what == 'hackernews' or what is None:
-        # Spawn another process so it doesn't
-        # account for dyno hours.
-        Popen(['python', 'hackernews.py'])
+        hn.update()
     if what == 'startupnews' or what is None:
-        Popen(['python', 'startupnews.py'])
+        sn.update()
     return 'Great success!'
 
 @app.route('/favicon.ico')
