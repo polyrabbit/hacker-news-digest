@@ -38,10 +38,11 @@ class HackerNews(object):
                     news['summary'] = article.get_summary()
                     tm = article.get_top_image()
                     if tm:
-                        self.im_storage.put(raw_data=tm.raw_data,
+                        img_id = self.im_storage.put(raw_data=tm.raw_data,
                                 content_type=tm.content_type)
-                except Exception as e:
-                    logger.error('Failed to fetch %s, exception: %s', news['url'], e)
+                        news['img_id'] = img_id
+                except Exception:
+                    logger.exception('Failed to fetch %s, exception: %s', news['url'])
                 self.storage.put(**news)
 
         # clean up old items

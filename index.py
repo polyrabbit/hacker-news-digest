@@ -37,7 +37,6 @@ def image(img_id):
        abort(404)
     from cStringIO import StringIO
     return send_file(StringIO(str(img.raw_data)), img.content_type)
-    return str(img['raw_data']), 200, {'Content-Type': img['content_type']}
 
 @app.route('/update/<what>', methods=['POST'])
 @app.route('/update', methods=['POST'])
@@ -55,5 +54,6 @@ def static_files():
     return send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)),
+            threaded=True)
 

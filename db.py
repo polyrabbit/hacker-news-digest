@@ -94,28 +94,32 @@ class Storage(object):
     exist = get
 
     def put(self, **kwargs):
+        """
+        Returns primary_key on success
+        """
         try:
-            self.session.add(self.model(**kwargs))
+            obj = self.model(**kwargs)
+            self.session.add(obj)
             self.session.commit()
-        # except psycopg2.IntegrityError as e:
-        except SQLAlchemyError as e:
-            logger.error('Failed to save %s, %s', kwargs[self.pk], e)
+            return getattr(obj, self.pk.name)
+        except SQLAlchemyError:
+            logger.exception('Failed to save %s', kwargs[self.pk])
             self.session.rollback()
 
     def update(self, pk, **kwargs):
         try:
             self.session.query(self.model).filter(self.pk==pk).update(kwargs)
             self.session.commit()
-        except SQLAlchemyError as e:
-            logger.error('Failed to update %s(%s), %s', self.table_name, pk, e)
+        except SQLAlchemyError:
+            logger.exception('Failed to update %s(%s)', self.table_name, pk)
             self.session.rollback()
 
     def delete(self, pk):
         try:
             self.session.query(self.model).filter(self.pk==pk).delete()
             self.session.commit()
-        except SQLAlchemyError as e:
-            logger.error('Failed to delete %s(%s), %s', self.table_name, pk, e)
+        except SQLAlchemyError:
+            logger.exception('Failed to delete %s(%s), %s', self.table_name, pk)
             self.session.rollback()
 
     def remove_except(self, keys):
@@ -125,8 +129,8 @@ class Storage(object):
                     synchronize_session=False)
             logger.info('Removed %s items from %s', rcnt, self.table_name)
             self.session.commit()
-        except SQLAlchemyError as e:
-            logger.error('Failed to clean old urls in %s, %s', self.table_name, e)
+        except SQLAlchemyError:
+            logger.exception('Failed to clean old urls in %s, %s', self.table_name)
             self.session.rollback()
 
 class ImageStorage(Storage):
@@ -136,7 +140,7 @@ class HnStorage(Storage):
     model = HackerNewsTable
 
     def get_all(self):
-        return self.session.query(self.model).all()
+        return self.session.query(self.model).order_by('rank').all()
 
 class SnStorage(HnStorage):
     model = StartupNewsTable
