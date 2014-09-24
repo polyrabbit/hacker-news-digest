@@ -3,3 +3,4 @@ lxml
 chardet
 flask
 psycopg2
+sqlalchemy

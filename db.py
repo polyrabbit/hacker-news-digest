@@ -65,7 +65,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 engine = create_engine(os.environ.get("DATABASE_URL", 
     'postgres://postgres@localhost:5432/postgres')\
-            .replace('postgres://', 'postgresql://'))
+            .replace('postgres://', 'postgresql://'), pool_size=10, max_overflow=10)
 Session = scoped_session(sessionmaker(bind=engine))
 session = Session()
 
