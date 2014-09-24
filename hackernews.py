@@ -29,7 +29,7 @@ class HackerNews(object):
         # add new items
         for news in news_list:
             # Use news url as the key
-            if self.storage.exist(url=news['url']):
+            if self.storage.exist(news['url']):
                 logger.info('Updating %s', news['url'])
                 # We need the url so we can't pop it here
                 _news = news.copy()
@@ -41,21 +41,14 @@ class HackerNews(object):
                     news['summary'] = article.get_summary()
                     tm = article.get_top_image()
                     if tm:
-                        news['img_id'] = md5(tm.url).hexdigest()
-                        self.im_storage.put(id=news['img_id'], raw_data=tm.raw_data,
+                        self.im_storage.put(raw_data=tm.raw_data,
                                 content_type=tm.content_type)
                 except Exception as e:
                     logger.info('Failed to fetch %s, %s', news['url'], e)
                 self.storage.put(**news)
 
         # clean up old items
-        new_links = frozenset(n['url'] for n in news_list)
-        for news in self.storage.get_all():
-            if news['url'] not in new_links:
-                logger.info('Removing %s', news['url'])
-                # if 'img_id' in news:
-                #     bucket.delete_object(news['img_id'])
-                self.storage.delete(url=news['url'])
+        self.storage.remove_except((n['url'] for n in news_list))
 
     def parse_news_list(self):
         req = urllib2.Request(self.end_point, headers={'User-Agent':
