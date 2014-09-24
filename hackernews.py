@@ -3,7 +3,6 @@ import re
 import logging
 from urlparse import urljoin
 import urllib2
-from md5 import md5
 
 from bs4 import BeautifulSoup as BS
 from page_content_extractor import legendary_parser_factory
