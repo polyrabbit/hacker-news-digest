@@ -1,8 +1,6 @@
-import os
 import logging
-import psycopg2
-import psycopg2.extras
 
+import config
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import SQLAlchemyError
@@ -18,9 +16,8 @@ logger = logging.getLogger(__name__)
 # psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 # psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
-engine = create_engine(os.environ.get("DATABASE_URL", 
-    'postgres://postgres@localhost:5432/postgres')\
-            .replace('postgres://', 'postgresql://'), pool_size=10, max_overflow=10)
+engine = create_engine(config.db_url, pool_size=config.db_pool_size,
+        max_overflow=config.db_max_overflow)
 # Session = scoped_session(sessionmaker(bind=engine))
 Session = sessionmaker(bind=engine)
 

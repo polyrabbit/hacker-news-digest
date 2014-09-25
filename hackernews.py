@@ -41,7 +41,7 @@ class HackerNews(object):
                                 content_type=tm.content_type)
                         news['img_id'] = img_id
                 except Exception:
-                    logger.exception('Failed to fetch %s, exception: %s', news['url'])
+                    logger.exception('Failed to fetch %s', news['url'])
                 self.storage.put(**news)
 
         # clean up old items
