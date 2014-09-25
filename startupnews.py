@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class StartupNews(HackerNews):
     end_point = 'http://news.dbanotes.net/'
-    storage = SnStorage()
+    storage_class = SnStorage
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')

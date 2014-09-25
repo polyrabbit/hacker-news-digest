@@ -17,8 +17,11 @@ urllib2.install_opener(opener)
 
 class HackerNews(object):
     end_point = 'https://news.ycombinator.com/'
-    storage = HnStorage()
-    im_storage = ImageStorage()
+    storage_class = HnStorage
+
+    def __init__(self):
+        self.storage = self.storage_class()
+        self.im_storage = ImageStorage()
 
     def update(self):
         news_list = self.parse_news_list()
