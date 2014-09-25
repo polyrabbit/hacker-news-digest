@@ -13,23 +13,26 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-imstore = ImageStorage()
-hn = HackerNews()
-sn = StartupNews()
-
+# @app.before_request
+# def before_request():
+#     print '+'*10, request.path
+#
 @app.route("/hackernews")
 @app.route('/')
 def hackernews():
+    hn = HackerNews()
     return render_template('index.html', title='Hacker News',
             news_list=hn.get_all())
 
 @app.route("/startupnews")
 def startupnews():
+    sn = StartupNews()
     return render_template('index.html', title='Startup News',
             news_list=sn.get_all())
 
 @app.route('/img/<int:img_id>')
 def image(img_id):
+    imstore = ImageStorage()
     img = imstore.get(img_id)
     if not img:
        abort(404)
@@ -42,9 +45,9 @@ def update(what=None):
     if request.form.get('key') != config.HN_UPDATE_KEY:
         abort(401)
     if what == 'hackernews' or what is None:
-        hn.update()
+        HackerNews().update()
     if what == 'startupnews' or what is None:
-        sn.update()
+        StartupNews().update()
     return 'Great success!'
 
 @app.route('/favicon.ico')
