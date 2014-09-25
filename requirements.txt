@@ -4,6 +4,6 @@ chardet
 flask
 psycopg2
 sqlalchemy
-gnuicorn
+gunicorn
 futures
 trollius
