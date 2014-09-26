@@ -2,7 +2,7 @@ import logging
 
 import config
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import (
         create_engine, Sequence,
@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 
 engine = create_engine(config.db_url, pool_size=config.db_pool_size,
         max_overflow=config.db_max_overflow)
-# Session = scoped_session(sessionmaker(bind=engine))
-Session = sessionmaker(bind=engine)
+# scoped_session ensures I get the same session whenever I call it.
+Session = scoped_session(sessionmaker(bind=engine))
+# Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
 
@@ -78,12 +79,22 @@ def sync_db():
 def drop_db():
     Base.metadata.drop_all(engine)
 
+import threading, time
+def fun():
+    while True:
+        print '-'*10, engine.pool, engine.pool.status()
+        time.sleep(3)
+
+t = threading.Thread(target=fun)
+t.daemon = True
+t.start()
+
 class Storage(object):
 
     def __init__(self):
         self.pk = self.model.__mapper__.primary_key[0]
         self.session = Session()
-        print '+'*10, self.session
+        print '+'*10, threading.current_thread().name, engine.pool, engine.pool.status()
         self.table_name = self.model.__tablename__
 
     def get(self, pk):
@@ -130,6 +141,9 @@ class Storage(object):
         except SQLAlchemyError:
             logger.exception('Failed to clean old urls in %s, %s', self.table_name)
             self.session.rollback()
+
+    def __del__(self):
+        self.session.close()
 
 class ImageStorage(Storage):
     model = Image
