@@ -22,7 +22,7 @@ db_max_overflow = 0
 # Gunicorn
 bind = "0.0.0.0:%s" % port
 # workers = multiprocessing.cpu_count() *2 +1
-workers = DB_CONNECTION_LIMIT / db_pool_size
+workers = DB_CONNECTION_LIMIT / db_pool_size -1
 # threads = db_pool_size
 accesslog = '-'
 errorlog = '-'
