@@ -83,6 +83,7 @@ class Storage(object):
     def __init__(self):
         self.pk = self.model.__mapper__.primary_key[0]
         self.session = Session()
+        print '+'*10, self.session
         self.table_name = self.model.__tablename__
 
     def get(self, pk):
