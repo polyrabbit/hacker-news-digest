@@ -87,14 +87,13 @@ def fun():
 
 t = threading.Thread(target=fun)
 t.daemon = True
-t.start()
+# t.start()
 
 class Storage(object):
 
     def __init__(self):
         self.pk = self.model.__mapper__.primary_key[0]
         self.session = Session()
-        print '+'*10, threading.current_thread().name, engine.pool, engine.pool.status()
         self.table_name = self.model.__tablename__
 
     def get(self, pk):
