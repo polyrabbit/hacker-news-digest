@@ -73,6 +73,9 @@ class Image(Base):
     content_type = Column(String)
     raw_data = Column(LargeBinary)
 
+    def __repr__(self):
+        return u"%s<%s>" % (self.id, self.content_type)
+
 def sync_db():
     Base.metadata.create_all(engine)
 
@@ -111,7 +114,7 @@ class Storage(object):
             self.session.commit()
             return getattr(obj, self.pk.name)
         except SQLAlchemyError:
-            logger.exception('Failed to save %s', kwargs[self.pk])
+            logger.exception('Failed to save %s', kwargs[self.pk.name])
             self.session.rollback()
 
     def update(self, pk, **kwargs):
@@ -127,18 +130,20 @@ class Storage(object):
             self.session.query(self.model).filter(self.pk==pk).delete()
             self.session.commit()
         except SQLAlchemyError:
-            logger.exception('Failed to delete %s(%s), %s', self.table_name, pk)
+            logger.exception('Failed to delete %s from %s', pk, self.table_name)
             self.session.rollback()
 
     def remove_except(self, keys):
+        if not keys:
+            return
         try:
-            # See http://stackoverflow.com/questions/7892618/sqlalchemy-delete-subquery
-            rcnt = self.session.query(self.model).filter(~self.pk.in_(keys)).delete(
-                    synchronize_session=False)
-            logger.info('Removed %s items from %s', rcnt, self.table_name)
+            rcnt = 1
+            for rcnt, obsolete in enumerate(self.session.query(self.model).filter(~self.pk.in_(keys))):
+                self.session.delete(obsolete)
+            logger.info('Removed %s items from %s', rcnt+1, self.table_name)
             self.session.commit()
         except SQLAlchemyError:
-            logger.exception('Failed to clean old urls in %s, %s', self.table_name)
+            logger.exception('Failed to clean old urls in %s', self.table_name)
             self.session.rollback()
 
     def __del__(self):
