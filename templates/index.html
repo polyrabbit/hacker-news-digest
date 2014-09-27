@@ -42,7 +42,7 @@
 {% endif %}
 </span><div style="padding: 5px 0 0 5px;">
 {% if news.summary %}
-    {{ news.summary|truncate(200) }}
+    {{ news.summary|truncate(300)|safe }}
 {% endif %}
 </div></div>
 <div style="clear: both;"></div>
