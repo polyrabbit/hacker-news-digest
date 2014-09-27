@@ -162,4 +162,5 @@ class SnStorage(HnStorage):
     model = StartupNewsTable
 
 sync_db()
+# drop_db()
 
