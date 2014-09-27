@@ -2,7 +2,7 @@ import random
 from unittest import TestCase
 from db import *
 
-class NewsParserTestCase(TestCase):
+class DataBaseTestCase(TestCase):
 
     def setUp(self):
         self.storage = SnStorage()

@@ -36,9 +36,9 @@ class HackerNews(object):
             else:
                 logger.info("Fetching %s", news['url'])
                 try:
-                    article = legendary_parser_factory(news['url'])
-                    news['summary'] = article.get_summary()
-                    tm = article.get_top_image()
+                    parser = legendary_parser_factory(news['url'])
+                    news['summary'] = parser.get_summary()
+                    tm = parser.get_top_image()
                     if tm:
                         img_id = self.im_storage.put(raw_data=tm.raw_data,
                                 content_type=tm.content_type)
