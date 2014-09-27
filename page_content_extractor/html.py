@@ -14,7 +14,7 @@ ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
-    'section|text|preview|view', re.IGNORECASE)
+    'section|text|preview|view|story-body', re.IGNORECASE)
 
 class WebImage(object):
     is_possible = False
