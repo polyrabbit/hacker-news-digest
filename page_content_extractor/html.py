@@ -14,7 +14,7 @@ ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
-    'section|text|preview', re.IGNORECASE)
+    'section|text|preview|view', re.IGNORECASE)
 
 class WebImage(object):
     is_possible = False
@@ -55,7 +55,9 @@ class WebImage(object):
             return int(width), int(height)
 
         if self.fetch_img(inode['src']):
-            return imgsz.fromstring(self.raw_data)[1:]
+            try:
+                return imgsz.fromstring(self.raw_data)[1:]
+            except ValueError as e:
         else:
             return 0, 0
 
