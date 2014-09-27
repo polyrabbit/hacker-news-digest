@@ -58,8 +58,9 @@ class WebImage(object):
             try:
                 return imgsz.fromstring(self.raw_data)[1:]
             except ValueError as e:
-        else:
-            return 0, 0
+                logger.error('Error while determing the size of %s, %s', self.url, e)
+                return 0, 0
+        return 0, 0
 
     def fetch_img(self, url):
         try:
