@@ -16,7 +16,7 @@ opener = urllib2.build_opener(cookie_support)
 urllib2.install_opener(opener)
 
 class HackerNews(object):
-    end_point = 'https://news.ycombinator.com/'
+    end_point = 'https://news.ycombinator.com/?p=5'
     storage_class = HnStorage
 
     def __init__(self):
