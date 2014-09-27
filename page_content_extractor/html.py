@@ -127,6 +127,10 @@ class HtmlContentExtractor(object):
         self.relative_path2_abs_url()
 
     def calc_best_node(self, cur_node, depth=0.1):
+        if cur_node.article:
+            # I love Html5!
+            self.article = cur_node.article
+            return
         text_len = self.text_len(cur_node)
         # img_len = self.img_area_len(cur_node)
         #TODO take image as a factor
