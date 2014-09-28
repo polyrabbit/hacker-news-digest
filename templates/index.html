@@ -3,7 +3,8 @@
 <head>
     <title>{{ title }}</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}">
+    <link href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <a href="https://github.com/polyrabbit/better-hacker-news" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
@@ -14,7 +15,7 @@
             <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title }}</a>
         </h1>
         {% if news.comhead %}
-            ({{ news.comhead }})
+            <span class="post-comhead">({{ news.comhead }})</span>
         {% endif %}
     </div>
 
@@ -54,7 +55,7 @@
     <div class="post-summary">
     {% if news.img_id %}
         <span class="feature-image">
-            <img src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
+            <img class="img-rounded" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px" data-toggle="modal" href="http://baidu.com">
         </span>
     {% endif %}
     {% if news.summary %}
@@ -66,6 +67,22 @@
     </div>
 </section>
 {% endfor %}
-
+<footer>
+    <a href="http://the-hacker-news.herokuapp.com/" target="_blank">Hacker News</a>
+    |
+    <a href="http://the-hacker-news.herokuapp.com/startupnews" target="_blank">Startup News</a>
+    |
+    <a href="https://github.com/polyrabbit/better-hacker-news" target="_blank">GitHub</a>
+</footer>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-36049801-3', 'auto');
+  ga('send', 'pageview');
+</script>
 </body>
 </html>

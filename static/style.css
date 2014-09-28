@@ -18,14 +18,19 @@ a {
     height: auto;
 }
 
+.post-item .post-title .post-comhead{
+    color: #777777;
+}
+
 ::selection {
-background: #FF6600;
-color: white;
-text-shadow: none;
+    background: #FF6600;
+    color: white;
+    text-shadow: none;
 }
 
 .post-item h1 {
     display: inline;
+    font-size: 1.6em;
 }
 
 .post-item .post-title a:hover {
@@ -61,4 +66,8 @@ text-shadow: none;
 
 .post-item .post-summary .summary-text {
     padding: 5px 0 0 5px;
+}
+
+footer {
+  margin: 10px auto;
 }
