@@ -45,6 +45,8 @@ class HackerNewsTable(Base):
     def __repr__(self):
         return u"%s<%s>" % (self.title, self.url)
 
+# TODO too verbose to define two times,
+# find a better way
 class StartupNewsTable(Base):
     __tablename__ = 'startupnews'
 
