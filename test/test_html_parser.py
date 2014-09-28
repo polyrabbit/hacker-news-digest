@@ -48,7 +48,7 @@ class PageContentExtractorTestCase(TestCase):
             fd.write(html_doc.encode('utf-8'))
             fd.seek(0)
             resp = urllib2.urlopen('file://%s' % fd.name)
-            self.assertEqual(HtmlContentExtractor(resp).get_summary(), '1 3 4')
+            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'1. 3. 4')
 
     def test_semantic_affect(self):
         assert HtmlContentExtractor.semantic_effect.im_func(object(),
