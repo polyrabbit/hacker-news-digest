@@ -51,6 +51,7 @@ def update(what=None):
     return 'Great success!'
 
 @app.route('/favicon.ico')
+@app.route('/sitemap.xml')
 def static_files():
     return send_from_directory(app.static_folder, request.path[1:])
 
