@@ -1,54 +1,69 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
 <head>
-<title>{{ title }}</title>
-<link rel="shortcut icon" href="/favicon.ico">
+    <title>{{ title }}</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
 {% for news in news_list %}
-<article class="post hnews hentry item" itemscope="itemscope" itemtype="http://schema.org/Article">
-<h1 align="justify" class="post-title url" itemprop="headline name">
-    <a target="_blank" class="url entry-title" href="{{ news.url }}" itemprop="url" rel="bookmark"> {{ news.title }}</a>
-</h1>
-<div class="postmeta">
-<span class="stamp-t" style=""></span>
-<span class="dtstamp author" ><span class="updated">{{ news.submit_time }}</span></span><span class="auth-t" style=""></span>
-<span itemprop="author" itemscope="itemscope" itemtype="http://schema.org/Person">
-<span class="author vcard byline">
-    <a class="email" href="{{ news.author_link }}" itemprop="url" rel="author">
-<span class="fn contributor" itemprop="name" style="text-decoration:none;">
-    {{ news.author }}
-</span>
-</a>
-</span>
-</span>
-</div>
-<div class="shareinpost">
-<div align="center" class="socialleft" style="z-index:99999;margin: 0px -4px;">
-<span class="st_plusone_hcount" displaytext="Google +1" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style=" margin-right: -5px; " st_processed="yes"><div style="display:inline-block;overflow:hidden;line-height:0px;position:relative;vertical-align:middle;bottom:0px;width:75px; height:21px;">&nbsp;<div id="___plusone_1" style="text-indent: 0px; margin: 0px; padding: 0px; border-style: none; float: none; line-height: normal; font-size: 1px; vertical-align: baseline; display: inline-block; width: 90px; height: 20px; background: transparent;"></div></div></span>
-<span class="st_fblike_hcount" displaytext="Facebook Like" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style="margin-right:5px" st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;position:relative;margin:3px 3px 0;padding:0px;font-size:11px;line-height:0px;vertical-align:bottom;overflow:visible;"><div data-action="" data-send="false" data-layout="button_count" data-show-faces="false" class="fb-like" data-href="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html"></div></span></span>
-<span class="st_facebook_hcount" displaytext="Facebook" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style=" margin-right: -5px; " st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;" class="stButton"><span><span class="stMainServices st-facebook-counter" style="background-image: url(http://w.sharethis.com/images/facebook_counter.png);">&nbsp;</span><span class="stArrow"><span class="stButton_gradient stHBubble" style="display: inline-block;"><span class="stBubble_hcount">1753</span></span></span></span></span></span>
-<span class="st_twitter_hcount" displaytext="Tweet" st_title="Windows 9 Start Menu Demo Video Leaked Online" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" st_via="TheHackersNews #Security" style=" margin-right: -5px; " st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;" class="stButton"><span><span class="stMainServices st-twitter-counter" style="background-image: url(http://w.sharethis.com/images/twitter_counter.png);">&nbsp;</span><span class="stArrow"><span class="stButton_gradient stHBubble" style="display: inline-block;"><span class="stBubble_hcount">180</span></span></span></span></span></span>
-<span class="st_reddit_hcount" displaytext="Reddit" st_title="Windows 9 Start Menu Demo Video Leaked Online" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style=" margin-right: -5px; " st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;" class="stButton"><span><span class="stButton_gradient"><span class="chicklets reddit">Reddit</span></span><span class="stArrow"><span class="stButton_gradient stHBubble" style="display: inline-block;"><span class="stBubble_hcount">12</span></span></span></span></span></span>
-<span class="st_linkedin_hcount" displaytext="LinkedIn" st_title="Windows 9 Start Menu Demo Video Leaked Online" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style=" margin-right: -5px; " st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;" class="stButton"><span><span class="stMainServices st-linkedin-counter" style="background-image: url(http://w.sharethis.com/images/linkedin_counter.png);">&nbsp;</span><span class="stArrow"><span class="stButton_gradient stHBubble" style="display: inline-block;"><span class="stBubble_hcount">109</span></span></span></span></span></span>
-<span class="st_sharethis_hcount" displaytext="ShareThis" st_title="Windows 9 Start Menu Demo Video Leaked Online" st_url="http://thehackernews.com/2014/09/windows-9-start-menu-demo-video-leaked.html" style=" margin-right: -5px; " st_processed="yes"><span style="text-decoration:none;color:#000000;display:inline-block;cursor:pointer;" class="stButton"><span><span class="stMainServices st-sharethis-counter" style="background-image: url(http://w.sharethis.com/images/sharethis_counter.png);">&nbsp;</span><span class="stArrow"><span class="stButton_gradient stHBubble" style="display: inline-block;"><span class="stBubble_hcount">2253</span></span></span></span></span></span>
-</div>
-</div>
-<div class="post-body entry-content" style="padding:0 5px;">
-<p>
-</p><div id="summary1434968035940655754"><span style="float:left">
-{% if news.img_id %}
-    <img style="border-radius: 7px;margin-top:5px;margin-right: 8px;border: 1px solid #F7F7F7;" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
-{% endif %}
-</span><div style="padding: 5px 0 0 5px;">
-{% if news.summary %}
-    {{ news.summary|truncate(300)|safe }}
-{% endif %}
-</div></div>
-<div style="clear: both;"></div>
-</div>
-</span>
-</article>
+<section class="post-item">
+    <div class="post-title">
+        <h1>
+            <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title }}</a>
+        </h1>
+        {% if news.comhead %}
+            ({{ news.comhead }})
+        {% endif %}
+    </div>
+
+    <div class="post-meta">
+        {% if news.score %}
+            <span title="score">
+                <span class="score" style="background: url({{ url_for('static', filename='score.png') }}) no-repeat 0 1px transparent; min-height: 16px; padding: 0 10px 0px 10px;margin: 10px;"></span>
+                <span class="next-to-icon">
+                    {{ news.score }}
+                </span>
+            </span>
+        {% endif %}
+        {% if news.author_link %}
+            <span class="author-link" title="author">
+                <a href="{{ news.author_link }}" rel="author" target="_blank">
+                    <span class="auth-t" style="background: url({{ url_for('static', filename='author.png') }}) no-repeat 0 1px transparent; min-height: 16px; padding: 0 10px 0px 10px;margin-left: 10px;">
+                    </span>
+                    {{ news.author }}
+                </a>
+            </span>
+        {% endif %}
+        <span title="submit time">
+            <span class="stamp-t" style="background: url({{ url_for('static', filename='time.png') }}) no-repeat 4px 1px transparent; min-height: 16px; padding: 0 15px 0px 10px;"></span>
+            <span class="last-updated">{{ news.submit_time }}</span>
+        </span>
+        {% if news.comment_url %}
+            <span class="comment" title="comment">
+                <a href="{{ news.comment_url }}" rel="comment" target="_blank">
+                    <span class="comment-t" style="background: url({{ url_for('static', filename='comment.png') }}) no-repeat 0 1px transparent; min-height: 16px; padding: 0 10px 0px 10px;margin-left: 10px;">
+                    </span>
+                    {{ news.comment_cnt }}
+                </a>
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="post-summary">
+    {% if news.img_id %}
+        <span class="feature-image">
+            <img src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
+        </span>
+    {% endif %}
+    {% if news.summary %}
+        <div class="summary-text">
+            {{ news.summary|truncate(300)|safe }}
+        </div>
+    {% endif %}
+    <div style="clear: both;"></div>
+    </div>
+</section>
 {% endfor %}
 </body>
 </html>
