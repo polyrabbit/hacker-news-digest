@@ -31,3 +31,8 @@ class VideoParserTestCase(TestCase):
         parser = VideoExtractor('Tudou', 'http://www.tudou.com/albumplay/NBDgX_W2aJk/wjz6Oq52l7E.html')
         self.assertEqual(parser.get_summary(),
                 '<iframe width="560" height="315" src="http://www.tudou.com/programs/view/html5embed.action?code=wjz6Oq52l7E" frameborder="0" allowfullscreen></iframe>')
+
+    def test_ustream_parser(self):
+        parser = VideoExtractor('ustream', 'http://www.ustream.tv/recorded/9900109?utm_campaign=JPER&utm_medium=FlashPlayer&utm_source=embed')
+        self.assertEqual(parser.get_summary(),
+                '<iframe width="560" height="315" src="http://www.ustream.tv/embed/recorded/9900109?v=3&amp;wmode=direct" frameborder="0" allowfullscreen></iframe>')

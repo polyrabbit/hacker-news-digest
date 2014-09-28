@@ -63,4 +63,12 @@ class VideoExtractor(object):
         """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(2)
 
+    def ustream_parser(self, url):
+        vid_mat = re.search(r'www\.ustream\.tv/recorded/(\d+)', url, re.I)
+        if not vid_mat:
+            raise ParseError('Invalid ustream video url')
+        return """<iframe width="560" height="315" """\
+        """src="http://www.ustream.tv/embed/recorded/%s?v=3&amp;wmode=direct" frameborder="0" """\
+        """allowfullscreen></iframe>""" % vid_mat.group(1)
+
 video_providers = frozenset(name.split('_')[0] for name in dir(VideoExtractor) if name.endswith('_parser'))
