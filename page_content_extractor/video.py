@@ -27,6 +27,8 @@ class VideoExtractor(object):
         vid_mat = re.search(r'v\.youku\.com/v_show/id_(\w+?)\.html', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid youku video url')
+        # TODO try bootstrap embed-responsive-item
+        # see http://getbootstrap.com/components/#navbar-component-alignment
         return """<iframe width="560" height="315" """\
         """src="http://player.youku.com/embed/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)

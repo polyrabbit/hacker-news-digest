@@ -1,3 +1,21 @@
+body {
+    background-color: #f5f5d5 !important;
+}
+
+.navbar {
+    background-color: #ff6600 !important;
+    color: #000000;
+}
+
+.navbar a {
+    color: #000000!important;
+}
+
+.container {
+    width: 970px;
+    max-width: none !important;
+}
+
 a {
     text-decoration: none;
 }
@@ -66,8 +84,4 @@ a {
 
 .post-item .post-summary .summary-text {
     padding: 5px 0 0 5px;
-}
-
-footer {
-  margin: 10px auto;
 }
