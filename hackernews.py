@@ -54,7 +54,8 @@ class HackerNews(object):
         req = urllib2.Request(self.end_point, headers={'User-Agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 '
             '(KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'})
-        dom = BS(urllib2.urlopen(req))
+        resp = urllib2.urlopen(req)
+        dom = BS(resp, from_encoding=resp.info().getparam('charset'))
         items = []
         # Sad BS doesn't support nth-of-type(3n)
         for rank, blank_line in enumerate(
