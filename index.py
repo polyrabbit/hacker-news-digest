@@ -35,7 +35,7 @@ def image(img_id):
     imstore = ImageStorage()
     img = imstore.get(img_id)
     if not img:
-       abort(404)
+        abort(404)
     from cStringIO import StringIO
     return send_file(StringIO(str(img.raw_data)), img.content_type)
 
