@@ -23,13 +23,25 @@ app = Flask(__name__)
 def hackernews():
     hn = HackerNews()
     return render_template('index.html', title='Hacker News',
-            news_list=hn.get_all())
+            news_list=hn.get_all(), navs=[
+        ('New', 'https://news.ycombinator.com/newest'),
+        ('Comments', 'https://news.ycombinator.com/newcomments'),
+        ('Show', 'https://news.ycombinator.com/show'),
+        ('Ask', 'https://news.ycombinator.com/ask'),
+        ('Jobs', 'https://news.ycombinator.com/jobs'),
+        ('Submit', 'https://news.ycombinator.com/submit')]
+    )
 
 @app.route("/startupnews")
 def startupnews():
     sn = StartupNews()
     return render_template('index.html', title='Startup News',
-            news_list=sn.get_all())
+            news_list=sn.get_all(), navs=[
+            ('New', 'http://news.dbanotes.net/newest'),
+            ('Comments', 'http://news.dbanotes.net/newcomments'),
+            ('Leaders', 'http://news.dbanotes.net/leaders'),
+            ('Submit', 'http://news.dbanotes.net/submit')
+        ])
 
 @app.route('/img/<int:img_id>')
 def image(img_id):

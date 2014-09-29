@@ -9,8 +9,14 @@
 </head>
 <body>
 <div class="container">
-<nav class="navbar navbar-pills" role="navigation">
-
+<nav class="navbar-collapse collapse" role="navigation">
+<ul class="nav navbar-nav">
+    {% for nav in navs %}
+    <li>
+        <a href="{{ nav[1] }}" target="_blank">{{ nav[0] }}</a>
+    </li>
+    {% endfor %}
+</ul>
 </nav>
 {% for news in news_list %}
 <article class="post-item">
@@ -73,9 +79,9 @@
 {% endfor %}
 <footer>
     <ul class="list-inline text-center">
-        <li><a href="http://the-hacker-news.herokuapp.com/">Hacker News</a></li>
+        <li><a href="/">Hacker News</a></li>
         |
-        <li><a href="http://the-hacker-news.herokuapp.com/startupnews">Startup News</a></li>
+        <li><a href="/startupnews">Startup News</a></li>
         |
         <li><a href="https://github.com/polyrabbit/better-hacker-news" title="Fork me on GitHub" target="_blank">GitHub</a></li>
     </ul>
