@@ -1,7 +1,7 @@
 #coding: utf-8
 import re
 import logging
-from urlparse import urljoin
+from urlparse import urljoin, urlsplit
 import urllib2
 
 from bs4 import BeautifulSoup as BS
@@ -66,10 +66,14 @@ class HackerNews(object):
 
             title = title_dom.a.get_text(strip=True)
             logger.info('Gotta %s', title)
-            url = title_dom.a['href']
+            url = urljoin(self.end_point, title_dom.a['href'])
             # In case of a discussion on hacker news, such as
             # 9.  Let discuss here
-            comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
+            # comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
+            comhead = urlsplit(url).hostname
+            # ps = comhead.split('.')
+            # if len(ps)>2 and ps[0].lower == 'www':
+            #     comhead = comhead[1:]
 
             children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
             if len(children_of_subtext_dom) == 1:
@@ -92,7 +96,7 @@ class HackerNews(object):
             items.append(dict(
                 rank = rank,
                 title = title,
-                url = urljoin(self.end_point, url),
+                url = url,
                 comhead = comhead,
                 score = score,
                 author = author,
