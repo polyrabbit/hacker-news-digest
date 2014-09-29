@@ -137,9 +137,10 @@ class Storage(object):
 
     def remove_except(self, keys):
         if not keys:
+            logger.warning("Get a empty key to remove_except")
             return
         try:
-            rcnt = 1
+            rcnt = -1
             for rcnt, obsolete in enumerate(self.session.query(self.model).filter(~self.pk.in_(keys))):
                 self.session.delete(obsolete)
             logger.info('Removed %s items from %s', rcnt+1, self.table_name)
