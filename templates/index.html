@@ -10,21 +10,17 @@
 <body>
 <div class="container">
 <nav class="navbar navbar-pills" role="navigation">
-    <ul class="list-inline nav navbar-nav">
-        <li><a href="http://the-hacker-news.herokuapp.com/">Hacker News</a></li>
-        <li><a href="http://the-hacker-news.herokuapp.com/startupnews">Startup News</a></li>
-        <li><a href="https://github.com/polyrabbit/better-hacker-news" target="_blank">GitHub</a></li>
-    </ul>
+
 </nav>
 {% for news in news_list %}
 <article class="post-item">
     <div class="post-title">
-        <h1>
-            <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title }}</a>
-        </h1>
+        <h3>
+            <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title|trim }}</a>
         {% if news.comhead %}
-            <span class="post-comhead">({{ news.comhead }})</span>
+            <small>({{ news.comhead }})</small>
         {% endif %}
+        </h3>
     </div>
 
     <div class="post-meta">
@@ -75,6 +71,15 @@
     </div>
 </article>
 {% endfor %}
+<footer>
+    <ul class="list-inline text-center">
+        <li><a href="http://the-hacker-news.herokuapp.com/">Hacker News</a></li>
+        |
+        <li><a href="http://the-hacker-news.herokuapp.com/startupnews">Startup News</a></li>
+        |
+        <li><a href="https://github.com/polyrabbit/better-hacker-news" title="Fork me on GitHub" target="_blank">GitHub</a></li>
+    </ul>
+</footer>
 </div>
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>

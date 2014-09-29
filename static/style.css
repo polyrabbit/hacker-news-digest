@@ -16,10 +16,6 @@ body {
     max-width: none !important;
 }
 
-a {
-    text-decoration: none;
-}
-
 .post-item {
     border-bottom: 1px solid #dddddd;
     height: 100%!important;
@@ -44,11 +40,6 @@ a {
     background: #FF6600;
     color: white;
     text-shadow: none;
-}
-
-.post-item h1 {
-    display: inline;
-    font-size: 1.6em;
 }
 
 .post-item .post-title a:hover {
@@ -84,4 +75,8 @@ a {
 
 .post-item .post-summary .summary-text {
     padding: 5px 0 0 5px;
+}
+
+footer a {
+    color: #777;
 }
