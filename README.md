@@ -5,6 +5,12 @@ better-hacker-news
 
 [Hackernews](https://news.ycombinator.com/) fast reading.
 
+### Features
+* Summaries of news are extracted for you to skim quickly
+* PDF summaries are also extracted
+* Preview top images
+* Full hostname of submitted urls are shown
+
 ### TODO
 - [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
 - [ ] A more beautiful home page(maybe in HTML9)
