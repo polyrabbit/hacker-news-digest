@@ -60,8 +60,8 @@ class HackerNews(object):
         # Sad BS doesn't support nth-of-type(3n)
         for rank, blank_line in enumerate(
                 dom.select('table tr table:nth-of-type(2) tr[style="height:5px"]')):
-            subtext_dom = blank_line.previous_sibling
-            title_dom = subtext_dom.previous_sibling.find('td', class_='title', align=False)
+            subtext_dom = blank_line.find_previous_sibling('tr')
+            title_dom = subtext_dom.find_previous_sibling('tr').find('td', class_='title', align=False)
 
             title = title_dom.a.get_text(strip=True)
             logger.info('Gotta %s', title)
