@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-    width: 916px;
+    width: 916px !important;
     max-width: none !important;
 }
 
