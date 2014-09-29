@@ -60,6 +60,7 @@ class HackerNews(object):
         # Sad BS doesn't support nth-of-type(3n)
         for rank, blank_line in enumerate(
                 dom.select('table tr table:nth-of-type(2) tr[style="height:5px"]')):
+            # previous_sibling won't work when there are spaces between them.
             subtext_dom = blank_line.find_previous_sibling('tr')
             title_dom = subtext_dom.find_previous_sibling('tr').find('td', class_='title', align=False)
 
@@ -77,7 +78,7 @@ class HackerNews(object):
                 author_link = \
                 comment_cnt = \
                 comment_url = None
-                submit_time = children_of_subtext_dom[0]
+                submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[0]).group()
             else:
                 score = re.search('\d+', children_of_subtext_dom[0].get_text(strip=True)).group()
                 author = children_of_subtext_dom[2].get_text()
@@ -95,10 +96,10 @@ class HackerNews(object):
                 comhead = comhead,
                 score = score,
                 author = author,
-                author_link = urljoin(self.end_point, author_link),
+                author_link = urljoin(self.end_point, author_link)  if author_link else None,
                 submit_time = submit_time,
                 comment_cnt = comment_cnt,
-                comment_url = urljoin(self.end_point, comment_url)
+                comment_url = urljoin(self.end_point, comment_url) if comment_url else None
             ))
         return items
 
