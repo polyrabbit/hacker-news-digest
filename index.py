@@ -36,8 +36,7 @@ def image(img_id):
     img = imstore.get(img_id)
     if not img:
         abort(404)
-    from cStringIO import StringIO
-    return send_file(StringIO(str(img.raw_data)), img.content_type)
+    return send_file(img.makefile(), img.content_type)
 
 @app.route('/update/<what>', methods=['POST'])
 @app.route('/update', methods=['POST'])

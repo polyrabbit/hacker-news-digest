@@ -1,4 +1,6 @@
 import logging
+from cStringIO import StringIO
+
 
 import config
 from sqlalchemy.ext.declarative import declarative_base
@@ -77,6 +79,9 @@ class Image(Base):
 
     def __repr__(self):
         return u"%s<%s>" % (self.id, self.content_type)
+
+    def makefile(self):
+        return StringIO(self.raw_data)
 
 def sync_db():
     Base.metadata.create_all(engine)
