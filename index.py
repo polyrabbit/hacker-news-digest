@@ -1,7 +1,8 @@
 import logging
 
 from flask import (
-    Flask, render_template, abort, request, send_from_directory, send_file
+    Flask, render_template, abort, request, send_from_directory, send_file,
+    Response
 )
 
 import config
@@ -32,11 +33,13 @@ def startupnews():
 
 @app.route('/img/<int:img_id>')
 def image(img_id):
+    if request.if_none_match or request.if_modified_since:
+        return Response(status=304)
     imstore = ImageStorage()
     img = imstore.get(img_id)
     if not img:
         abort(404)
-    return send_file(img.makefile(), img.content_type)
+    return send_file(img.makefile(), img.content_type, conditional=True)
 
 @app.route('/update/<what>', methods=['POST'])
 @app.route('/update', methods=['POST'])

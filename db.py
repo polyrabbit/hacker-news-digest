@@ -1,5 +1,6 @@
 import logging
-from cStringIO import StringIO
+# cStringIO won't let me set name attr on it
+from StringIO import StringIO
 
 
 import config
@@ -81,7 +82,9 @@ class Image(Base):
         return u"%s<%s>" % (self.id, self.content_type)
 
     def makefile(self):
-        return StringIO(self.raw_data)
+        file = StringIO(self.raw_data)
+        file.name = __file__
+        return file
 
 def sync_db():
     Base.metadata.create_all(engine)
