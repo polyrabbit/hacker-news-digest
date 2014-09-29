@@ -72,8 +72,8 @@ class HackerNews(object):
             # comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
             comhead = urlsplit(url).hostname
             ps = comhead.split('.')
-            if len(ps)>2 and ps[0].lower == 'www':
-                comhead = comhead[1:]
+            if len(ps)>2 and ps[0].lower() == 'www':
+                comhead = '.'.join(ps[1:])
 
             children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
             if len(children_of_subtext_dom) == 1:
