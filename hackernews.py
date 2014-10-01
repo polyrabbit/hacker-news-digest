@@ -70,10 +70,7 @@ class HackerNews(object):
             # In case of a discussion on hacker news, such as
             # 9.  Let discuss here
             # comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
-            comhead = urlsplit(url).hostname
-            ps = comhead.split('.')
-            if len(ps)>2 and ps[0].lower() == 'www':
-                comhead = '.'.join(ps[1:])
+            comhead = self.parse_comhead(url)
 
             children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
             if len(children_of_subtext_dom) == 1:
@@ -107,18 +104,22 @@ class HackerNews(object):
             ))
         return items
 
+    def parse_comhead(self, url):
+        if not url.startswith('http'):
+            url = 'http://' + url
+        us = urlsplit(url.lower())
+        comhead = us.hostname
+        hs = comhead.split('.')
+        if len(hs)>2 and hs[0] == 'www':
+            comhead = comhead[4:]
+        if comhead.endswith('github.com'):
+            ps = us.path.split('/')
+            if len(ps)>1 and ps[1]:
+                comhead = '%s/%s' % (comhead, ps[1])
+        return comhead
+
     def get_all(self):
         return self.storage.get_all()
-
-import unittest
-
-class TestHackerNewsParser(unittest.TestCase):
-    def test_parsed_score(self):
-        """Every score should be a digit"""
-        hn = HackerNews()
-        for news in hn.parse_news_list():
-            self.assertTrue(news['score'] is None or \
-                    news['score'].isdigit())
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
