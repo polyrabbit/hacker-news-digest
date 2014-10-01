@@ -35,12 +35,6 @@ body {
     color: #777777;
 }
 
-::selection {
-    background: #428bca;
-    color: white;
-    text-shadow: none;
-}
-
 .post-item .post-title a:hover {
     text-decoration: underline;
 }
