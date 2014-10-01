@@ -23,7 +23,6 @@ body {
 }
 
 .post-item .post-title {
-    color: #3d5a99;
     display: block;
     text-decoration: none;
     padding: 3px 10px;
@@ -37,7 +36,7 @@ body {
 }
 
 ::selection {
-    background: #FF6600;
+    background: #428bca;
     color: white;
     text-shadow: none;
 }
