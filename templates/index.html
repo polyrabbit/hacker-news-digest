@@ -10,14 +10,19 @@
 </head>
 <body>
 <div class="container">
-<nav class="navbar-collapse collapse" role="navigation">
+<nav class="navbar navbar-static-top">
+    <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="{{ navs[0][1] }}" target="_blank">{{ navs[0][0] }}</a>
+    </div>
     <ul class="nav navbar-nav">
-        {% for nav in navs %}
+        {% for nav in navs[1:] %}
         <li>
             <a href="{{ nav[1] }}" target="_blank">{{ nav[0] }}</a>
         </li>
         {% endfor %}
     </ul>
+    </div>
 </nav>
 {% for news in news_list %}
 <article class="post-item">
@@ -88,8 +93,23 @@
     </ul>
 </footer>
 </div>
+<!-- The modal dialog, which will be used to wrap the lightbox content -->
+    <div class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <img>
+                </div>
+            </div>
+        </div>
+    </div>
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script>
+    $('.post-item .post-summary .feature-image img').click(function (e) {
+        $('.modal-dialog .modal-body img').attr('src', $(this).attr('src'));
+    });
+</script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
