@@ -8,7 +8,7 @@ better-hacker-news
 ### Features
 * Summaries of news are extracted for you to skim quickly
 * PDF summaries are also extracted
-* Preview top images
+* Preview top images and videos
 * Full hostname of submitted urls are shown
 
 ### TODO

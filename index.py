@@ -62,6 +62,7 @@ def update(what=None):
         abort(401)
     if what == 'hackernews' or what is None:
         HackerNews().update()
+        # TODO add last-updated
     if what == 'startupnews' or what is None:
         StartupNews().update()
     return 'Great success!'
