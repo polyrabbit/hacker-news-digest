@@ -66,6 +66,14 @@ body {
     padding: 5px 0 0 5px;
 }
 
+.modal-dialog {
+    max-width: 600px;
+}
+
+.modal img {
+    margin: auto;
+}
+
 footer a {
     color: #777;
 }

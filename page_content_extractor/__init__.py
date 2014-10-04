@@ -24,7 +24,7 @@ def legendary_parser_factory(url):
         except ParseError:
             logger.info('%s is not a %s video, try another', resp.geturl(), vp)
     if resp.info().getmaintype() == 'text':
-        logger.debug('Get an %s to parse', resp.info().gettype())
+        logger.info('Get an %s to parse', resp.info().gettype())
         return HtmlContentExtractor(resp)
     raise TypeError('I have no idea how the %s is formatted' % resp.info().gettype())
 

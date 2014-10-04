@@ -71,7 +71,7 @@
     <div class="post-summary">
     {% if news.img_id %}
         <a class="feature-image" href="#">
-            <img class="img-rounded img-responsive" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px" data-toggle="modal" href="http://baidu.com">
+            <img class="img-rounded img-responsive" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
         </a>
     {% endif %}
     {% if news.summary %}
@@ -94,21 +94,21 @@
 </footer>
 </div>
 <!-- The modal dialog, which will be used to wrap the lightbox content -->
-    <div class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <img>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="modal fade in" id="img-preview-modal" tabindex="-1">
+  <div class="modal-dialog">
+        <img class="img-responsive">
+  </div>
+</div>
+
+
 <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
-    $('.post-item .post-summary .feature-image img').click(function (e) {
-        $('.modal-dialog .modal-body img').attr('src', $(this).attr('src'));
-    });
+$('.post-item .post-summary .feature-image').click(function (e) {
+    $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
+    $('#img-preview-modal').modal();
+    return false;
+});
 </script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
