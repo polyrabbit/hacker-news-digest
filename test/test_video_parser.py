@@ -13,9 +13,9 @@ class VideoParserTestCase(TestCase):
                 '<iframe width="560" height="315" src="http://player.youku.com/embed/XNzkxMTE3MTEy" frameborder="0" allowfullscreen></iframe>')
 
     def test_youtube_parser(self):
-        parser = VideoExtractor('Youtube', 'https://www.youtube.com/watch?v=ocXb3qeg7Es')
+        parser = VideoExtractor('Youtube', 'https://www.youtube.com/watch?v=db-7J5OaSag')
         self.assertEqual(parser.get_summary(),
-                '<iframe width="560" height="315" src="//www.youtube.com/embed/ocXb3qeg7Es" frameborder="0" allowfullscreen></iframe>')
+                '<iframe width="560" height="315" src="//www.youtube.com/embed/db-7J5OaSag" frameborder="0" allowfullscreen></iframe>')
 
     def test_vimeo_parser(self):
         parser = VideoExtractor('Vimeo', 'https://vimeo.com/105196878')

@@ -34,7 +34,7 @@ class VideoExtractor(object):
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def youtube_parser(self, url):
-        vid_mat = re.search(r'www\.youtube\.com/watch\?v=(\w+)', url, re.I)
+        vid_mat = re.search(r'www\.youtube\.com/watch\?v=([^&]+)', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid youtube video url')
         return """<iframe width="560" height="315" """\
