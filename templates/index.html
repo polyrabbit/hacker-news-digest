@@ -90,6 +90,10 @@
         <li><a href="/startupnews">Startup News+</a></li>
         |
         <li><a href="https://github.com/polyrabbit/better-hacker-news" title="Fork me on GitHub" target="_blank">GitHub</a></li>
+        {% if last_synced %}
+        |
+            <li>Last synced: {{ last_synced }}</li>
+        {% endif %}
     </ul>
 </footer>
 </div>
