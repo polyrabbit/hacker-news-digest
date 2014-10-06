@@ -29,9 +29,6 @@
     <div class="post-title">
         <h3>
             <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title|trim }}</a>
-        {% if news.comhead %}
-            <small>({{ news.comhead }})</small>
-        {% endif %}
         </h3>
     </div>
 
@@ -65,6 +62,10 @@
                     {{ news.comment_cnt }}
                 </a>
             </span>
+        {% endif %}
+        {% if news.comhead %}
+            <span class="comlink-t" style="background: url({{ url_for('static', filename='external_link.png') }}) no-repeat 4px 1px transparent; height: 16px; padding: 0 15px 0px 10px; margin: 0px 3px;"></span>
+            <span>{{ news.comhead }}</span>
         {% endif %}
     </div>
 

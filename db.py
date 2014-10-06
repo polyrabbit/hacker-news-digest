@@ -98,8 +98,8 @@ def fun():
         print '-'*10, engine.pool, engine.pool.status()
         time.sleep(3)
 
-t = threading.Thread(target=fun)
-t.daemon = True
+# t = threading.Thread(target=fun)
+# t.daemon = True
 # t.start()
 
 class Storage(object):

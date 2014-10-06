@@ -8,3 +8,4 @@ gunicorn
 futures
 trollius
 ago
+selenium

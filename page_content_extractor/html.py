@@ -63,6 +63,7 @@ class WebImage(object):
         return 0, 0
 
     def fetch_img(self, url):
+        # TODO what if image is encoded in data:image/png;base64?
         try:
             resp = urllib2.urlopen(self.build_request(url))
             # meta info
