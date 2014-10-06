@@ -72,6 +72,7 @@ body {
 
 .modal img {
     margin: auto;
+    background-color: #FFF;
 }
 
 footer li, footer li a {
