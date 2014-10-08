@@ -2,9 +2,10 @@ body {
     background-color: #f5f5d5 !important;
 }
 
-.container {
-    width: 916px !important;
-    max-width: none !important;
+@media (min-width: 1200px) {
+    .container {
+        width: 916px !important;
+    }
 }
 
 .nav>li>a:hover, .nav>li>a:focus {
