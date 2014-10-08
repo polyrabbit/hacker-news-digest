@@ -10,11 +10,18 @@
 </head>
 <body>
 <div class="container">
-<nav class="navbar navbar-static-top">
+<nav class="navbar">
     <div class="container-fluid">
     <div class="navbar-header">
+         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
         <a class="navbar-brand" href="{{ navs[0][1] }}" target="_blank">{{ navs[0][0] }}</a>
     </div>
+    <div class="collapse navbar-collapse" id="hn-menu">
     <ul class="nav navbar-nav">
         {% for nav in navs[1:] %}
         <li>
@@ -22,6 +29,7 @@
         </li>
         {% endfor %}
     </ul>
+    </div>
     </div>
 </nav>
 {% for news in news_list %}

@@ -13,6 +13,10 @@ body {
     background-color: #f5f5d5;
 }
 
+.navbar-toggle .icon-bar {
+    background-color: #888;
+}
+
 .post-item {
     border-bottom: 1px solid #dddddd;
     height: 100%!important;
