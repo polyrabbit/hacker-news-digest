@@ -26,7 +26,7 @@ class VideoExtractor(object):
     def youku_parser(self, url):
         vid_mat = re.search(r'v\.youku\.com/v_show/id_(\w+?)\.html', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid youku video url')
+            raise ParseError('Invalid youku video url(%s)' % url)
         # TODO try bootstrap embed-responsive-item
         # see http://getbootstrap.com/components/#navbar-component-alignment
         return """<iframe width="560" height="315" """\
@@ -36,7 +36,7 @@ class VideoExtractor(object):
     def youtube_parser(self, url):
         vid_mat = re.search(r'www\.youtube\.com/watch\?v=([^&]+)', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid youtube video url')
+            raise ParseError('Invalid youtube video url(%s)' % url)
         return """<iframe width="560" height="315" """\
         """src="//www.youtube.com/embed/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
@@ -44,7 +44,7 @@ class VideoExtractor(object):
     def vimeo_parser(self, url):
         vid_mat = re.search(r'vimeo\.com/(\d+)', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid vimeo video url')
+            raise ParseError('Invalid vimeo video url(%s)' % url)
         return """<iframe width="560" height="315" """\
         """src="//player.vimeo.com/video/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
@@ -52,7 +52,7 @@ class VideoExtractor(object):
     def dailymotion_parser(self, url):
         vid_mat = re.search(r'www\.dailymotion\.com/video/([a-zA-Z0-9]+)_[-\w]+', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid dailymotion video url')
+            raise ParseError('Invalid dailymotion video url(%s)' % url)
         return """<iframe width="560" height="315" """\
         """src="//www.dailymotion.com/embed/video/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
@@ -60,7 +60,7 @@ class VideoExtractor(object):
     def tudou_parser(self, url):
         vid_mat = re.search(r'www\.tudou\.com/albumplay/(\w+?)/(\w+?)\.html', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid tudou video url')
+            raise ParseError('Invalid tudou video url(%s)' % url)
         return """<iframe width="560" height="315" """\
         """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(2)
@@ -68,9 +68,16 @@ class VideoExtractor(object):
     def ustream_parser(self, url):
         vid_mat = re.search(r'www\.ustream\.tv/recorded/(\d+)', url, re.I)
         if not vid_mat:
-            raise ParseError('Invalid ustream video url')
+            raise ParseError('Invalid ustream video url(%s)' % url)
         return """<iframe width="560" height="315" """\
         """src="http://www.ustream.tv/embed/recorded/%s?v=3&amp;wmode=direct" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
+
+    def bloomberg_parser(self, url):
+        vid_mat = re.search(r'www\.bloomberg\.com/video/[-\w]+?-(\w+)\.', url, re.I)
+        if not vid_mat:
+            raise ParseError('Invalid bloomberg video url(%s)' % url)
+        return """<object data='http://www.bloomberg.com/video/embed/%s"""\
+        """?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>""" % vid_mat.group(1)
 
 video_providers = frozenset(name.split('_')[0] for name in dir(VideoExtractor) if name.endswith('_parser'))

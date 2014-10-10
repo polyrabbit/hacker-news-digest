@@ -36,3 +36,8 @@ class VideoParserTestCase(TestCase):
         parser = VideoExtractor('ustream', 'http://www.ustream.tv/recorded/9900109?utm_campaign=JPER&utm_medium=FlashPlayer&utm_source=embed')
         self.assertEqual(parser.get_summary(),
                 '<iframe width="560" height="315" src="http://www.ustream.tv/embed/recorded/9900109?v=3&amp;wmode=direct" frameborder="0" allowfullscreen></iframe>')
+
+    def test_bloomberg_parser(self):
+        parser = VideoExtractor('bloomberg', 'http://www.bloomberg.com/video/paul-graham-and-jessica-livingston-studio-1-0-10-09-J5e3sjvtRrys6nd286HWUA.html')
+        self.assertEqual(parser.get_summary(),
+                "<object data='http://www.bloomberg.com/video/embed/J5e3sjvtRrys6nd286HWUA?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>")
