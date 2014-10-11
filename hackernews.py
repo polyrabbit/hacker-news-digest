@@ -9,6 +9,7 @@ from page_content_extractor import legendary_parser_factory
 
 logger = logging.getLogger(__name__)
 
+from config import sites_for_users
 from db import ImageStorage, HnStorage
 
 cookie_support = urllib2.HTTPCookieProcessor()
@@ -112,7 +113,7 @@ class HackerNews(object):
         hs = comhead.split('.')
         if len(hs)>2 and hs[0] == 'www':
             comhead = comhead[4:]
-        if comhead.endswith('github.com'):
+        if comhead.endswith(sites_for_users):
             ps = us.path.split('/')
             if len(ps)>1 and ps[1]:
                 comhead = '%s/%s' % (comhead, ps[1])

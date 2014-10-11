@@ -27,3 +27,4 @@ threads = db_pool_size
 accesslog = '-'
 errorlog = '-'
 
+sites_for_users = ('github.com', 'medium.com')
