@@ -9,3 +9,4 @@ futures
 trollius
 ago
 selenium
+pdfminer
