@@ -1,3 +1,4 @@
+#coding: utf-8
 import os
 from urllib2 import urlopen
 from unittest import TestCase
@@ -10,4 +11,6 @@ class PdfParserTestCase(TestCase):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/cuckoo-undergrad.pdf')
         parser = PdfExtractor(open(fpath))
         self.assertIsNone(parser.get_top_image())
-        parser.get_summary()  # no errors
+        self.assertTrue(parser.get_summary().startswith(
+            'This lecture note presents and analyses two simple hashing algorithms: “Hashing with Chaining”,'
+        ))  # no errors

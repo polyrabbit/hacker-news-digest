@@ -39,7 +39,7 @@ class PdfExtractor(object):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
-            if len(p.split()) > 10:
+            if len(p.split()) > 40:
                 partial_summaries.append(p)
                 len_of_summary += len(p.split())
                 if len_of_summary > 250:
@@ -53,9 +53,9 @@ class PdfExtractor(object):
                 has_began = True
                 p.append(line.strip())
             elif has_began:  # end one paragraph
-                    yield ' '.join(p)
-                    has_began = False
-                    p = []
+                yield ' '.join(p)
+                has_began = False
+                p = []
         if p:
             yield ' '.join(p)
 
