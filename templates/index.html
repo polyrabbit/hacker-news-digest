@@ -87,7 +87,7 @@
     {% endif %}
     {% if news.summary %}
         <div class="summary-text">
-            {{ news.summary|truncate(300)|safe }}
+            {{ news.summary|my_truncate(300)|safe }}
         </div>
     {% endif %}
     <div style="clear: both;"></div>

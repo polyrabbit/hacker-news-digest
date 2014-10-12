@@ -1,10 +1,12 @@
 import logging
+import re
 from datetime import datetime
 
 from flask import (
     Flask, render_template, abort, request, send_from_directory, send_file,
     Response
 )
+from jinja2.filters import do_truncate
 from ago import human
 
 import config
@@ -81,6 +83,14 @@ def update(what=None):
 @app.route('/sitemap.xml')
 def static_files():
     return send_from_directory(app.static_folder, request.path[1:])
+
+@app.template_filter('my_truncate')
+def my_truncate(s, *args, **kwargs):
+    # TODO, this is only an ad-hoc for https://pdf.yt/d/jHuhj9FsOC-o9Uap
+    # who embeds html tags in a textarea
+    if re.search(r'<([a-z]+)[^>]+>\s*</\1>', s, re.I|re.M):
+        return s
+    return do_truncate(s, *args, **kwargs)
 
 if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0', port=config.port)
