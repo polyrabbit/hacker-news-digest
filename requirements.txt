@@ -9,4 +9,4 @@ futures
 trollius
 ago
 selenium
-pdfminer
+pdfminer==20140328
