@@ -11,6 +11,8 @@ from page_content_extractor.html import *
 
 class PageContentExtractorTestCase(TestCase):
 
+    maxDiff = None
+
     def test_purge(self):
         html_doc = """
         <html>good<script>whatever</script></html>
@@ -40,16 +42,6 @@ class PageContentExtractorTestCase(TestCase):
             resp = urllib2.urlopen('file://%s' % fd.name)
             self.assertEqual(HtmlContentExtractor(resp).article.text, '')
 
-    def test_summary_with_no_first_header(self):
-        html_doc = u"""
-        <p>1<h1>2</h1><div>3</div><h1>4</h1></p>
-        """
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'1. 3. 4')
-
     def test_semantic_affect(self):
         assert HtmlContentExtractor.semantic_effect.im_func(object(),
                 BS('<article>good</article>').article) == 2
@@ -60,17 +52,72 @@ class PageContentExtractorTestCase(TestCase):
         assert HtmlContentExtractor.semantic_effect.im_func(object(),
                 BS('<p class="comment">good</p>').p) == .2
 
-    def test_check_image(self):
-        html_doc = """
-        <img src="http://img3.douban.com/view/event_poster/raw/public/38c9a52fb4c13fd.jpg" />
-        """
-        img = WebImage('http://www.douban.com/', BS(html_doc).img)
-        print img.is_possible
+    # def test_calc_best_node(self):
+    #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
+    #     print HtmlContentExtractor(resp).get_summary()
 
-    def test_simple_page_extract(self):
-        e = legendary_parser_factory('http://www.infzm.com/content/81698')
-        print e.get_summary()
-        # e.get_top_image().save('/tmp/downimg')
+    # def test_check_image(self):
+    #     html_doc = """
+    #     <img src="http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg" />
+    #     """
+    #     img = WebImage('http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/', BS(html_doc).img)
+    #     self.assertTrue(img.is_possible)
+
+    def test_get_summary_from_all_short_paragraph(self):
+        html_doc = u"""
+        <p>1<h1>2</h1><div>3</div><h1>4</h1></p>
+        """
+        with tempfile.NamedTemporaryFile() as fd:
+            fd.write(html_doc.encode('utf-8'))
+            fd.seek(0)
+            resp = urllib2.urlopen('file://%s' % fd.name)
+            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'1 2 3 4')
+
+    def test_get_summary_from_short_and_long_paragraph(self):
+        html_doc = u"""
+        <h3 class="post-name">HTTP/2: The Long-Awaited Sequel</h3>
+        <span class="value">Thursday, October 9, 2014 2:01 AM</span>
+        <h2>Ready to speed things up? </h2>
+        <div>Ready to speed things up? </div>
+        <p>Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due.</p>
+        <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.  </p>
+        """
+        with tempfile.NamedTemporaryFile() as fd:
+            fd.write(html_doc.encode('utf-8'))
+            fd.seek(0)
+            resp = urllib2.urlopen('file://%s' % fd.name)
+            # print HtmlContentExtractor(resp).get_summary()
+            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
+            u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. We’ve been working hard to ...")
+
+    def test_get_summary_word_cut(self):
+        html_doc = '<p>'+'1'*1000+'</p>'+'<p>'+'2'*1000+'</p>'
+        with tempfile.NamedTemporaryFile() as fd:
+            fd.write(html_doc.encode('utf-8'))
+            fd.seek(0)
+            resp = urllib2.urlopen('file://%s' % fd.name)
+            summary = HtmlContentExtractor(resp).get_summary()
+            self.assertNotIn('2', summary)
+            self.assertTrue(summary.endswith('...'))
+
+    def test_get_summary_with_preserved_tag(self):
+        html_doc = '<pre>' + '1'*1000 + '</pre>'
+        with tempfile.NamedTemporaryFile() as fd:
+            fd.write(html_doc.encode('utf-8'))
+            fd.seek(0)
+            resp = urllib2.urlopen('file://%s' % fd.name)
+            self.assertEqual(html_doc, HtmlContentExtractor(resp).get_summary())
+
+    def test_get_summary_with_link_intensive(self):
+        html_doc = '<div><p><a href="whatever">' + '1'*1000 + '</a></p>'+\
+                   '<p>'+'2'*1000+'</p></div>'
+        with tempfile.NamedTemporaryFile() as fd:
+            fd.write(html_doc.encode('utf-8'))
+            fd.seek(0)
+            resp = urllib2.urlopen('file://%s' % fd.name)
+            pp = HtmlContentExtractor(resp)
+            pp.article = BS(html_doc).div
+            self.assertTrue(pp.get_summary().startswith('2'*10))
 
     def test_clean_up_html_not_modify_iter_while_looping(self):
         resp = urllib2.urlopen('file://%s' % os.path.join(
@@ -80,7 +127,6 @@ class PageContentExtractorTestCase(TestCase):
             HtmlContentExtractor(resp)
         except AttributeError as e:
             self.fail('%s, maybe delete something while looping.' % e)
-        
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

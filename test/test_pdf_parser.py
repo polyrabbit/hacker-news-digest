@@ -7,10 +7,15 @@ from page_content_extractor.pdf import *
 
 class PdfParserTestCase(TestCase):
 
-    def test_simple_parse_with_no_errors(self):
-        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/cuckoo-undergrad.pdf')
+    def test_paragraph_parse_without_authors(self):
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/cpi.pdf')
         parser = PdfExtractor(open(fpath))
         self.assertIsNone(parser.get_top_image())
         self.assertTrue(parser.get_summary().startswith(
-            'This lecture note presents and analyses two simple hashing algorithms: “Hashing with Chaining”,'
-        ))  # no errors
+            'Systems code is often written in low-level languages like C/C++, which offer'
+        ))  # Should be no errors
+
+    # def test_text_order(self):
+    #     parser = PdfExtractor(open('/tmp/lisp-java.pdf'))
+    #     self.assertIsNone(parser.get_top_image())
+    #     print parser.article

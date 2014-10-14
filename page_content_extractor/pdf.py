@@ -8,12 +8,14 @@ from pdfminer.layout import LAParams
 from cStringIO import StringIO
 
 from .exceptions import ParseError
+from .utils import is_paragraph, word_count
 
 logger = logging.getLogger(__name__)
 
 class PdfExtractor(object):
 
     def __init__(self, resp):
+        # TODO sort text according to their layouts
         try:
             self.load(resp)
         except Exception as e:
@@ -28,8 +30,8 @@ class PdfExtractor(object):
         device = TextConverter(rsrcmgr, output_fp, codec=codec, laparams=laparams)
         # Create a PDF interpreter object.
         interpreter = PDFPageInterpreter(rsrcmgr, device)
-        # Process each page contained in the document.
 
+        # Process each page contained in the document.
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
 
@@ -39,11 +41,12 @@ class PdfExtractor(object):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
-            if len(p.split()) > 40:
+            if is_paragraph(p):
                 partial_summaries.append(p)
-                len_of_summary += len(p.split())
-                if len_of_summary > 250:
+                len_of_summary += len(p)
+                if len_of_summary > 300:
                     return ' '.join(partial_summaries)
+        return ' '.join(partial_summaries) or None
 
     def get_paragraphs(self):
         p = []

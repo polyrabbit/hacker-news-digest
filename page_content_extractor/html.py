@@ -6,6 +6,7 @@ import urllib2
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 
 import imgsz
+from .utils import is_paragraph
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,14 @@ class WebImage(object):
     raw_data = ''
 
     def __init__(self, base_url, img_node):
+        # TODO cannot fetch image from washingtonpost
+        # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
         if img_node.get('src') is None:
-            logger.debug('No src')
+            logger.info('No src')
+            return
+        # see https://bitbucket.org/raphaelzhang/novel-reader/src/d5f1e60c5387bfbc375e89cada55b3b05370cb01/extractor.py#cl-717
+        if img_node.get('src').startswith('data:image/'):
+            logger.info('Image is encoded in base64, too short')
             return
         self.base_url = base_url
         img_node['src'] = urljoin(self.base_url, img_node['src'])
@@ -63,7 +70,6 @@ class WebImage(object):
         return 0, 0
 
     def fetch_img(self, url):
-        # TODO what if image is encoded in data:image/png;base64?
         try:
             resp = urllib2.urlopen(self.build_request(url))
             # meta info
@@ -127,25 +133,39 @@ class HtmlContentExtractor(object):
         self.clean_up_html()
         self.relative_path2_abs_url()
 
-    def calc_best_node(self, cur_node, depth=0.1):
-        if cur_node.article:
-            # I love Html5!
-            self.article = cur_node.article
-            return
-        text_len = self.text_len(cur_node)
-        # img_len = self.img_area_len(cur_node)
-        #TODO take image as a factor
-        img_len = 0
-        impact_factor = self.semantic_effect(cur_node)
-        score = (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
-        # cur_node.score = score
+    def calc_best_node(self, node):
 
-        if score > self.max_score:
-            self.max_score, self.article = score, cur_node
+        def _cal_node_score(node, depth):
+            text_len = self.text_len(node)
+            # img_len = self.img_area_len(cur_node)
+            #TODO take image as a factor
+            img_len = 0
+            impact_factor = self.semantic_effect(node)
+            return (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
 
-        for child in cur_node.children: # the direct children, not descendants
-            if isinstance(child, Tag):
-                self.calc_best_node(child, depth+0.1)
+        def _cal_best_article(root):
+            """
+            The one with most text is the most likely article, naive and simple
+            """
+            for art in node.find_all('article'):
+                score = _cal_node_score(art, depth=1)
+                if score > self.max_score:
+                    self.max_score, self.article = score, art
+
+        def _cal_best_node(cur_node, depth=0.1):
+            score = _cal_node_score(cur_node, depth)
+            if score > self.max_score:
+                self.max_score, self.article = score, cur_node
+
+            for child in cur_node.children:  # the direct children, not descendants
+                if isinstance(child, Tag):
+                    _cal_best_node(child, depth+0.1)
+
+        if node.article:
+            # If we have article tags, we are sure main content is among them
+            _cal_best_article(node)
+        else:
+            _cal_best_node(node, 0.1)
 
     def semantic_effect(self, node):
         # The most important part
@@ -186,8 +206,8 @@ class HtmlContentExtractor(object):
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(node, NavigableString)
             elif type(node) is NavigableString:
-                text_len += len(node.string.strip()) + node.string.count(',')\
-                        + node.string.count(u'，')  # Chinese comma
+                text_len += len(node.string.strip()) + node.string.count(',') +\
+                            node.string.count(u'，')  # Chinese comma
         cur_node.text_len = text_len
         return text_len
 
@@ -246,10 +266,60 @@ class HtmlContentExtractor(object):
         return self.title.string
 
     def get_summary(self):
-        first_header = self.article.find(name=re.compile(r'h\d'))
-        if first_header:
-            first_header.extract()
-        return self.article.get_text(separator=u'. ', strip=True, types=(NavigableString,))
+
+        block_elements = {'article', 'div', 'p', 'pre', 'blockquote', 'cite',
+                'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot'}
+        preserved_tags = {'pre', 'code'}
+        max_length = 300
+
+        def link_intensive(node):
+            all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
+            if not all_text:
+                return False
+            link_text = 0
+            for a in node.find_all('a'):
+                link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
+            return float(link_text) / all_text >= .5
+
+        def deepest_block_element_first_search(node):
+            if node.name in preserved_tags and not link_intensive(node):
+                yield unicode(node)
+                return
+            for child in node.children:
+                if isinstance(child, Tag):
+                    deepest_block_element_first_search(child)
+                if child.name in block_elements and not link_intensive(child):
+                    if child.name in preserved_tags:
+                        yield unicode(child)
+                    else:
+                        yield child.get_text(separator=u' ', strip=True, types=(NavigableString,))
+
+        partial_summaries = []
+        len_of_summary = 0
+        for p in deepest_block_element_first_search(self.article):
+            if is_paragraph(p):
+                p_mat = re.search(r'<([a-z]+)[^>]*>([^<]*)</\1>', p)
+                if p_mat:
+                    # A tag should be considered atom
+                    partial_summaries.append(p)
+                    len_of_summary += len(p_mat.group(2))
+                    if len_of_summary > max_length:
+                        return ' '.join(partial_summaries)
+                else:
+                    if len_of_summary + len(p) > max_length:
+                        for word in p.split():
+                            partial_summaries.append(word)
+                            len_of_summary += len(word)
+                            if len_of_summary > max_length:
+                                partial_summaries.append('...')
+                                return ' '.join(partial_summaries)
+                    else:
+                        partial_summaries.append(p)
+                        len_of_summary += len(p)
+
+        if partial_summaries:
+            return ' '.join(partial_summaries)
+        return self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))[:max_length]
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):
