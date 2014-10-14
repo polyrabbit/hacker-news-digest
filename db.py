@@ -173,5 +173,8 @@ class SnStorage(HnStorage):
     model = StartupNewsTable
 
 sync_db()
-# drop_db()
+if __name__ == '__main__':
+    import sys
+    if sys.argv[-1] == 'drop':
+        drop_db()
 
