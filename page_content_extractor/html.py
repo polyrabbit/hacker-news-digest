@@ -118,8 +118,8 @@ class HtmlContentExtractor(object):
     """
     def __init__(self, resp):
         self.max_score = -1
-        self.article = None # default to an empty doc, if there are no tags.
-        charset = resp.info().getparam('charset') # or None
+        self.article = None  # default to an empty doc, if there are no tags.
+        charset = resp.info().getparam('charset')  # or None
         # what's the more elegent way?
         # dom_tree = BS(cont.replace('<br>', '<br />'), from_encoding=charset)
         doc = BS(resp, from_encoding=charset)

@@ -40,12 +40,19 @@ class PdfExtractor(object):
     def get_summary(self):
         partial_summaries = []
         len_of_summary = 0
+        max_length = 300
         for p in self.get_paragraphs():
             if is_paragraph(p):
-                partial_summaries.append(p)
-                len_of_summary += len(p)
-                if len_of_summary > 300:
-                    return ' '.join(partial_summaries)
+                if len_of_summary + len(p) > max_length:
+                    for word in p.split():
+                        partial_summaries.append(word)
+                        len_of_summary += len(word)
+                        if len_of_summary > max_length:
+                            partial_summaries.append('...')
+                            return ' '.join(partial_summaries)
+                else:
+                    partial_summaries.append(p)
+                    len_of_summary += len(p)
         return ' '.join(partial_summaries) or None
 
     def get_paragraphs(self):
