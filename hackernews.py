@@ -24,7 +24,9 @@ class HackerNews(object):
         self.storage = self.storage_class()
         self.im_storage = ImageStorage()
 
-    def update(self):
+    def update(self, force=False):
+        if force:
+            self.storage.remove_except([])
         news_list = self.parse_news_list()
         # add new items
         for news in news_list:

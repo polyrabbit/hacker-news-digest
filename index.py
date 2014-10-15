@@ -72,11 +72,12 @@ def image(img_id):
 def update(what=None):
     if request.form.get('key') != config.HN_UPDATE_KEY:
         abort(401)
+    force = 'force' in request.args
     if what == 'hackernews' or what is None:
-        HackerNews().update()
+        HackerNews().update(force)
         last_synced[0] = datetime.now()
     if what == 'startupnews' or what is None:
-        StartupNews().update()
+        StartupNews().update(force)
         last_synced[1] = datetime.now()
     return 'Great success!'
 
