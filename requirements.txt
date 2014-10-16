@@ -10,3 +10,4 @@ trollius
 ago
 selenium
 pdfminer==20140328
+requests==2.2.1

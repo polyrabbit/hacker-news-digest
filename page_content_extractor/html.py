@@ -2,8 +2,8 @@
 import re
 import logging
 from urlparse import urljoin
-import urllib2
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
+import requests
 
 import imgsz
 from .utils import is_paragraph
@@ -71,21 +71,16 @@ class WebImage(object):
 
     def fetch_img(self, url):
         try:
-            resp = urllib2.urlopen(self.build_request(url))
+            resp = requests.get(url, headers={'Referer': self.base_url})
             # meta info
-            self.url = url
-            self.raw_data = resp.read()
-            self.content_type = resp.info().gettype()
+            self.url = resp.url
+            self.raw_data = resp.content
+            self.content_type = resp.headers['Content-Type']
             return True
         except IOError as e:
-            logger.debug(e)
+            logger.info(e)
             return False
     
-    def build_request(self, url):
-        return urllib2.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; '
-                'Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36',
-                'Referer': self.base_url})
-
     def to_text_len(self):
         return self.img_area_px / self.scale
 
@@ -116,16 +111,13 @@ class HtmlContentExtractor(object):
     """
     see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
     """
-    def __init__(self, resp):
+    def __init__(self, html, base_url=''):
         self.max_score = -1
         self.article = None  # default to an empty doc, if there are no tags.
-        charset = resp.info().getparam('charset')  # or None
-        # what's the more elegent way?
-        # dom_tree = BS(cont.replace('<br>', '<br />'), from_encoding=charset)
-        doc = BS(resp, from_encoding=charset)
+        doc = BS(html)
 
         self.title = doc.title
-        self.base_url = resp.geturl()
+        self.base_url = base_url
         self.purge(doc)
         self.calc_best_node(doc)
 
@@ -265,12 +257,11 @@ class HtmlContentExtractor(object):
     def get_title(self):
         return self.title.string
 
-    def get_summary(self):
+    def get_summary(self, max_length=300):
 
-        block_elements = {'article', 'div', 'p', 'pre', 'blockquote', 'cite',
+        block_elements = {'article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
                 'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot'}
         preserved_tags = {'pre', 'code'}
-        max_length = 300
 
         def link_intensive(node):
             all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))

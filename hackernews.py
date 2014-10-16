@@ -2,19 +2,15 @@
 import re
 import logging
 from urlparse import urljoin, urlsplit
-import urllib2
 
 from bs4 import BeautifulSoup as BS
 from page_content_extractor import legendary_parser_factory
 
 logger = logging.getLogger(__name__)
 
-from config import sites_for_users
+from config import sites_for_users, summary_length
 from db import ImageStorage, HnStorage
-
-cookie_support = urllib2.HTTPCookieProcessor()
-opener = urllib2.build_opener(cookie_support)
-urllib2.install_opener(opener)
+import requests
 
 class HackerNews(object):
     end_point = 'https://news.ycombinator.com/'
@@ -40,7 +36,7 @@ class HackerNews(object):
                 logger.info("Fetching %s", news['url'])
                 try:
                     parser = legendary_parser_factory(news['url'])
-                    news['summary'] = parser.get_summary()
+                    news['summary'] = parser.get_summary(summary_length)
                     tm = parser.get_top_image()
                     if tm:
                         img_id = self.im_storage.put(raw_data=tm.raw_data,
@@ -54,11 +50,7 @@ class HackerNews(object):
         self.storage.remove_except([n['url'] for n in news_list])
 
     def parse_news_list(self):
-        req = urllib2.Request(self.end_point, headers={'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36'})
-        resp = urllib2.urlopen(req)
-        dom = BS(resp, from_encoding=resp.info().getparam('charset'))
+        dom = BS(requests.get(self.end_point).text)
         items = []
         # Sad BS doesn't support nth-of-type(3n)
         for rank, blank_line in enumerate(

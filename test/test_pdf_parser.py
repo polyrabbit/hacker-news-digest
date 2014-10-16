@@ -9,7 +9,7 @@ class PdfParserTestCase(TestCase):
 
     def test_paragraph_parse_without_authors(self):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/cpi.pdf')
-        parser = PdfExtractor(open(fpath))
+        parser = PdfExtractor(open(fpath, 'rb').read())
         self.assertIsNone(parser.get_top_image())
         self.assertTrue(parser.get_summary().startswith(
             'Systems code is often written in low-level languages like C/C++, which offer'

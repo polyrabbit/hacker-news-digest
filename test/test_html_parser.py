@@ -3,7 +3,6 @@ import os.path
 import logging
 import unittest
 from unittest import TestCase
-import tempfile
 
 from bs4 import BeautifulSoup as BS
 from page_content_extractor import *
@@ -25,22 +24,14 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = u"""
         <html>good,，</html>
         """
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            doc = BS(html_doc, from_encoding='utf-8')
-            length = HtmlContentExtractor(resp).text_len(doc)
-            self.assertEqual(length, 8)
+        doc = BS(html_doc, from_encoding='utf-8')
+        length = HtmlContentExtractor(html_doc).text_len(doc)
+        self.assertEqual(length, 8)
 
     def test_parsing_empty_response(self):
         html_doc = u"""
         """
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            self.assertEqual(HtmlContentExtractor(resp).article.text, '')
+        self.assertEqual(HtmlContentExtractor(html_doc).article.text, '')
 
     def test_semantic_affect(self):
         assert HtmlContentExtractor.semantic_effect.im_func(object(),
@@ -54,7 +45,7 @@ class PageContentExtractorTestCase(TestCase):
 
     # def test_calc_best_node(self):
     #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
-    #     print HtmlContentExtractor(resp).get_summary()
+    #     print HtmlContentExtractor(resp.read()).get_summary()
 
     # def test_check_image(self):
     #     html_doc = """
@@ -67,11 +58,7 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = u"""
         <p>1<h1>2</h1><div>3</div><h1>4</h1></p>
         """
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'1 2 3 4')
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'1 2 3 4')
 
     def test_get_summary_from_short_and_long_paragraph(self):
         html_doc = u"""
@@ -82,49 +69,33 @@ class PageContentExtractorTestCase(TestCase):
         <p>Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due.</p>
         <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.  </p>
         """
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            # print HtmlContentExtractor(resp).get_summary()
-            self.assertEqual(HtmlContentExtractor(resp).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
-            u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. We’ve been working hard to ...")
+        # print HtmlContentExtractor(html_doc).get_summary()
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
+        u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. We’ve been working hard to ...")
 
     def test_get_summary_word_cut(self):
         html_doc = '<p>'+'1'*1000+'</p>'+'<p>'+'2'*1000+'</p>'
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            summary = HtmlContentExtractor(resp).get_summary()
-            self.assertNotIn('2', summary)
-            self.assertTrue(summary.endswith('...'))
+        summary = HtmlContentExtractor(html_doc).get_summary()
+        self.assertNotIn('2', summary)
+        self.assertTrue(summary.endswith('...'))
 
     def test_get_summary_with_preserved_tag(self):
         html_doc = '<pre>' + '1'*1000 + '</pre>'
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            self.assertEqual(html_doc, HtmlContentExtractor(resp).get_summary())
+        self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary())
 
     def test_get_summary_with_link_intensive(self):
         html_doc = '<div><p><a href="whatever">' + '1'*1000 + '</a></p>'+\
                    '<p>'+'2'*1000+'</p></div>'
-        with tempfile.NamedTemporaryFile() as fd:
-            fd.write(html_doc.encode('utf-8'))
-            fd.seek(0)
-            resp = urllib2.urlopen('file://%s' % fd.name)
-            pp = HtmlContentExtractor(resp)
-            pp.article = BS(html_doc).div
-            self.assertTrue(pp.get_summary().startswith('2'*10))
+        pp = HtmlContentExtractor(html_doc)
+        pp.article = BS(html_doc).div
+        self.assertTrue(pp.get_summary().startswith('2'*10))
 
     def test_clean_up_html_not_modify_iter_while_looping(self):
-        resp = urllib2.urlopen('file://%s' % os.path.join(
+        html_doc = open(os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
-            'fixtures/kim.com.html'))
+            'fixtures/kim.com.html')).read().decode('utf-8')
         try:
-            HtmlContentExtractor(resp)
+            HtmlContentExtractor(html_doc)
         except AttributeError as e:
             self.fail('%s, maybe delete something while looping.' % e)
 

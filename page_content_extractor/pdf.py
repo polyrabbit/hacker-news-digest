@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 
 class PdfExtractor(object):
 
-    def __init__(self, resp):
+    def __init__(self, raw_data):
         # TODO sort text according to their layouts
         try:
-            self.load(resp)
+            self.load(raw_data)
         except Exception as e:
             raise ParseError(e)
 
-    def load(self, resp):
-        pdf_fp = StringIO(resp.read())
+    def load(self, raw_data):
+        pdf_fp = StringIO(raw_data)
         output_fp = StringIO()
         codec = 'utf-8'
         laparams = LAParams()
@@ -37,10 +37,9 @@ class PdfExtractor(object):
 
         self.article = output_fp.getvalue()
 
-    def get_summary(self):
+    def get_summary(self, max_length=300):
         partial_summaries = []
         len_of_summary = 0
-        max_length = 300
         for p in self.get_paragraphs():
             if is_paragraph(p):
                 if len_of_summary + len(p) > max_length:
