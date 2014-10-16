@@ -3,6 +3,7 @@ import os
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 socket.setdefaulttimeout(20)
 
