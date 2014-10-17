@@ -51,6 +51,7 @@ class HackerNews(object):
         self.storage.remove_except([n['url'] for n in news_list])
 
     def get_news_list(self):
+        # TODO tooooo damn slow, try use a generator here
         items = []
         ids = self.s.get(self.end_point.format(uri='topstories.json')).json()[:30]
         for rank, item_id in enumerate(ids):

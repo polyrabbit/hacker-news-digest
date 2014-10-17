@@ -37,7 +37,7 @@ class HackerNewsTable(Base):
     score = Column(Integer)
     author = Column(String)
     author_link = Column(String)
-    submit_time = Column(TIMESTAMP)
+    submit_time = Column(Integer)
     comment_cnt = Column(Integer)
     comment_url = Column(String)
     summary = Column(String)
