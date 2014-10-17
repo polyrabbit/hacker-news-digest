@@ -13,17 +13,18 @@ from db import ImageStorage, HnStorage
 import requests
 
 class HackerNews(object):
-    end_point = 'https://news.ycombinator.com/'
+    end_point = 'https://hacker-news.firebaseio.com/v0/{uri}'
     storage_class = HnStorage
 
     def __init__(self):
         self.storage = self.storage_class()
         self.im_storage = ImageStorage()
+        self.s = requests.Session()
 
     def update(self, force=False):
         if force:
             self.storage.remove_except([])
-        news_list = self.parse_news_list()
+        news_list = self.get_news_list()
         # add new items
         for news in news_list:
             # Use news url as the key
@@ -49,57 +50,32 @@ class HackerNews(object):
         # clean up old items
         self.storage.remove_except([n['url'] for n in news_list])
 
-    def parse_news_list(self):
-        dom = BS(requests.get(self.end_point).text)
+    def get_news_list(self):
         items = []
-        # Sad BS doesn't support nth-of-type(3n)
-        for rank, blank_line in enumerate(
-                dom.select('table tr table:nth-of-type(2) tr[style="height:5px"]')):
-            # previous_sibling won't work when there are spaces between them.
-            subtext_dom = blank_line.find_previous_sibling('tr')
-            title_dom = subtext_dom.find_previous_sibling('tr').find('td', class_='title', align=False)
-
-            title = title_dom.a.get_text(strip=True)
-            logger.info('Gotta %s', title)
-            url = urljoin(self.end_point, title_dom.a['href'])
-            # In case of a discussion on hacker news, such as
-            # 9.  Let discuss here
-            # comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
-            comhead = self.parse_comhead(url)
-
-            children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
-            if len(children_of_subtext_dom) == 1:
-                score = \
-                author = \
-                author_link = \
-                comment_cnt = \
-                comment_url = None
-                submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[0]).group()
-            else:
-                score = re.search('\d+', children_of_subtext_dom[0].get_text(strip=True)).group()
-                author = children_of_subtext_dom[2].get_text()
-                author_link = children_of_subtext_dom[2]['href']
-                submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[3]).group()
-                # In case of no comments yet
-                comment_cnt = (re.search('\d+', children_of_subtext_dom[4].get_text())
-                        or re.search('0', '0')).group()
-                comment_url = children_of_subtext_dom[4]['href']
-
-            items.append(dict(
-                rank = rank,
-                title = title,
-                url = url,
-                comhead = comhead,
-                score = score,
-                author = author,
-                author_link = urljoin(self.end_point, author_link)  if author_link else None,
-                submit_time = submit_time,
-                comment_cnt = comment_cnt,
-                comment_url = urljoin(self.end_point, comment_url) if comment_url else None
-            ))
+        ids = self.s.get(self.end_point.format(uri='topstories.json')).json()[:30]
+        for rank, item_id in enumerate(ids):
+            try:
+                item = self.s.get(self.end_point.format(uri='item/%s.json' % item_id)).json()
+                item['comment_url'] = self.build_comment_link(item_id)
+            except requests.exceptions.RequestException as e:
+                logger.error('An exception occurred while trying to fetch story %s, %s',
+                                 self.end_point.format(uri='item/%s.json' % item_id), e)
+                continue
+            logger.info('Gotta "%s"', item['title'])
+            item['rank'] = rank
+            item['comhead'] = self.parse_comhead(item['url']) if item['url'] else None
+            # Come after comhead
+            item['url'] = item['url'] or self.build_comment_link(item_id)
+            item['author'] = item.get('by')
+            item['author_link'] = self.build_user_link(item.get('by'))
+            item['submit_time'] = item.get('time')
+            item['comment_cnt'] = self.get_comment_cnt(item.get('kids', []))
+            items.append(item)
         return items
 
     def parse_comhead(self, url):
+        if not url:
+            return None
         if not url.startswith('http'):
             url = 'http://' + url
         us = urlsplit(url.lower())
@@ -113,6 +89,36 @@ class HackerNews(object):
                 comhead = '%s/%s' % (comhead, ps[1])
         return comhead
 
+    def build_user_link(self, uid):
+        if not uid:
+            return None
+        return 'https://news.ycombinator.com/user?id=%s' % uid
+
+    def build_comment_link(self, item_id):
+        if not item_id:
+            return None
+        return 'https://news.ycombinator.com/item?id=%s' % item_id
+
+    def get_comment_cnt(self, kids):
+
+        def get_children(node_id):
+            try:
+                return self.s.get(self.end_point.format(uri='item/%s.json' %
+                    node_id)).json().get('kids', [])
+            except requests.exceptions.RequestException as e:
+                logger.error('An exception occurred while trying to fetch comment %s, %s',
+                                 self.end_point.format(uri='item/%s.json' % node_id), e)
+                return []
+
+        def get_descendant_cnt(node_id):
+            children = get_children(node_id)
+            cnt = len(children)
+            for c in children:
+                cnt += get_descendant_cnt(c)
+            return cnt
+
+        return sum(map(get_descendant_cnt, kids)) + len(kids)
+
     def get_all(self):
         return self.storage.get_all()
 
@@ -120,5 +126,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
     # unittest.main()
     hn = HackerNews()
-    hn.update()
+    print hn.get_all()
 

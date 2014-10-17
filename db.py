@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import (
-        create_engine, Sequence,
+        create_engine, Sequence, TIMESTAMP,
         Column, Integer, String, ForeignKey, LargeBinary
     )
 
@@ -37,7 +37,7 @@ class HackerNewsTable(Base):
     score = Column(Integer)
     author = Column(String)
     author_link = Column(String)
-    submit_time = Column(String)
+    submit_time = Column(TIMESTAMP)
     comment_cnt = Column(Integer)
     comment_url = Column(String)
     summary = Column(String)
@@ -108,6 +108,7 @@ class Storage(object):
         self.pk = self.model.__mapper__.primary_key[0]
         self.session = Session()
         self.table_name = self.model.__tablename__
+        self.fields = {str(f).split('.')[1] for f in self.model.__table__.columns}
 
     def get(self, pk):
         return self.session.query(self.model).get(pk)
@@ -119,7 +120,8 @@ class Storage(object):
         Returns primary_key on success
         """
         try:
-            obj = self.model(**kwargs)
+            fields = {k: kwargs[k] for k in kwargs if k in self.fields}
+            obj = self.model(**fields)
             self.session.add(obj)
             self.session.commit()
             return getattr(obj, self.pk.name)
@@ -175,4 +177,3 @@ if __name__ == '__main__':
     import sys
     if sys.argv[-1] == 'drop':
         drop_db()
-

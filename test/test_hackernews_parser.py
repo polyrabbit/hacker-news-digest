@@ -9,7 +9,7 @@ class TestHackerNewsParser(unittest.TestCase):
 
     def test_parsed_score(self):
         """Every score should be a digit"""
-        for news in self.hn.parse_news_list():
+        for news in self.hn.get_news_list():
             self.assertTrue(news['score'] is None or \
                     news['score'].isdigit())
 

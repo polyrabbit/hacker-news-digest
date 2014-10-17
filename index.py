@@ -28,9 +28,12 @@ last_synced = [None, None]
 @app.route('/')
 def hackernews():
     hn = HackerNews()
+    news = hn.get_all()
+    for n in news:
+        n.submit_time = human(datetime.fromtimestamp(float(n.submit_time)), 1)
     return render_template('index.html',
             title='Hacker News',
-            news_list=hn.get_all(),
+            news_list=news,
             navs=[
                 ('Hacker News', 'https://news.ycombinator.com/news'),
                 ('New', 'https://news.ycombinator.com/newest'),
