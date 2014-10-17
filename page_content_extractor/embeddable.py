@@ -3,11 +3,13 @@ import re
 import logging
 from urlparse import urljoin
 
+import requests
+
 from .exceptions import ParseError
 
 logger = logging.getLogger(__name__)
 
-class VideoExtractor(object):
+class EmbeddableExtractor(object):
 
     def __init__(self, video_provider, url):
         parser = getattr(self, '%s_parser' % video_provider.lower(),
@@ -80,4 +82,9 @@ class VideoExtractor(object):
         return """<object data='http://www.bloomberg.com/video/embed/%s"""\
         """?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>""" % vid_mat.group(1)
 
-video_providers = frozenset(name.split('_')[0] for name in dir(VideoExtractor) if name.endswith('_parser'))
+    def slideshare_parser(self, url):
+        r = requests.get('http://www.slideshare.net/api/oembed/2', params={'url': url, 'format': 'json'})
+        r.raise_for_status()
+        return r.json()['html']
+
+embeddables = frozenset(name.split('_')[0] for name in dir(EmbeddableExtractor) if name.endswith('_parser'))

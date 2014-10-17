@@ -9,7 +9,7 @@ import requests
 
 from .exceptions import ParseError
 from .html import HtmlContentExtractor
-from .video import VideoExtractor, video_providers
+from .embeddable import EmbeddableExtractor, embeddables
 from .pdf import PdfExtractor
 
 logger = logging.getLogger(__name__)
@@ -26,13 +26,13 @@ def legendary_parser_factory(url):
     resp = requests.get(url)
 
     # .hostname is in lower case
-    vp = urlsplit(resp.url).hostname.split('.')[-2]
-    if vp in video_providers:
-        logger.info('Get a %s video to parse(%s)', vp, resp.url)
+    provider = urlsplit(resp.url).hostname.split('.')[-2]
+    if provider in embeddables:
+        logger.info('Get a %s embeddable to parse(%s)', provider, resp.url)
         try:
-            return VideoExtractor(vp, resp.url)
-        except ParseError:
-            logger.info('%s is not a %s video, try another', resp.url, vp)
+            return EmbeddableExtractor(provider, resp.url)
+        except Exception as e:
+            logger.info('%s is not a %s embeddable, try another(%s)', resp.url, provider, e)
 
     ct = resp.headers.get('content-type', '').lower()
     if ct.startswith('text'):
