@@ -77,7 +77,7 @@ class WebImage(object):
             self.raw_data = resp.content
             self.content_type = resp.headers['Content-Type']
             return True
-        except IOError as e:
+        except (IOError, KeyError) as e:
             logger.info(e)
             return False
     
