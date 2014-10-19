@@ -16,7 +16,7 @@ class EmbeddableExtractor(object):
                 self.default_parser)
         self.embed_html = parser(url)
 
-    def get_summary(self):
+    def get_summary(self, max_length=300):
         return self.embed_html
 
     def get_top_image(self):
