@@ -11,6 +11,9 @@ better-hacker-news
 * Preview top images and videos
 * Full hostname of submitted urls are shown
 
+### Talk is cheap, illustrate what it can do for me
+![image](https://cloud.githubusercontent.com/assets/2657334/4693366/3f875ece-5797-11e4-9006-28a0bbefe4ea.png)![image](https://cloud.githubusercontent.com/assets/2657334/4693373/8461c21e-5797-11e4-8e5c-4e9277f413f3.png)
+
 ### TODO
 - [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
 - [ ] A more beautiful home page(maybe in HTML9)
