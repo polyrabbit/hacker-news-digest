@@ -1,5 +1,6 @@
 #coding: utf-8
 import re
+from datetime import datetime
 import logging
 from urlparse import urljoin, urlsplit
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 from config import sites_for_users, summary_length
 from db import ImageStorage, HnStorage
 import requests
+from requests.adapters import HTTPAdapter
 
 class HackerNews(object):
     end_point = 'https://hacker-news.firebaseio.com/v0/{uri}'
@@ -20,6 +22,9 @@ class HackerNews(object):
         self.storage = self.storage_class()
         self.im_storage = ImageStorage()
         self.s = requests.Session()
+        # Damn api,
+        # see http://stackoverflow.com/questions/20969744/python-request-connectionerror-max-retries-exceeded
+        self.s.mount('https://hacker-news.firebaseio.com/v0/', HTTPAdapter(max_retries=5))
 
     def update(self, force=False):
         if force:
@@ -69,7 +74,7 @@ class HackerNews(object):
             item['url'] = item['url'] or self.build_comment_link(item_id)
             item['author'] = item.get('by')
             item['author_link'] = self.build_user_link(item.get('by'))
-            item['submit_time'] = item.get('time')
+            item['submit_time'] = datetime.fromtimestamp(item['time']) if 'time' in item else None
             item['comment_cnt'] = self.get_comment_cnt(item.get('kids', []))
             items.append(item)
         return items

@@ -30,7 +30,7 @@ def hackernews():
     hn = HackerNews()
     news = hn.get_all()
     for n in news:
-        n.submit_time = human(datetime.fromtimestamp(float(n.submit_time)), 1)
+        n.submit_time = human(n.submit_time, 1)
     return render_template('index.html',
             title='Hacker News',
             news_list=news,
