@@ -9,7 +9,6 @@ from flask import (
 from ago import human
 
 import config
-from page_content_extractor.utils import word_count
 from db import ImageStorage
 from hackernews import HackerNews
 from startupnews import StartupNews

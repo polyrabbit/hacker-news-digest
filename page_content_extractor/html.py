@@ -1,12 +1,13 @@
 #coding: utf-8
 import re
+
 import logging
 from urlparse import urljoin
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
 import imgsz
-from .utils import is_paragraph
+from .utils import tokenize, is_paragraph
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,9 @@ class WebImage(object):
         # see https://bitbucket.org/raphaelzhang/novel-reader/src/d5f1e60c5387bfbc375e89cada55b3b05370cb01/extractor.py#cl-717
         if img_node.get('src').startswith('data:image/'):
             logger.info('Image is encoded in base64, too short')
+            return
+        if 'avatar' in img_node.get('class', '')+img_node.get('id', '') + img_node.get('src', '').lower():
+            logger.info('Maybe this is an avatar(%s)', img_node['src'])
             return
         self.base_url = base_url
         img_node['src'] = urljoin(self.base_url, img_node['src'])
@@ -78,7 +82,7 @@ class WebImage(object):
             self.content_type = resp.headers['Content-Type']
             return True
         except (IOError, KeyError) as e:
-            logger.info(e)
+            logger.info('Failed to fetch img(%s), %s', url, e)
             return False
     
     def to_text_len(self):
@@ -259,9 +263,9 @@ class HtmlContentExtractor(object):
 
     def get_summary(self, max_length=300):
 
-        block_elements = {'article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
-                'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot'}
-        preserved_tags = {'pre', 'code'}
+        block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
+                'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
+        preserved_tags = {'pre'}
 
         def link_intensive(node):
             all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
@@ -273,44 +277,57 @@ class HtmlContentExtractor(object):
             return float(link_text) / all_text >= .5
 
         def deepest_block_element_first_search(node):
-            if node.name in preserved_tags and not link_intensive(node):
-                yield unicode(node)
-                return
-            for child in node.children:
-                if isinstance(child, Tag):
-                    deepest_block_element_first_search(child)
-                if child.name in block_elements and not link_intensive(child):
-                    if child.name in preserved_tags:
-                        yield unicode(child)
+            # TODO tooooo inefficient
+            for p in node.find_all(block_elements):
+                if p.founded:
+                    continue
+                p.founded = True
+                if not p.find_all(block_elements):
+                    if link_intensive(p):
+                        continue
+                    if p.name in preserved_tags:
+                        yield unicode(p)
                     else:
-                        yield child.get_text(separator=u' ', strip=True, types=(NavigableString,))
+                        yield p.text
+                else:
+                    for grand_p in deepest_block_element_first_search(p):
+                        yield grand_p
+            else:  # TODO tooooooo redundant
+                if node.name in block_elements and not link_intensive(node):
+                    if node.name in preserved_tags:
+                        yield unicode(node)
+                    else:
+                        yield node.text
 
         partial_summaries = []
         len_of_summary = 0
         for p in deepest_block_element_first_search(self.article):
-            if is_paragraph(p):
+            if is_paragraph(p):  # consider it to be a paragraph
+                # A tag should be considered atom
                 p_mat = re.search(r'<([a-z]+)[^>]*>([^<]*)</\1>', p)
                 if p_mat:
-                    # A tag should be considered atom
                     partial_summaries.append(p)
                     len_of_summary += len(p_mat.group(2))
                     if len_of_summary > max_length:
-                        return ' '.join(partial_summaries)
+                        return ''.join(partial_summaries)
                 else:
                     if len_of_summary + len(p) > max_length:
-                        for word in p.split():
+                        for word in tokenize(p):
                             partial_summaries.append(word)
                             len_of_summary += len(word)
                             if len_of_summary > max_length:
                                 partial_summaries.append('...')
-                                return ' '.join(partial_summaries)
+                                return ''.join(partial_summaries)
                     else:
                         partial_summaries.append(p)
                         len_of_summary += len(p)
+                partial_summaries.append(' ')
 
         if partial_summaries:
-            return ' '.join(partial_summaries)
-        return self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))[:max_length]
+            return ''.join(partial_summaries)
+        logger.debug('Nothing qualifies a paragraph, get a jam')
+        text = self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))
+        return text[:max_length]+' ...' if len(text) > max_length else text
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):

@@ -8,7 +8,7 @@ from pdfminer.layout import LAParams
 from cStringIO import StringIO
 
 from .exceptions import ParseError
-from .utils import is_paragraph, word_count
+from .utils import tokenize, is_paragraph
 
 logger = logging.getLogger(__name__)
 
@@ -35,24 +35,24 @@ class PdfExtractor(object):
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
 
-        self.article = output_fp.getvalue()
+        self.article = output_fp.getvalue().decode('utf-8')
 
     def get_summary(self, max_length=300):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
-            if is_paragraph(p):
-                if len_of_summary + len(p) > max_length:
-                    for word in p.split():
+            if is_paragraph(p):  # eligible to be a paragraph
+                if len_of_summary + len(p) >= max_length:
+                    for word in tokenize(p):
                         partial_summaries.append(word)
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
-                            partial_summaries.append('...')
-                            return ' '.join(partial_summaries)
+                            partial_summaries.append(' ...')
+                            return ''.join(partial_summaries)
                 else:
                     partial_summaries.append(p)
                     len_of_summary += len(p)
-        return ' '.join(partial_summaries) or None
+        return ''.join(partial_summaries) or None
 
     def get_paragraphs(self):
         p = []

@@ -71,7 +71,7 @@ class PageContentExtractorTestCase(TestCase):
         """
         # print HtmlContentExtractor(html_doc).get_summary()
         self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
-        u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. We’ve been working hard to ...")
+        u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
 
     def test_get_summary_word_cut(self):
         html_doc = '<p>'+'1'*1000+'</p>'+'<p>'+'2'*1000+'</p>'
@@ -90,6 +90,14 @@ class PageContentExtractorTestCase(TestCase):
         pp.article = BS(html_doc).div
         self.assertTrue(pp.get_summary().startswith('2'*10))
 
+    def test_get_summary_with_nested_div(self):
+        html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a'*1000, 'b'*1000)
+        self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('b'))
+
+    def test_get_summary_without_strip(self):
+        html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)
+        self.assertIn(' ', HtmlContentExtractor(html_doc).get_summary())
+
     def test_clean_up_html_not_modify_iter_while_looping(self):
         html_doc = open(os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -98,6 +106,14 @@ class PageContentExtractorTestCase(TestCase):
             HtmlContentExtractor(html_doc)
         except AttributeError as e:
             self.fail('%s, maybe delete something while looping.' % e)
+
+    def test_CJK(self):
+        html_doc = u'我'*1000
+        self.assertLess(len(HtmlContentExtractor(html_doc).get_summary()), 1000)
+
+    def test_doctor(self):
+        ar = legendary_parser_factory('http://www.bbc.com/news/magazine-29518319')
+        print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
