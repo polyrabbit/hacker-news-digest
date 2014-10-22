@@ -16,6 +16,6 @@ class PdfParserTestCase(TestCase):
         ))  # Should be no errors
 
     # def test_text_order(self):
-    #     parser = PdfExtractor(open('/tmp/lisp-java.pdf'))
+    #     parser = PdfExtractor(open('/tmp/fm_21-76_us_army_survival_manual_2006.pdf', 'rb').read())
     #     self.assertIsNone(parser.get_top_image())
-    #     print parser.article
+    #     print parser.get_summary()
