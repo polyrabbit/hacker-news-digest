@@ -1,5 +1,4 @@
 import logging
-import re
 from datetime import datetime
 
 from flask import (
@@ -28,7 +27,7 @@ last_synced = [None, None]
 def hackernews():
     hn = HackerNews()
     return render_template('index.html',
-            title='Hacker News',
+            title='Hacker News Digest',
             news_list=hn.get_all(),
             navs=[
                 ('Hacker News', 'https://news.ycombinator.com/news'),
@@ -45,7 +44,7 @@ def hackernews():
 def startupnews():
     sn = StartupNews()
     return render_template('index.html',
-            title='Startup News',
+            title='Startup News Digest',
             news_list=sn.get_all(),
             navs=[
                 ('Startup News', 'http://news.dbanotes.net/news'),
