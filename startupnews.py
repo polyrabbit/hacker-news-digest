@@ -1,12 +1,12 @@
 from hackernews import HackerNews
 import logging
-from db import SnStorage
+import models
 
 logger = logging.getLogger(__name__)
 
 class StartupNews(HackerNews):
     end_point = 'http://news.dbanotes.net/'
-    storage_class = SnStorage
+    model_class = models.StartupNews
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')

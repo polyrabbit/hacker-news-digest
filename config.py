@@ -7,24 +7,25 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 
 socket.setdefaulttimeout(20)
 
-port = int(os.environ.get('PORT', 5000))
+PORT = int(os.environ.get('PORT', 5000))
 
+# Fail fast
 HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
 
 # Free account on heroku
 DB_CONNECTION_LIMIT = 20
 # Database
-db_url = os.environ.get("DATABASE_URL",
+SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL",
     'postgres://postgres@localhost:5432/postgres')\
     .replace('postgres://', 'postgresql://')
-db_pool_size = 5
-db_max_overflow = 5
+SQLALCHEMY_POOL_SIZE = 5
+SQLALCHEMY_MAX_OVERFLOW = 5
 
 # Gunicorn
-bind = "0.0.0.0:%s" % port
+bind = "0.0.0.0:%s" % PORT
 # workers = multiprocessing.cpu_count() *2 +1
 workers = 3
-threads = db_pool_size
+threads = SQLALCHEMY_POOL_SIZE
 accesslog = '-'
 errorlog = '-'
 

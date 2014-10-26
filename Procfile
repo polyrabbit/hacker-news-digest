@@ -1,1 +1,1 @@
-web: gunicorn -c config.py index:app
+web: make run-in-production

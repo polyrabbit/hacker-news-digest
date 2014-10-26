@@ -5,30 +5,28 @@ from flask import (
     Flask, render_template, abort, request, send_from_directory, send_file,
     Response
 )
-from ago import human
+from flask.ext.sqlalchemy import SQLAlchemy
 
-import config
-from db import ImageStorage
-from hackernews import HackerNews
-from startupnews import StartupNews
+app = Flask(__name__)
+app.config.from_object('config')
+db = SQLAlchemy(app)
+
+from ago import human
+# Avoid circular imports
+# from models import HackerNews, StartupNews, Image
+import models
 
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
 # [0] for hackernews, [1] for startupnews
 last_synced = [None, None]
-
-# @app.before_request
-# def before_request():
-#     print last_synced
 
 @app.route("/hackernews")
 @app.route('/')
 def hackernews():
-    hn = HackerNews()
     return render_template('index.html',
             title='Hacker News Digest',
-            news_list=hn.get_all(),
+            news_list=models.HackerNews.query.all(),
             navs=[
                 ('Hacker News', 'https://news.ycombinator.com/news'),
                 ('New', 'https://news.ycombinator.com/newest'),
@@ -42,10 +40,9 @@ def hackernews():
 
 @app.route("/startupnews")
 def startupnews():
-    sn = StartupNews()
     return render_template('index.html',
             title='Startup News Digest',
-            news_list=sn.get_all(),
+            news_list=models.StartupNews.query.all(),
             navs=[
                 ('Startup News', 'http://news.dbanotes.net/news'),
                 ('New', 'http://news.dbanotes.net/newest'),
@@ -59,17 +56,17 @@ def startupnews():
 def image(img_id):
     if request.if_none_match or request.if_modified_since:
         return Response(status=304)
-    imstore = ImageStorage()
-    img = imstore.get(img_id)
-    if not img:
-        abort(404)
+    img = models.Image.query.get_or_404(img_id)
     return send_file(img.makefile(), img.content_type, conditional=True)
 
 @app.route('/update/<what>', methods=['POST'])
 @app.route('/update', methods=['POST'])
 def update(what=None):
-    if request.form.get('key') != config.HN_UPDATE_KEY:
+    if request.form.get('key') != app.config['HN_UPDATE_KEY']:
         abort(401)
+    # circular imports again
+    from hackernews import HackerNews
+    from startupnews import StartupNews
     force = 'force' in request.args
     if what == 'hackernews' or what is None:
         HackerNews().update(force)
@@ -85,5 +82,5 @@ def static_files():
     return send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
-    app.run(debug=False, host='0.0.0.0', port=config.port)
+    app.run(debug=False, host='0.0.0.0', port=app.config['PORT'])
 

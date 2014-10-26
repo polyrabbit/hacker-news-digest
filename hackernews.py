@@ -9,29 +9,25 @@ from page_content_extractor import legendary_parser_factory
 logger = logging.getLogger(__name__)
 
 from config import sites_for_users, summary_length
-from db import ImageStorage, HnStorage
+import models
 import requests
 
 class HackerNews(object):
     end_point = 'https://news.ycombinator.com/'
-    storage_class = HnStorage
-
-    def __init__(self):
-        self.storage = self.storage_class()
-        self.im_storage = ImageStorage()
+    model_class = models.HackerNews
 
     def update(self, force=False):
         if force:
-            self.storage.remove_except([])
+            self.model_class.remove_except([])
         news_list = self.parse_news_list()
         # add new items
         for news in news_list:
             # Use news url as the key
-            if self.storage.exist(news['url']):
+            if self.model_class.query.get(news['url']):
                 logger.info('Updating %s', news['url'])
                 # We need the url so we can't pop it here
                 _news = news.copy()
-                self.storage.update(pk=_news.pop('url'), **_news)
+                self.model_class.update(_news.pop('url'), **_news)
             else:
                 logger.info("Fetching %s", news['url'])
                 try:
@@ -39,15 +35,16 @@ class HackerNews(object):
                     news['summary'] = parser.get_summary(summary_length)
                     tm = parser.get_top_image()
                     if tm:
-                        img_id = self.im_storage.put(raw_data=tm.raw_data,
-                                content_type=tm.content_type)
+                        img_id = models.Image.add(content_type=tm.content_type,
+                                raw_data=tm.raw_data)
                         news['img_id'] = img_id
-                except Exception:
-                    logger.exception('Failed to fetch %s', news['url'])
-                self.storage.put(**news)
+                except Exception as e:
+                    logger.exception('Failed to fetch %s, %s', news['url'], e)
+                self.model_class.add(**news)
 
-        # clean up old items
-        self.storage.remove_except([n['url'] for n in news_list])
+        if not force:
+            # clean up old items
+            self.model_class.remove_except([n['url'] for n in news_list])
 
     def parse_news_list(self):
         dom = BS(requests.get(self.end_point).text)
@@ -112,9 +109,6 @@ class HackerNews(object):
             if len(ps)>1 and ps[1]:
                 comhead = '%s/%s' % (comhead, ps[1])
         return comhead
-
-    def get_all(self):
-        return self.storage.get_all()
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
