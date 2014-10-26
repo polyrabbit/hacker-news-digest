@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from flask import (
     Flask, render_template, abort, request, send_from_directory, send_file,
@@ -18,12 +17,10 @@ import models
 
 logger = logging.getLogger(__name__)
 
-# [0] for hackernews, [1] for startupnews
-last_synced = [None, None]
-
 @app.route("/hackernews")
 @app.route('/')
 def hackernews():
+    ts = models.LastUpdated.get('hackernews')
     return render_template('index.html',
             title='Hacker News Digest',
             news_list=models.HackerNews.query.all(),
@@ -35,11 +32,12 @@ def hackernews():
                 ('Ask', 'https://news.ycombinator.com/ask'),
                 ('Jobs', 'https://news.ycombinator.com/jobs'),
                 ('Submit', 'https://news.ycombinator.com/submit')],
-            last_synced = last_synced[0] and human(last_synced[0], 1)
+            last_updated = ts and human(ts, 1)
         )
 
 @app.route("/startupnews")
 def startupnews():
+    ts = models.LastUpdated.get('startupnews')
     return render_template('index.html',
             title='Startup News Digest',
             news_list=models.StartupNews.query.all(),
@@ -49,7 +47,7 @@ def startupnews():
                 ('Comments', 'http://news.dbanotes.net/newcomments'),
                 ('Leaders', 'http://news.dbanotes.net/leaders'),
                 ('Submit', 'http://news.dbanotes.net/submit')],
-            last_synced = last_synced[1] and human(last_synced[1], 1)
+            last_updated = ts and human(ts, 1)
         )
 
 @app.route('/img/<int:img_id>')
@@ -70,10 +68,10 @@ def update(what=None):
     force = 'force' in request.args
     if what == 'hackernews' or what is None:
         HackerNews().update(force)
-        last_synced[0] = datetime.now()
+        models.LastUpdated.update('hackernews')
     if what == 'startupnews' or what is None:
         StartupNews().update(force)
-        last_synced[1] = datetime.now()
+        models.LastUpdated.update('startupnews')
     return 'Great success!'
 
 @app.route('/favicon.ico')

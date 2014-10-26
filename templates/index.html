@@ -111,10 +111,10 @@
         <li><a href="/startupnews">Startup News+</a></li>
         |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
-{#        {% if last_synced %}#}
-{#        |#}
-{#            <li>Last synced: {{ last_synced }}</li>#}
-{#        {% endif %}#}
+        {% if last_updated %}
+        |
+            <li>Last updated: {{ last_updated }}</li>
+        {% endif %}
     </ul>
 </footer>
 </div>

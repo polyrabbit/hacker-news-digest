@@ -1,6 +1,7 @@
 import logging
 # cStringIO won't let me set name attr on it
 from StringIO import StringIO
+import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
 from index import db
@@ -126,6 +127,35 @@ class Image(db.Model, HelperMixin):
         file = StringIO(self.raw_data)
         file.name = __file__
         return file
+
+class LastUpdated(db.Model):
+    __tablename__ = 'last_updated'
+
+    table_name = db.Column(db.String, primary_key=True)
+    time_stamp = db.Column(db.DateTime, default=datetime.datetime.now)
+
+    def __init__(self, tn, ts):
+        self.table_name = tn
+        self.time_stamp = ts
+
+    @classmethod
+    def update(cls, tn):
+       session.merge(cls(tn, datetime.datetime.now()))
+       try:
+            session.commit()
+       except SQLAlchemyError:
+           logger.exception('Failed to update %s', tn)
+           session.rollback()
+
+    @classmethod
+    def get(cls, tn):
+        obj = cls.query.get(tn)
+        if obj:
+            return obj.time_stamp
+        return None
+
+    def __repr__(self):
+        return u"%s<%s>" % (self.table_name, self.time_stamp)
 
 db.create_all()
 
