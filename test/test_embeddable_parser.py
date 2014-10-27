@@ -49,3 +49,9 @@ class EmbeddableParserTestCase(TestCase):
                          '<iframe src="http://www.slideshare.net/slideshow/embed_code/40684167" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/earnestagency/the-yes-factor" title="The YES Factor: How to persuade business buyers to say yes." target="_blank">The YES Factor: How to persuade business buyers to say yes.</a> </strong> from <strong><a href="http://www.slideshare.net/earnestagency" target="_blank">Earnest</a></strong> </div>\n\n')
 
         self.assertRaises(requests.exceptions.HTTPError, EmbeddableExtractor, 'slideshare', 'http://www.slideshare.net/whatever404040404')
+
+    def test_pdf_parser(self):
+        parser = EmbeddableExtractor('pdf', 'https://pdf.yt/d/KV90aIpCM7DqUpAv')
+        self.assertEqual(parser.get_summary(),
+                         '<iframe src="https://pdf.yt/d/KV90aIpCM7DqUpAv/embed?sparse=0" style="width: 100%; height: 700px; border: 0px;" allowfullscreen></iframe>')
+        self.assertRaises(ParseError, EmbeddableExtractor, 'pdf', 'https://pdf.yt/gallery')

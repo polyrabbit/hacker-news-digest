@@ -87,4 +87,9 @@ class EmbeddableExtractor(object):
         r.raise_for_status()
         return r.json()['html']
 
+    def pdf_parser(self, url):
+        if not re.search(r'//pdf.yt/d/\w+', url, re.I):
+            raise ParseError('Invalid pdf.yt embeddable url(%s)' % url)
+        return '<iframe src="{}/embed?sparse=0" style="width: 100%; height: 700px; border: 0px;" allowfullscreen></iframe>'.format(url)
+
 embeddables = frozenset(name.split('_')[0] for name in dir(EmbeddableExtractor) if name.endswith('_parser'))
