@@ -3,11 +3,13 @@ import re
 
 import logging
 from urlparse import urljoin
+from collections import defaultdict
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
 import imgsz
-from .utils import tokenize, is_paragraph
+from .utils import tokenize, is_paragraph, LCS_length
+from backports.functools_lru_cache import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -116,52 +118,71 @@ class HtmlContentExtractor(object):
     see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
     """
     def __init__(self, html, base_url=''):
+        # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
+        self.img_area_len = lru_cache(1024)(self.img_area_len)
+        self.text_len = lru_cache(1024)(self.text_len)
+        self.semantic_effect = lru_cache(1024)(self.semantic_effect)
+
         self.max_score = -1
-        self.article = None  # default to an empty doc, if there are no tags.
+        self.scores = defaultdict(int)
         doc = BS(html)
 
-        self.title = doc.title
+        self.title = doc.title.string if doc.title else u''
         self.base_url = base_url
         self.purge(doc)
-        self.calc_best_node(doc)
+        self.article = self.find_main_content(doc)
 
         # clean ups
         self.clean_up_html()
         self.relative_path2_abs_url()
+        print self.img_area_len.cache_info(), self.text_len.cache_info(), self.semantic_effect.cache_info()
 
-    def calc_best_node(self, node):
+    def set_article_title_point(self, doc):
+        # First we give a high point to nodes who have
+        # a descendant that is a header tag and matches title most
+        def is_article_title(node):
+            if re.match(r'h\d+', node.name):
+                header_txt = node.get_text(separator=u' ', strip=True)
+                if LCS_length(tokenize(header_txt), tokenize(self.title)) /\
+                        float(len(tokenize(header_txt))) > .9:
+                    return True
+            return False
 
-        def _cal_node_score(node, depth):
-            text_len = self.text_len(node)
-            # img_len = self.img_area_len(cur_node)
-            #TODO take image as a factor
-            img_len = 0
-            impact_factor = self.semantic_effect(node)
-            return (text_len + img_len) * impact_factor * (depth**1.5) # yes 1.5 is a big number
+        for node in doc.find_all(is_article_title):
+            # Give eligible node a high score
+            logger.debug('Found a eligible title: %s', node.get_text(separator=u' ', strip=True))
+            # self.scores[node] = 1000
+            for parent in node.parents:
+                if parent:
+                    self.scores[parent] = 1000
 
-        def _cal_best_article(root):
-            """
-            The one with most text is the most likely article, naive and simple
-            """
-            for art in node.find_all('article'):
-                score = _cal_node_score(art, depth=1)
-                if score > self.max_score:
-                    self.max_score, self.article = score, art
+    def set_article_tag_point(self, doc):
+        for node in doc.find_all('article'):
+            self.scores[node] += 500
 
-        def _cal_best_node(cur_node, depth=0.1):
-            score = _cal_node_score(cur_node, depth)
-            if score > self.max_score:
-                self.max_score, self.article = score, cur_node
+    def calc_node_score(self, node, depth=.1):
+        """
+        The one with most text is the most likely article, naive and simple
+        """
+        text_len = self.text_len(node)
+        # img_len = self.img_area_len(cur_node)
+        #TODO take image as a factor
+        img_len = 0
+        impact_factor = self.semantic_effect(node)
+        self.scores[node] += (text_len + img_len) * impact_factor * (depth**1.5)  # yes 1.5 is a big number
 
-            for child in cur_node.children:  # the direct children, not descendants
-                if isinstance(child, Tag):
-                    _cal_best_node(child, depth+0.1)
+        for child in node.children:  # the direct children, not descendants
+            if isinstance(child, Tag):
+                self.calc_node_score(child, depth+0.1)
 
-        if node.article:
-            # If we have article tags, we are sure main content is among them
-            _cal_best_article(node)
-        else:
-            _cal_best_node(node, 0.1)
+    def find_main_content(self, root):
+        self.set_article_title_point(root)
+        self.set_article_tag_point(root)
+        self.calc_node_score(root)
+        article = max(self.scores, key=lambda k: self.scores[k])
+        print self.scores[root.article]
+        logger.debug('Score of the main content is %s', self.scores[article])
+        return article
 
     def semantic_effect(self, node):
         # The most important part
@@ -192,9 +213,6 @@ class HtmlContentExtractor(object):
         Calc the total the length of text in a node, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
-        # Damn beautifusoup! soup.nonexist will always return None
-        if getattr(cur_node, 'text_len', None) is not None:
-            return cur_node.text_len
         text_len = 0
         for node in cur_node.children:
             if isinstance(node, Tag):
@@ -204,19 +222,15 @@ class HtmlContentExtractor(object):
             elif type(node) is NavigableString:
                 text_len += len(node.string.strip()) + node.string.count(',') +\
                             node.string.count(u'，')  # Chinese comma
-        cur_node.text_len = text_len
         return text_len
 
     def img_area_len(self, cur_node):
-        if getattr(cur_node, 'img_len', None) is not None:
-            return cur_node.img_len
         img_len = 0
         if cur_node.name == 'img':
             img_len = WebImage(self.base_url, cur_node).to_text_len()
         else:
             for node in cur_node.find_all('img', recursive=False):  # only search children first
                 img_len += self.img_area_len(node)
-        cur_node.img_len = img_len
         return img_len
 
     def purge(self, doc):
@@ -257,9 +271,6 @@ class HtmlContentExtractor(object):
 
     def geturl(self):
         return self.base_url
-
-    def get_title(self):
-        return self.title.string
 
     def get_summary(self, max_length=300):
 

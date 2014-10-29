@@ -1,6 +1,7 @@
 #coding: utf-8
 import re
 import requests
+from backports.functools_lru_cache import lru_cache
 
 # def word_count(s):
 #     return len(list(jieba.cut(s)))
@@ -17,7 +18,13 @@ def is_paragraph(s):
 
 ascii_patt = re.compile(ur'([\u0000-\u00FF]+)', re.U)
 
+@lru_cache(maxsize=32)
 def tokenize(s):
+    """
+    >>> tokenize(u'ab我的 wtf ggにほんご ニ')
+    (u'ab ', u'我', u'的', u'wtf ', u'gg ', u'に', u'ほ', u'ん', u'ご', u'ニ')
+
+    """
     tokens = []
     for t in ascii_patt.split(s.strip()):
         if t:
@@ -25,7 +32,7 @@ def tokenize(s):
                 tokens.extend([tt+' ' for tt in t.split()])
             else:
                 tokens.extend(list(t))
-    return tokens
+    return tuple(tokens)  # sorry but list is unhashable
 
 def my_default_user_agent(name="python-requests"):
     return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 " \
@@ -53,4 +60,18 @@ def monkey_patch_requests():
     requests.utils.default_user_agent = my_default_user_agent
     requests.adapters.HTTPAdapter.build_response = my_build_response
     requests.adapters.HTTPAdapter.send = send_with_default_args
+
+@lru_cache(maxsize=128)
+def LCS_length(x, y):
+    """
+    Return the length of longest common subsequence of *iterable* x and y
+    """
+    len_x, len_y = len(x)+1, len(y)+1
+    lcs = [[0] for i in range(len_x)]
+    lcs[0] = [0 for j in range(len_y)]
+    for i in range(1, len_x):
+        for j in range(1, len_y):
+            lcs[i].append(lcs[i-1][j-1] + 1 if x[i-1]==y[j-1] else
+                    max(lcs[i-1][j], lcs[i][j-1]))
+    return lcs[len_x-1][len_y-1]
 

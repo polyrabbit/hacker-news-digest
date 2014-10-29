@@ -111,9 +111,14 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = u'我'*1000
         self.assertLess(len(HtmlContentExtractor(html_doc).get_summary()), 1000)
 
-    def test_doctor(self):
-        ar = legendary_parser_factory('http://www.bbc.com/news/magazine-29518319')
-        print ar.get_summary()
+    def test_common_sites_forbes(self):
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
+        # ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
+        # print ar.article
+        # ar.get_summary()
+        ar = legendary_parser_factory('http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
+        print ar.article
+        ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
