@@ -75,3 +75,10 @@ def LCS_length(x, y):
                     max(lcs[i-1][j], lcs[i][j-1]))
     return lcs[len_x-1][len_y-1]
 
+@lru_cache(maxsize=128)
+def string_inclusion_ratio(needle, haystack):
+    """A naive way to calc to what extent string b contains string a"""
+    if not needle:
+        return 0
+    return LCS_length(tokenize(needle), tokenize(haystack)) / float(len(tokenize(needle)))
+

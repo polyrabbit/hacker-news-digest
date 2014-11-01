@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
 import imgsz
-from .utils import tokenize, is_paragraph, LCS_length
+from .utils import tokenize, is_paragraph, string_inclusion_ratio
 from backports.functools_lru_cache import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -119,12 +119,12 @@ class HtmlContentExtractor(object):
     """
     def __init__(self, html, base_url=''):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
-        self.img_area_len = lru_cache(1024)(self.img_area_len)
-        self.text_len = lru_cache(1024)(self.text_len)
-        self.semantic_effect = lru_cache(1024)(self.semantic_effect)
+        self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
+        self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
 
         self.max_score = -1
         self.scores = defaultdict(int)
+        self.text_len_of = defaultdict(int)
         doc = BS(html)
 
         self.title = doc.title.string if doc.title else u''
@@ -135,40 +135,45 @@ class HtmlContentExtractor(object):
         # clean ups
         self.clean_up_html()
         self.relative_path2_abs_url()
-        print self.img_area_len.cache_info(), self.text_len.cache_info(), self.semantic_effect.cache_info()
+        # print self.calc_img_area_len.cache_info(), self.calc_effective_text_len.cache_info()
 
-    def set_article_title_point(self, doc):
+    def set_article_title_point(self, doc, point):
+        for parent in self.find_article_header_parents(doc):
+            self.scores[parent] = point
+
+    def find_article_header_parents(self, doc):
         # First we give a high point to nodes who have
         # a descendant that is a header tag and matches title most
-        def is_article_title(node):
+        def is_article_header(node):
             if re.match(r'h\d+', node.name):
                 header_txt = node.get_text(separator=u' ', strip=True)
-                if LCS_length(tokenize(header_txt), tokenize(self.title)) /\
-                        float(len(tokenize(header_txt))) > .9:
+                if string_inclusion_ratio(header_txt, self.title) > .85:
                     return True
             return False
 
-        for node in doc.find_all(is_article_title):
+        for node in doc.find_all(is_article_header):
             # Give eligible node a high score
             logger.debug('Found a eligible title: %s', node.get_text(separator=u' ', strip=True))
             # self.scores[node] = 1000
             for parent in node.parents:
-                if parent:
-                    self.scores[parent] = 1000
+                if not parent or parent is doc:
+                    break
+                yield parent
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
-            self.scores[node] += 500
+            # Double their length
+            self.scores[node] += self.calc_effective_text_len(node)
 
     def calc_node_score(self, node, depth=.1):
         """
         The one with most text is the most likely article, naive and simple
         """
-        text_len = self.text_len(node)
-        # img_len = self.img_area_len(cur_node)
+        text_len = self.calc_effective_text_len(node)
+        # img_len = self.calc_img_area_len(cur_node)
         #TODO take image as a factor
         img_len = 0
-        impact_factor = self.semantic_effect(node)
+        impact_factor = 2 if self.has_positive_effect(node) else 1
         self.scores[node] += (text_len + img_len) * impact_factor * (depth**1.5)  # yes 1.5 is a big number
 
         for child in node.children:  # the direct children, not descendants
@@ -176,61 +181,55 @@ class HtmlContentExtractor(object):
                 self.calc_node_score(child, depth+0.1)
 
     def find_main_content(self, root):
-        self.set_article_title_point(root)
+        max_text_len = self.calc_effective_text_len(root)
+        self.set_article_title_point(root, max_text_len)  # Give them the highest score
         self.set_article_tag_point(root)
+
         self.calc_node_score(root)
         article = max(self.scores, key=lambda k: self.scores[k])
-        print self.scores[root.article]
+        # print self.scores[article], self.scores[root.article]
         logger.debug('Score of the main content is %s', self.scores[article])
         return article
 
-    def semantic_effect(self, node):
-        # The most important part
-        # returns 1 means no effect
-        # 2 means positive
-        # .2 means negative
-        if isinstance(node, NavigableString):
-            return 1
+    @staticmethod
+    def has_positive_effect(node):
+        for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
+            if positive_patt.search(attr):
+                return True
+        return False
 
-        def _any(iter, func):
-            for i in iter:
-                if func(i):
-                    return True
-            return False
+    @staticmethod
+    def has_negative_effect(node):
+        for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
+            if negative_patt.search(attr):
+                return True
+        return False
 
-        if _any([node.get('id', ''), node.name] + node.get('class', []),
-                negative_patt.search):
-            return .2
-
-        if _any([node.get('id', ''), node.name] + node.get('class', []),
-                positive_patt.search):
-            return 2
-
-        return 1
-
-    def text_len(self, cur_node):
+    def calc_effective_text_len(self, node):
         """
-        Calc the total the length of text in a node, same as
+        Calc the total the length of text in a child, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
         text_len = 0
-        for node in cur_node.children:
-            if isinstance(node, Tag):
-                text_len += self.text_len(node)
+        for child in node.children:
+            if isinstance(child, Tag):
+                text_len += self.calc_effective_text_len(child)
             # Comment is also an instance of NavigableString,
-            # so we should not use isinstance(node, NavigableString)
-            elif type(node) is NavigableString:
-                text_len += len(node.string.strip()) + node.string.count(',') +\
-                            node.string.count(u'，')  # Chinese comma
+            # so we should not use isinstance(child, NavigableString)
+            elif type(child) is NavigableString:
+                text_len += len(child.string.strip()) + child.string.count(',') + \
+                            child.string.count(u'，')  # Chinese comma
+        if self.has_negative_effect(node):
+            return text_len * .2
         return text_len
 
-    def img_area_len(self, cur_node):
+    def calc_img_area_len(self, cur_node):
         img_len = 0
         if cur_node.name == 'img':
             img_len = WebImage(self.base_url, cur_node).to_text_len()
         else:
             for node in cur_node.find_all('img', recursive=False):  # only search children first
-                img_len += self.img_area_len(node)
+                img_len += self.calc_img_area_len(node)
         return img_len
 
     def purge(self, doc):
@@ -287,33 +286,36 @@ class HtmlContentExtractor(object):
                 link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
             return float(link_text) / all_text >= .5
 
+        parents = set(self.find_article_header_parents(self.article))
         def deepest_block_element_first_search(node):
             # TODO tooooo inefficient
             for p in node.find_all(block_elements):
                 if p.founded:
                     continue
+                if p in parents:
+                    continue
                 p.founded = True
-                if not p.find_all(block_elements):
+                if not p.find(block_elements):
                     if link_intensive(p):
                         continue
                     if p.name in preserved_tags:
                         yield unicode(p)
                     else:
-                        yield p.text
+                        yield p.get_text(separator=u'', strip=True, types=(NavigableString,))
                 else:
                     for grand_p in deepest_block_element_first_search(p):
                         yield grand_p
-            else:  # TODO tooooooo redundant
+            if not node.find(block_elements):  # TODO tooooooo redundant
                 if node.name in block_elements and not link_intensive(node):
                     if node.name in preserved_tags:
                         yield unicode(node)
                     else:
-                        yield node.text
+                        yield node.get_text(separator=u'', strip=True, types=(NavigableString,))
 
         partial_summaries = []
         len_of_summary = 0
         for p in deepest_block_element_first_search(self.article):
-            if is_paragraph(p):  # consider it to be a paragraph
+            if len(tokenize(p)) > 20:  # consider it to be a paragraph
                 # A tag should be considered atom
                 p_mat = re.search(r'<([a-z]+)[^>]*>([^<]*)</\1>', p)
                 if p_mat:

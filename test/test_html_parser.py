@@ -25,7 +25,7 @@ class PageContentExtractorTestCase(TestCase):
         <html>good,，</html>
         """
         doc = BS(html_doc, from_encoding='utf-8')
-        length = HtmlContentExtractor(html_doc).text_len(doc)
+        length = HtmlContentExtractor(html_doc).calc_effective_text_len(doc)
         self.assertEqual(length, 8)
 
     def test_parsing_empty_response(self):
@@ -34,14 +34,12 @@ class PageContentExtractorTestCase(TestCase):
         self.assertEqual(HtmlContentExtractor(html_doc).article.text, '')
 
     def test_semantic_affect(self):
-        assert HtmlContentExtractor.semantic_effect.im_func(object(),
-                BS('<article>good</article>').article) == 2
-        assert HtmlContentExtractor.semantic_effect.im_func(object(),
-                BS('<p>good</p>').p) == 1
-        assert HtmlContentExtractor.semantic_effect.im_func(object(),
-                BS('<p class="conteNt">good</p>').p) == 2
-        assert HtmlContentExtractor.semantic_effect.im_func(object(),
-                BS('<p class="comment">good</p>').p) == .2
+        # They are static methods
+        self.assertTrue(HtmlContentExtractor.has_positive_effect(BS('<article>good</article>').article))
+        self.assertFalse(HtmlContentExtractor.has_negative_effect(BS('<p>good</p>').p))
+        self.assertFalse(HtmlContentExtractor.has_positive_effect(BS('<p>good</p>').p))
+        self.assertTrue(HtmlContentExtractor.has_positive_effect(BS('<p class="conteNt">good</p>').p))
+        self.assertTrue(HtmlContentExtractor.has_negative_effect(BS('<p class="comment">good</p>').p))
 
     # def test_calc_best_node(self):
     #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
@@ -113,12 +111,14 @@ class PageContentExtractorTestCase(TestCase):
 
     def test_common_sites_forbes(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
-        # ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
-        # print ar.article
-        # ar.get_summary()
+        ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
+        self.assertTrue(unicode(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
+        self.assertTrue(unicode(ar.get_summary()).startswith('Kind of like every baseball player will try'))
+
+    def test_common_sites_ruanyifeng(self):
         ar = legendary_parser_factory('http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
-        print ar.article
-        ar.get_summary()
+        self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
+        self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
