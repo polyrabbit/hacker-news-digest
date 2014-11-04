@@ -275,7 +275,7 @@ class HtmlContentExtractor(object):
 
         block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
                 'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
-        preserved_tags = {'pre'}
+        preserved_tags = {'code'}
 
         def link_intensive(node):
             all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
