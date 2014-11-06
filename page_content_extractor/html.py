@@ -46,16 +46,16 @@ class WebImage(object):
         width, height = self.get_size(img_node)
         # self.img_area_px = self.equivalent_text_len()
         if not (width and height):
-            logger.debug('Failed no width or height found, %s', img_node['src'])
+            logger.info('Failed no width or height found, %s', img_node['src'])
             return
         if not self.check_dimension(width, height):
-            logger.debug('Failed on dimension check(width=%s height=%s) %s',
+            logger.info('Failed on dimension check(width=%s height=%s) %s',
                     width, height, img_node['src'])
             return
         if not self.raw_data:
             self.fetch_img(img_node['src'])
         if not self.check_image_bytesize():
-            logger.debug('Failed on image_bytesize check, size is %s, %s',
+            logger.info('Failed on image_bytesize check, size is %s, %s',
                     len(self.raw_data), img_node['src'])
             return
         self.is_possible = True
@@ -153,7 +153,7 @@ class HtmlContentExtractor(object):
 
         for node in doc.find_all(is_article_header):
             # Give eligible node a high score
-            logger.debug('Found a eligible title: %s', node.get_text(separator=u' ', strip=True))
+            logger.info('Found a eligible title: %s', node.get_text(separator=u' ', strip=True))
             # self.scores[node] = 1000
             for parent in node.parents:
                 if not parent or parent is doc:
@@ -188,7 +188,7 @@ class HtmlContentExtractor(object):
         self.calc_node_score(root)
         article = max(self.scores, key=lambda k: self.scores[k])
         # print self.scores[article], self.scores[root.article]
-        logger.debug('Score of the main content is %s', self.scores[article])
+        logger.info('Score of the main content is %s', self.scores[article])
         return article
 
     @staticmethod
@@ -338,7 +338,7 @@ class HtmlContentExtractor(object):
 
         if partial_summaries:
             return ''.join(partial_summaries)
-        logger.debug('Nothing qualifies a paragraph, get a jam')
+        logger.info('Nothing qualifies a paragraph, get a jam')
         text = self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))
         return text[:max_length]+' ...' if len(text) > max_length else text
 
@@ -346,7 +346,7 @@ class HtmlContentExtractor(object):
         for img_node in self.article.find_all('img'):
             img = WebImage(self.base_url, img_node)
             if img.is_possible:
-                logger.debug('Found a top image %s', img.url)
+                logger.info('Found a top image %s', img.url)
                 return img
         return None
 

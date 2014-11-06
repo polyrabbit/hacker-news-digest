@@ -1,6 +1,6 @@
 .PHONY: run test drop
 run:
-	python index.py
+	DEBUG=1 python index.py
 run-in-production:
 	gunicorn -c config.py index:app
 test:

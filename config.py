@@ -2,7 +2,10 @@ import socket
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
+DEBUG = 'DEBUG' in os.environ
+
+logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
+                    format='%(levelname)s - [%(asctime)s] %(message)s')
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 socket.setdefaulttimeout(20)
@@ -20,6 +23,7 @@ SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL",
     .replace('postgres://', 'postgresql://')
 SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
+SQLALCHEMY_ECHO = DEBUG
 
 # Gunicorn
 bind = "0.0.0.0:%s" % PORT
@@ -31,3 +35,4 @@ errorlog = '-'
 
 summary_length = 250
 sites_for_users = ('github.com', 'medium.com')
+
