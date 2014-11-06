@@ -68,9 +68,10 @@ def image(img_id):
     img = models.Image.query.get_or_404(img_id)
     return send_file(img.makefile(), img.content_type, conditional=True)
 
-@app.route('/update/<what>', methods=['POST'])
-@app.route('/update', methods=['POST'])
-def update(what=None):
+@app.route('/update/hackernews', methods=['POST'], defaults={'what': 'hackernews'})
+@app.route('/update/startupnews', methods=['POST'], defaults={'what': 'startupnews'})
+@app.route('/update', methods=['POST'], defaults={'what': None})
+def update(what):
     if request.form.get('key') != app.config['HN_UPDATE_KEY']:
         abort(401)
     # circular imports again
