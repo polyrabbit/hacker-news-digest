@@ -145,7 +145,7 @@ class HtmlContentExtractor(object):
         # First we give a high point to nodes who have
         # a descendant that is a header tag and matches title most
         def is_article_header(node):
-            if re.match(r'h\d+', node.name):
+            if re.match(r'h\d+|td', node.name):
                 header_txt = node.get_text(separator=u' ', strip=True)
                 if string_inclusion_ratio(header_txt, self.title) > .85:
                     return True
