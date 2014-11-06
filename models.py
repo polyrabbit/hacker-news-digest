@@ -25,7 +25,7 @@ class HelperMixin(object):
             session.commit()
             return getattr(obj, pk_name)
         except SQLAlchemyError:
-            logger.exception('Failed to save %s', kwargs[pk_name])
+            logger.exception('Failed to save %s', kwargs.get(pk_name, 'image'))
             session.rollback()
 
     @classmethod
@@ -54,11 +54,13 @@ class HelperMixin(object):
         pk = cls.__mapper__.primary_key[0]
         try:
             rcnt = -1
-            if not keys:
-                rcnt = cls.query.delete() - 1
-            else:
-                for rcnt, obsolete in enumerate(cls.query.filter(~pk.in_(keys))):
-                    session.delete(obsolete)
+            # if not keys:
+                  # TODO query.delete will fire a delete from, which won't delete
+                  # related image, have to delete them one by one
+            #     rcnt = cls.query.delete() - 1
+            # else:
+            for rcnt, obsolete in enumerate(cls.query.filter(~pk.in_(keys))):
+                session.delete(obsolete)
             logger.info('Removed %s items from %s', rcnt+1, cls.__tablename__)
             session.commit()
         except SQLAlchemyError:
@@ -79,7 +81,7 @@ class HackerNews(db.Model, HelperMixin):
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
-    img_id = db.Column(db.Integer, db.ForeignKey('image.id'))
+    img_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'))
 
     image = db.relationship('Image', cascade='delete')
 
@@ -102,7 +104,7 @@ class StartupNews(db.Model, HelperMixin):
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
-    img_id = db.Column(db.Integer, db.ForeignKey('image.id'))
+    img_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'))
 
     image = db.relationship('Image', cascade='delete')
 
