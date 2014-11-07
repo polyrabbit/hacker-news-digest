@@ -26,8 +26,8 @@ SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
 
 # Gunicorn
-bind = "0.0.0.0:%s" % PORT
-# workers = multiprocessing.cpu_count() *2 +1
+# As suggested by nginx-buildpack
+bind = "unix:/tmp/nginx.socket"
 workers = 3
 threads = SQLALCHEMY_POOL_SIZE
 accesslog = '-'

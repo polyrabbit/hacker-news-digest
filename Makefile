@@ -1,8 +1,8 @@
 .PHONY: run test drop
 run:
 	DEBUG=1 python index.py
-run-in-production:
-	gunicorn -c config.py index:app
+run-in-heroku:
+	bin/start-nginx gunicorn -c config.py index:app && touch /tmp/app-initialized
 test:
 	python -m unittest discover ./test
 drop:

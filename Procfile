@@ -1,1 +1,1 @@
-web: make run-in-production
+web: make run-in-heroku
