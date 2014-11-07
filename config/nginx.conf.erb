@@ -17,7 +17,7 @@ http {
 
 	log_format l2met 'measure#nginx.service=$request_time request_id=$http_x_request_id';
 	access_log /dev/null l2met;
-	error_log /dev/null
+	error_log /dev/null;
 
 	include mime.types;
 	default_type application/octet-stream;
