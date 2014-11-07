@@ -6,11 +6,11 @@
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
 <url>
-    <loc>http://the-hacker-news.herokuapp.com/</loc>
+    <loc>http://hackernews.im/</loc>
     <changefreq>always</changefreq>
 </url>
 <url>
-    <loc>http://the-hacker-news.herokuapp.com/startupnews</loc>
+    <loc>http://hackernews.im/startupnews</loc>
     <changefreq>hourly</changefreq>
 </url>
 </urlset>
