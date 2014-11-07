@@ -2,7 +2,8 @@
 run:
 	DEBUG=1 python index.py
 run-in-heroku:
-	bin/start-nginx gunicorn -c config.py index:app && touch /tmp/app-initialized
+	touch /tmp/app-initialized
+	bin/start-nginx gunicorn -c config.py index:app
 test:
 	python -m unittest discover ./test
 drop:
