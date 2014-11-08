@@ -1,9 +1,8 @@
 import logging
 
-from urlparse import urlparse, urlunparse
 from flask import (
-    Flask, render_template, abort, request, send_from_directory, send_file,
-    Response, redirect
+    Flask, render_template, abort, request, send_file,
+    Response
 )
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -17,16 +16,6 @@ from ago import human
 import models
 
 logger = logging.getLogger(__name__)
-
-@app.before_request
-def redirect_naked_domain():
-    """Redirect hackernews.im to www.hackernews.im, cuz heroku doesnot support a nacked host"""
-    # How I miss nginx here
-    if request.host.endswith('herokuapp.com'):
-        urlparts = urlparse(request.url)
-        urlparts_list = list(urlparts)
-        urlparts_list[1] = 'www.hackernews.im'
-        return redirect(urlunparse(urlparts_list), code=301)
 
 @app.route("/hackernews")
 @app.route('/')
@@ -85,11 +74,6 @@ def update(what):
         StartupNews().update(force)
         models.LastUpdated.update('startupnews')
     return 'Great success!'
-
-@app.route('/favicon.ico')
-@app.route('/sitemap.xml')
-def static_files():
-    return send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=app.config['PORT'])

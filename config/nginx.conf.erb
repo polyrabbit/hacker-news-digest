@@ -9,11 +9,15 @@ events {
 }
 
 http {
-        gzip on;
-        gzip_comp_level 2;
-        gzip_min_length 512;
+    gzip on;
+    gzip_comp_level 2;
+    gzip_min_length 512;
+    gzip_vary on;
+    gzip_disable msie6;
+    # Also for HTTP 1.0
+    gzip_http_version 1.0;
+    gzip_types text/plain application/x-javascript text/xml text/css;
 
-	server_tokens off;
 
 	log_format l2met 'measure#nginx.service=$request_time request_id=$http_x_request_id';
 	access_log logs/nginx/access.log l2met;
@@ -31,8 +35,8 @@ http {
  	}
 
 	server {
-		listen <%= ENV["PORT"] %>;
-		server_name _;
+		listen <%= ENV["PORT"] || 80 %> default_server;
+        server_name www.hackernews.im hackernews.im
 		keepalive_timeout 5;
 
 		location / {
@@ -41,5 +45,24 @@ http {
 			proxy_redirect off;
 			proxy_pass http://app_server;
 		}
+
+        location /static/ {
+            alias <%= Dir.pwd %>/static/;
+        }
+
+        location /favicon.ico {
+            root <%= Dir.pwd %>/static/;
+        }
+
+        location /sitemap.xml {
+            root <%= Dir.pwd %>/static/;
+        }
+
 	}
+
+    server {
+		listen <%= ENV["PORT"] || 80 %>;
+        server_name the-hacker-news.herokuapp.com;
+        rewrite  ^/(.*)$ http://www.hackernews.im/$1 permanent;
+    }
 }
