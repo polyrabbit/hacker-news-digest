@@ -2,6 +2,7 @@ import logging
 # cStringIO won't let me set name attr on it
 from StringIO import StringIO
 import datetime
+from hashlib import md5
 
 from sqlalchemy.exc import SQLAlchemyError
 from index import db
@@ -81,7 +82,7 @@ class HackerNews(db.Model, HelperMixin):
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
-    img_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'))
+    img_id = db.Column(db.String, db.ForeignKey('image.id', ondelete='CASCADE'))
 
     image = db.relationship('Image', cascade='delete')
 
@@ -104,17 +105,20 @@ class StartupNews(db.Model, HelperMixin):
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
-    img_id = db.Column(db.Integer, db.ForeignKey('image.id', ondelete='CASCADE'))
+    img_id = db.Column(db.String, db.ForeignKey('image.id', ondelete='CASCADE'))
 
     image = db.relationship('Image', cascade='delete')
 
     def __repr__(self):
         return u"%s<%s>" % (self.title, self.url)
 
+def md5_img(context):
+    return md5(context.current_parameters['raw_data']).hexdigest()
+
 class Image(db.Model, HelperMixin):
     __tablename__ = 'image'
 
-    id = db.Column(db.Integer, db.Sequence('image_id_seq'), primary_key=True)
+    id = db.Column(db.String, default=md5_img, primary_key=True)
     content_type = db.Column(db.String)
     raw_data = db.Column(db.LargeBinary)
 

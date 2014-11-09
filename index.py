@@ -50,7 +50,7 @@ def startupnews():
             last_updated = ts and human(ts, 1)
         )
 
-@app.route('/img/<int:img_id>')
+@app.route('/img/<img_id>')
 def image(img_id):
     if request.if_none_match or request.if_modified_since:
         return Response(status=304)
