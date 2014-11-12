@@ -23,7 +23,7 @@ def hackernews():
     ts = models.LastUpdated.get('hackernews')
     return render_template('index.html',
             title='Hacker News Digest',
-            news_list=models.HackerNews.query.all(),
+            news_list=models.HackerNews.query.order_by('rank').all(),
             navs=[
                 ('Hacker News', 'https://news.ycombinator.com/news'),
                 ('New', 'https://news.ycombinator.com/newest'),
@@ -40,7 +40,7 @@ def startupnews():
     ts = models.LastUpdated.get('startupnews')
     return render_template('index.html',
             title='Startup News Digest',
-            news_list=models.StartupNews.query.all(),
+            news_list=models.StartupNews.query.order_by('rank').all(),
             navs=[
                 ('Startup News', 'http://news.dbanotes.net/news'),
                 ('New', 'http://news.dbanotes.net/newest'),

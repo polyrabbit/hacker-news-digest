@@ -274,7 +274,7 @@ class HtmlContentExtractor(object):
     def get_summary(self, max_length=300):
 
         block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
-                'code', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
+                'code', 'blockquote', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
         preserved_tags = {'code'}
 
         def link_intensive(node):
