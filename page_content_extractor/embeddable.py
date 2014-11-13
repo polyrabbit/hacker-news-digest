@@ -61,11 +61,16 @@ class EmbeddableExtractor(object):
 
     def tudou_parser(self, url):
         vid_mat = re.search(r'www\.tudou\.com/albumplay/(\w+?)/(\w+?)\.html', url, re.I)
-        if not vid_mat:
-            raise ParseError('Invalid tudou video url(%s)' % url)
-        return """<iframe width="560" height="315" """\
-        """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
-        """allowfullscreen></iframe>""" % vid_mat.group(2)
+        if vid_mat:
+            return """<iframe width="560" height="315" """\
+            """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
+            """allowfullscreen></iframe>""" % vid_mat.group(2)
+        vid_mat = re.search(r'www\.tudou\.com/programs/view/([^/]+)/', url, re.I)
+        if vid_mat:
+            return """<iframe width="560" height="315" """ \
+                   """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """ \
+                   """allowfullscreen></iframe>""" % vid_mat.group(1)
+        raise ParseError('Invalid tudou video url(%s)' % url)
 
     def ustream_parser(self, url):
         vid_mat = re.search(r'www\.ustream\.tv/recorded/(\d+)', url, re.I)

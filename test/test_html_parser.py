@@ -120,6 +120,11 @@ class PageContentExtractorTestCase(TestCase):
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
+    def test_common_sites_xxx(self):
+        ar = legendary_parser_factory('http://squid314.livejournal.com/275614.html')
+        # print ar.article
+        print ar.get_summary()
+
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
     # logging.debug, logging.info ...

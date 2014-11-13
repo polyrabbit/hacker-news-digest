@@ -32,6 +32,9 @@ class EmbeddableParserTestCase(TestCase):
         parser = EmbeddableExtractor('Tudou', 'http://www.tudou.com/albumplay/NBDgX_W2aJk/wjz6Oq52l7E.html')
         self.assertEqual(parser.get_summary(),
                 '<iframe width="560" height="315" src="http://www.tudou.com/programs/view/html5embed.action?code=wjz6Oq52l7E" frameborder="0" allowfullscreen></iframe>')
+        parser = EmbeddableExtractor('Tudou', 'http://www.tudou.com/programs/view/xlR2wzzJkSs/')
+        self.assertEqual(parser.get_summary(),
+                         '<iframe width="560" height="315" src="http://www.tudou.com/programs/view/html5embed.action?code=xlR2wzzJkSs" frameborder="0" allowfullscreen></iframe>')
 
     def test_ustream_parser(self):
         parser = EmbeddableExtractor('ustream', 'http://www.ustream.tv/recorded/9900109?utm_campaign=JPER&utm_medium=FlashPlayer&utm_source=embed')
