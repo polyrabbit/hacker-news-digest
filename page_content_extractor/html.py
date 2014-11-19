@@ -14,7 +14,7 @@ from backports.functools_lru_cache import lru_cache
 logger = logging.getLogger(__name__)
 
 # Beautifulsoup will convert all tag names to lower-case
-ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe')
+ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe', 'head')
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
@@ -113,6 +113,12 @@ class WebImage(object):
         fp.write(self.raw_data)
         fp.close()
 
+def tag_equal(self, other):
+    return id(self) == id(other)
+# Use tag as keys in dom scores,
+# two tags with the same content and attributes should not consider equal to each other.
+Tag.__eq__ = tag_equal
+
 class HtmlContentExtractor(object):
     """
     see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
@@ -124,7 +130,6 @@ class HtmlContentExtractor(object):
 
         self.max_score = -1
         self.scores = defaultdict(int)
-        self.text_len_of = defaultdict(int)
         doc = BS(html)
 
         self.title = doc.title.string if doc.title else u''
@@ -137,11 +142,11 @@ class HtmlContentExtractor(object):
         self.relative_path2_abs_url()
         # print self.calc_img_area_len.cache_info(), self.calc_effective_text_len.cache_info()
 
-    def set_article_title_point(self, doc, point):
-        for parent in self.find_article_header_parents(doc):
-            self.scores[parent] = point
+    def set_title_parents_point(self, doc):
+        for parent in self.parents_of_article_header(doc):
+            self.scores[parent] = self.calc_effective_text_len(parent) * 2
 
-    def find_article_header_parents(self, doc):
+    def parents_of_article_header(self, doc):
         # First we give a high point to nodes who have
         # a descendant that is a header tag and matches title most
         def is_article_header(node):
@@ -174,20 +179,19 @@ class HtmlContentExtractor(object):
         #TODO take image as a factor
         img_len = 0
         impact_factor = 2 if self.has_positive_effect(node) else 1
-        self.scores[node] += (text_len + img_len) * impact_factor * (depth**1.5)  # yes 1.5 is a big number
+        self.scores[node] = (self.scores[node] + text_len + img_len) * impact_factor * (depth**1.4)
 
         for child in node.children:  # the direct children, not descendants
             if isinstance(child, Tag):
                 self.calc_node_score(child, depth+0.1)
 
     def find_main_content(self, root):
-        max_text_len = self.calc_effective_text_len(root)
-        self.set_article_title_point(root, max_text_len)  # Give them the highest score
+        self.calc_effective_text_len(root)
+        self.set_title_parents_point(root)  # Give them the highest score
         self.set_article_tag_point(root)
 
         self.calc_node_score(root)
         article = max(self.scores, key=lambda k: self.scores[k])
-        # print self.scores[article], self.scores[root.article]
         logger.info('Score of the main content is %s', self.scores[article])
         return article
 
@@ -213,6 +217,8 @@ class HtmlContentExtractor(object):
         text_len = 0
         for child in node.children:
             if isinstance(child, Tag):
+                if child.name == 'a':
+                    continue
                 text_len += self.calc_effective_text_len(child)
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(child, NavigableString)
@@ -286,7 +292,7 @@ class HtmlContentExtractor(object):
                 link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
             return float(link_text) / all_text >= .5
 
-        parents = set(self.find_article_header_parents(self.article))
+        parents = set(self.parents_of_article_header(self.article))
         def deepest_block_element_first_search(node):
             # TODO tooooo inefficient
             for p in node.find_all(block_elements):
@@ -301,7 +307,7 @@ class HtmlContentExtractor(object):
                     if p.name in preserved_tags:
                         yield unicode(p)
                     else:
-                        yield p.get_text(separator=u'', strip=True, types=(NavigableString,))
+                        yield p.get_text(separator=u'', strip=False, types=(NavigableString,))
                 else:
                     for grand_p in deepest_block_element_first_search(p):
                         yield grand_p
@@ -310,7 +316,7 @@ class HtmlContentExtractor(object):
                     if node.name in preserved_tags:
                         yield unicode(node)
                     else:
-                        yield node.get_text(separator=u'', strip=True, types=(NavigableString,))
+                        yield node.get_text(separator=u'', strip=False, types=(NavigableString,))
 
         partial_summaries = []
         len_of_summary = 0

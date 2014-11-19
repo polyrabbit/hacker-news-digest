@@ -72,24 +72,24 @@ class PageContentExtractorTestCase(TestCase):
         u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
 
     def test_get_summary_word_cut(self):
-        html_doc = '<p>'+'1'*1000+'</p>'+'<p>'+'2'*1000+'</p>'
+        html_doc = '<p>'+'1 '*500+'</p>'+'<p>'+'2 '*500+'</p>'
         summary = HtmlContentExtractor(html_doc).get_summary()
         self.assertNotIn('2', summary)
         self.assertTrue(summary.endswith('...'))
 
     def test_get_summary_with_preserved_tag(self):
-        html_doc = '<pre>' + '1'*1000 + '</pre>'
+        html_doc = '<code>' + '11 '*400 + '</code>'
         self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary())
 
     def test_get_summary_with_link_intensive(self):
-        html_doc = '<div><p><a href="whatever">' + '1'*1000 + '</a></p>'+\
-                   '<p>'+'2'*1000+'</p></div>'
+        html_doc = '<div><p><a href="whatever">' + '1 '*500 + '</a></p>'+\
+                   '<p>'+'2 '*500+'</p></div>'
         pp = HtmlContentExtractor(html_doc)
         pp.article = BS(html_doc).div
-        self.assertTrue(pp.get_summary().startswith('2'*10))
+        self.assertTrue(pp.get_summary().startswith('2 '*10))
 
     def test_get_summary_with_nested_div(self):
-        html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a'*1000, 'b'*1000)
+        html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a '*500, 'b '*500)
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('b'))
 
     def test_get_summary_without_strip(self):
@@ -109,6 +109,17 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = u'我'*1000
         self.assertLess(len(HtmlContentExtractor(html_doc).get_summary()), 1000)
 
+    def test_tags_separated_by_space(self):
+        html_doc = u"""
+        <article><p>Python has a GIL, right? Not quite - PyPy STM is a python implementation
+without a GIL, so it can scale CPU-bound work to several cores.
+PyPy STM is developed by Armin Rigo and Remi Meier,
+and supported by community <em>donations</em>.<p></article>
+        """
+        # print HtmlContentExtractor(html_doc).get_summary()
+        # TODO shouldn't endswith A_SPACE
+        self.assertTrue(HtmlContentExtractor(html_doc).get_summary().endswith('by community donations. '))
+
     def test_common_sites_forbes(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
@@ -120,10 +131,10 @@ class PageContentExtractorTestCase(TestCase):
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
-    def test_common_sites_xxx(self):
-        ar = legendary_parser_factory('http://squid314.livejournal.com/275614.html')
-        # print ar.article
-        print ar.get_summary()
+    # def test_common_sites_xxx(self):
+    #     ar = legendary_parser_factory('http://morepypy.blogspot.tw/2014/11/tornado-without-gil-on-pypy-stm.html')
+    #     # print ar.article
+    #     print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
