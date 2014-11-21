@@ -92,6 +92,12 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a '*500, 'b '*500)
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('b'))
 
+    def test_empty_title(self):
+        """Empty title shouldn't be None"""
+        html_doc = '<title></title>'
+        article = HtmlContentExtractor(html_doc)
+        self.assertEqual(article.title, '')
+
     def test_get_summary_without_strip(self):
         html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)
         self.assertIn(' ', HtmlContentExtractor(html_doc).get_summary())

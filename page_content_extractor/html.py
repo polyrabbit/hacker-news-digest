@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
 import imgsz
-from .utils import tokenize, is_paragraph, string_inclusion_ratio
+from .utils import tokenize, string_inclusion_ratio
 from backports.functools_lru_cache import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -127,12 +127,13 @@ class HtmlContentExtractor(object):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
         self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
         self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
+        self.parents_of_article_header = lru_cache(1024)(self.parents_of_article_header)
 
         self.max_score = -1
         self.scores = defaultdict(int)
         doc = BS(html)
 
-        self.title = doc.title.string if doc.title else u''
+        self.title = (doc.title.string if doc.title else u'') or u''
         self.base_url = base_url
         self.purge(doc)
         self.article = self.find_main_content(doc)
@@ -156,14 +157,17 @@ class HtmlContentExtractor(object):
                     return True
             return False
 
+        parents = []
         for node in doc.find_all(is_article_header):
             # Give eligible node a high score
-            logger.info('Found a eligible title: %s', node.get_text(separator=u' ', strip=True))
+            logger.info('Found an eligible title: %s', node.get_text(separator=u' ', strip=True))
             # self.scores[node] = 1000
             for parent in node.parents:
                 if not parent or parent is doc:
                     break
-                yield parent
+                # Use array instead of yield here to best utilize cache
+                parents.append(parent)
+        return parents
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
@@ -277,46 +281,42 @@ class HtmlContentExtractor(object):
     def geturl(self):
         return self.base_url
 
+    @staticmethod
+    def is_link_intensive(node):
+        all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
+        if not all_text:
+            return False
+        link_text = 0
+        for a in node.find_all('a'):
+            link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
+        return float(link_text) / all_text >= .5
+
     def get_summary(self, max_length=300):
 
         block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
                 'code', 'blockquote', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
         preserved_tags = {'code'}
 
-        def link_intensive(node):
-            all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
-            if not all_text:
-                return False
-            link_text = 0
-            for a in node.find_all('a'):
-                link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
-            return float(link_text) / all_text >= .5
-
         parents = set(self.parents_of_article_header(self.article))
         def deepest_block_element_first_search(node):
             # TODO tooooo inefficient
-            for p in node.find_all(block_elements):
+            for p in node.find_all(block_elements) or [node]:  # or works when no one is found
                 if p.founded:
                     continue
                 if p in parents:
                     continue
                 p.founded = True
                 if not p.find(block_elements):
-                    if link_intensive(p):
+                    if HtmlContentExtractor.is_link_intensive(p):
                         continue
                     if p.name in preserved_tags:
                         yield unicode(p)
                     else:
                         yield p.get_text(separator=u'', strip=False, types=(NavigableString,))
                 else:
+                    # Miss yield from here
                     for grand_p in deepest_block_element_first_search(p):
                         yield grand_p
-            if not node.find(block_elements):  # TODO tooooooo redundant
-                if node.name in block_elements and not link_intensive(node):
-                    if node.name in preserved_tags:
-                        yield unicode(node)
-                    else:
-                        yield node.get_text(separator=u'', strip=False, types=(NavigableString,))
 
         partial_summaries = []
         len_of_summary = 0
