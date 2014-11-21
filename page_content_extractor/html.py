@@ -22,7 +22,7 @@ positive_patt = re.compile(r'article|entry|post|column|main|content|'
 
 class WebImage(object):
     is_possible = False
-    MIN_PX = 50
+    MIN_PX = 100
     MIN_BYTES_SIZE = 4000
     MAX_BYTES_SIZE = 2.5*1024*1024
     SCALE_FROM_IMG_TO_TEXT = 22*22
