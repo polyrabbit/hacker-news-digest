@@ -348,7 +348,7 @@ class HtmlContentExtractor(object):
             if not article_begun and p in parents:
                 continue
             # Filter out something like 'November 15, 2014 by XXX'
-            if not article_begun and re.search(r'meta|date|time|author|share|caption|clear|fix',
+            if not article_begun and re.search(r'meta|date|time|author|share|caption|clear|fix|tag|manage',
                 '%s %s' % (p.get('id', ''), ' '.join(p.get('class', []))), re.I):
                 continue
             if not article_begun and HtmlContentExtractor.is_link_intensive(p):
