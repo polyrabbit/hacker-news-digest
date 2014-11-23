@@ -154,14 +154,14 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
-    @unittest.skip('local test only')
+    # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         # ar = legendary_parser_factory('http://startupclass.samaltman.com/courses/lec17/')
         # ar = legendary_parser_factory('http://devo.ps/')
-        ar = legendary_parser_factory('http://www.scs.stanford.edu/11au-cs240h/notes/par.html')
+        ar = legendary_parser_factory('http://www.hackernews.im/')
         # print ar.article
-        print ar.get_summary(1000)
+        print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

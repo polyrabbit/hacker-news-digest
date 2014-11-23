@@ -352,7 +352,7 @@ class HtmlContentExtractor(object):
                 continue
             if not article_begun and HtmlContentExtractor.is_link_intensive(p):
                 continue
-            ps = p.get_text(separator=u'', strip=False, types=(NavigableString,))
+            ps = p.get_text(separator=u' ', strip=True, types=(NavigableString,))
             if not article_begun and len(tokenize(ps)) < 15:
                 # Too short to be a paragraph
                 continue
