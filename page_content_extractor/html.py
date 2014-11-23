@@ -10,6 +10,7 @@ import requests
 import imgsz
 from .utils import tokenize, string_inclusion_ratio
 from backports.functools_lru_cache import lru_cache
+from markupsafe import escape
 
 logger = logging.getLogger(__name__)
 
@@ -330,7 +331,7 @@ class HtmlContentExtractor(object):
                     cur_length += len(t[-1])
                     if cur_length >= length:
                         break
-                ret.append('\n'.join(t))
+                ret.append(escape('\n'.join(t)))
             if cur_length >= length:
                 break
         ret.append('</%s>' % node.name)
@@ -367,20 +368,20 @@ class HtmlContentExtractor(object):
             else:
                 if len_of_summary + len(ps) > max_length:
                     for word in tokenize(ps):
-                        partial_summaries.append(word)
+                        partial_summaries.append(escape(word))
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
                             partial_summaries.append('...')
                             return ''.join(partial_summaries)
                 else:
-                    partial_summaries.append(ps)
+                    partial_summaries.append(escape(ps))
                     len_of_summary += len(ps)
             partial_summaries.append(' ')
 
         if partial_summaries:
             return ''.join(partial_summaries[:-1])  # The last one is a space
         logger.info('Nothing qualifies a paragraph, get a jam')
-        text = self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))
+        text = escape(self.article.get_text(separator=u' ', strip=True, types=(NavigableString,)))
         return text[:max_length]+' ...' if len(text) > max_length else text
 
     def get_top_image(self):

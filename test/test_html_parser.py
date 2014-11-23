@@ -90,6 +90,12 @@ class PageContentExtractorTestCase(TestCase):
         pp.article = BS(html_doc).div
         self.assertTrue(pp.get_summary().startswith('2 '*10))
 
+    def test_escaped_summary(self):
+        html_doc = '<code>&lt;a href=&quot;&quot; title=&quot;&quot;&gt; &lt;</code>'
+        article = HtmlContentExtractor(html_doc)
+        # TODO test longer html
+        self.assertEqual(article.get_summary(), '&lt;a href=&#34;&#34; title=&#34;&#34;&gt; &lt;')
+
     def test_get_summary_with_nested_div(self):
         html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a '*500, 'b '*500)
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('b'))
@@ -154,16 +160,14 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
-    @unittest.skip('local test only')
+    # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://www.hackernews.im/')
         # print ar.article
-        from markupsafe import escape
-        print unicode(escape(ar.get_summary()))
-        # print ar.get_summary()
+        print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

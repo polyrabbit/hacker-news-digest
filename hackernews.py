@@ -5,7 +5,6 @@ from urlparse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup as BS
 from page_content_extractor import legendary_parser_factory
-from markupsafe import escape
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ class HackerNews(object):
                 logger.info("Fetching %s", news['url'])
                 try:
                     parser = legendary_parser_factory(news['url'])
-                    news['summary'] = unicode(escape(parser.get_summary(summary_length)))
+                    news['summary'] = parser.get_summary(summary_length)
                     tm = parser.get_top_image()
                     if tm:
                         img_id = models.Image.add(content_type=tm.content_type,
