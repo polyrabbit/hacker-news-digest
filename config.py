@@ -1,4 +1,3 @@
-import socket
 import os
 import logging
 
@@ -7,8 +6,6 @@ DEBUG = 'DEBUG' in os.environ
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(levelname)s - [%(asctime)s] %(message)s')
 logging.getLogger("requests").setLevel(logging.WARNING)
-
-socket.setdefaulttimeout(20)
 
 PORT = int(os.environ.get('PORT', 5000))
 

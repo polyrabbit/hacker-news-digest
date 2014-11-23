@@ -65,9 +65,8 @@ class PageContentExtractorTestCase(TestCase):
         <h2>Ready to speed things up? </h2>
         <div>Ready to speed things up? </div>
         <p>Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due.</p>
-        <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.  </p>
+        <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.</p>
         """
-        # print HtmlContentExtractor(html_doc).get_summary()
         self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
         u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
 
@@ -78,8 +77,11 @@ class PageContentExtractorTestCase(TestCase):
         self.assertTrue(summary.endswith('...'))
 
     def test_get_summary_with_preserved_tag(self):
-        html_doc = '<code>' + '11 '*400 + '</code>'
-        self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary())
+        html_doc = '<pre>' + '11 '*400 + '</pre>'
+        self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary(10))
+        html_doc = '<pre><code>' + '11\n'*400 + '</code>'+'what you think?'*200+'</pre>'
+        # print HtmlContentExtractor(html_doc).get_summary(10)
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(10), '<pre><code>%s</code></pre>' % '\n'.join(['11']*5))
 
     def test_get_summary_with_link_intensive(self):
         html_doc = '<div><p><a href="whatever">' + '1 '*500 + '</a></p>'+\
@@ -97,6 +99,24 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = '<title></title>'
         article = HtmlContentExtractor(html_doc)
         self.assertEqual(article.title, '')
+
+    def test_deepest_block_element_first_search(self):
+        html_doc = '<div><p>1</p><p>2</p><p>3</p></div>'
+        func = lambda t: HtmlContentExtractor.deepest_block_element_first_search(BS(t))
+        self.assertListEqual(map(lambda n: n.text, list(func(html_doc))), ['1', '2', '3'])
+        # Test one without descendant blocks
+        html_doc = '<div>1</div>'
+        self.assertListEqual(map(lambda n: n.text, list(func(html_doc))), ['1'])
+
+    def test_cut_content_to_length(self):
+        # Test not breaking a sentence in the middle
+        html_doc = '<pre>good</pre>'
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), (html_doc, 4))
+        # Test break on lines
+        html_doc = '<pre>good\ngood</pre>'
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre>good</pre>', 4))
+        html_doc = '<pre><code>good\ngood</code></pre>'
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre><code>good</code></pre>', 4))
 
     def test_get_summary_without_strip(self):
         html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)
@@ -120,14 +140,11 @@ class PageContentExtractorTestCase(TestCase):
         <article><p>Python has a GIL, right? Not quite - PyPy STM is a python implementation
 without a GIL, so it can scale CPU-bound work to several cores.
 PyPy STM is developed by Armin Rigo and Remi Meier,
-and supported by community <em>donations</em>.<p></article>
+and supported by community <em>donations</em>.</p></article>
         """
-        # print HtmlContentExtractor(html_doc).get_summary()
-        # TODO shouldn't endswith A_SPACE
-        self.assertTrue(HtmlContentExtractor(html_doc).get_summary().endswith('by community donations. '))
+        self.assertTrue(HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
 
     def test_common_sites_forbes(self):
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
         self.assertTrue(unicode(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
         self.assertTrue(unicode(ar.get_summary()).startswith('Kind of like every baseball player will try'))
@@ -137,10 +154,14 @@ and supported by community <em>donations</em>.<p></article>
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
 
-    # def test_common_sites_xxx(self):
-    #     ar = legendary_parser_factory('http://morepypy.blogspot.tw/2014/11/tornado-without-gil-on-pypy-stm.html')
-    #     # print ar.article
-    #     print ar.get_summary()
+    @unittest.skip('local test only')
+    def test_common_sites_xxx(self):
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
+        # ar = legendary_parser_factory('http://startupclass.samaltman.com/courses/lec17/')
+        # ar = legendary_parser_factory('http://devo.ps/')
+        ar = legendary_parser_factory('http://www.scs.stanford.edu/11au-cs240h/notes/par.html')
+        # print ar.article
+        print ar.get_summary(1000)
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

@@ -19,7 +19,7 @@ def is_paragraph(s):
 ascii_patt = re.compile(ur'([\u0000-\u00FF]+)', re.U)
 
 @lru_cache(maxsize=32)
-def tokenize(s):
+def tokenize(s):  # not using yield just for cache
     """
     >>> tokenize(u'ab我的 wtf ggにほんご ニ')
     (u'ab ', u'我', u'的', u'wtf ', u'gg ', u'に', u'ほ', u'ん', u'ご', u'ニ')
@@ -52,7 +52,7 @@ origin_send = requests.adapters.HTTPAdapter.send.im_func
 
 def send_with_default_args(*args, **kwargs):
     kwargs['verify'] = False
-    kwargs['timeout'] = kwargs['timeout'] or 20
+    kwargs['timeout'] = kwargs['timeout'] or 40
     return origin_send(*args, **kwargs)
 
 def monkey_patch_requests():

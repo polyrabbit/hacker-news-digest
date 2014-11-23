@@ -117,7 +117,7 @@ def tag_equal(self, other):
     return id(self) == id(other)
 # Use tag as keys in dom scores,
 # two tags with the same content and attributes should not consider equal to each other.
-Tag.__eq__ = tag_equal
+# Tag.__eq__ = tag_equal
 
 class HtmlContentExtractor(object):
     """
@@ -130,22 +130,25 @@ class HtmlContentExtractor(object):
         self.parents_of_article_header = lru_cache(1024)(self.parents_of_article_header)
 
         self.max_score = -1
+        # dict uses __eq__ to identify key, while in BS two different nodes
+        # will also be considered equal, DO not use that
         self.scores = defaultdict(int)
         doc = BS(html)
 
         self.title = (doc.title.string if doc.title else u'') or u''
+        self.article = doc
         self.base_url = base_url
         self.purge(doc)
-        self.article = self.find_main_content(doc)
+        self.find_main_content(doc)
 
         # clean ups
         self.clean_up_html()
         self.relative_path2_abs_url()
-        # print self.calc_img_area_len.cache_info(), self.calc_effective_text_len.cache_info()
+        # print self.parents_of_article_header.cache_info()
 
     def set_title_parents_point(self, doc):
         for parent in self.parents_of_article_header(doc):
-            self.scores[parent] = self.calc_effective_text_len(parent) * 2
+            parent.score = self.calc_effective_text_len(parent) * 2
 
     def parents_of_article_header(self, doc):
         # First we give a high point to nodes who have
@@ -172,7 +175,7 @@ class HtmlContentExtractor(object):
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
             # Double their length
-            self.scores[node] += self.calc_effective_text_len(node)
+            node.score = node.score or 0 + self.calc_effective_text_len(node)
 
     def calc_node_score(self, node, depth=.1):
         """
@@ -183,7 +186,10 @@ class HtmlContentExtractor(object):
         #TODO take image as a factor
         img_len = 0
         impact_factor = 2 if self.has_positive_effect(node) else 1
-        self.scores[node] = (self.scores[node] + text_len + img_len) * impact_factor * (depth**1.4)
+        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth**1.4)
+        if node.score > self.max_score:
+            self.max_score = node.score
+            self.article = node
 
         for child in node.children:  # the direct children, not descendants
             if isinstance(child, Tag):
@@ -195,9 +201,7 @@ class HtmlContentExtractor(object):
         self.set_article_tag_point(root)
 
         self.calc_node_score(root)
-        article = max(self.scores, key=lambda k: self.scores[k])
-        logger.info('Score of the main content is %s', self.scores[article])
-        return article
+        logger.info('Score of the main content is %s', self.article.score or 0)
 
     @staticmethod
     def has_positive_effect(node):
@@ -291,59 +295,90 @@ class HtmlContentExtractor(object):
             link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
         return float(link_text) / all_text >= .5
 
-    def get_summary(self, max_length=300):
-
+    @staticmethod
+    def deepest_block_element_first_search(node):
+        # TODO add the **code** tag
         block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
-                'code', 'blockquote', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
-        preserved_tags = {'code'}
+                 'blockquote', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
 
+        blocks = node.find_all(block_elements)
+        if not blocks:
+            # We have reached the farthest
+            yield node
+        # Else we continue travelling down
+        for p in blocks:
+            if p.founded:
+                continue
+            p.founded = True
+            # Miss yield from here
+            for grand_p in HtmlContentExtractor.deepest_block_element_first_search(p):
+                yield grand_p
+
+    @staticmethod
+    def cut_content_to_length(node, length):
+        cur_length = 0
+        ret = ['<%s>' % node.name]
+        for child in node.children:
+            if isinstance(child, Tag):
+                cs, cl = HtmlContentExtractor.cut_content_to_length(child, length-cur_length)
+                ret.append(cs)
+                cur_length += cl
+            else:
+                t = []
+                for line in unicode(child).split('\n'):
+                    t.append(line)
+                    cur_length += len(t[-1])
+                    if cur_length >= length:
+                        break
+                ret.append('\n'.join(t))
+            if cur_length >= length:
+                break
+        ret.append('</%s>' % node.name)
+        return ''.join(ret), cur_length
+
+    def get_summary(self, max_length=300):
+        preserved_tags = {'pre'}
         parents = set(self.parents_of_article_header(self.article))
-        def deepest_block_element_first_search(node):
-            # TODO tooooo inefficient
-            for p in node.find_all(block_elements) or [node]:  # or works when no one is found
-                if p.founded:
-                    continue
-                if p in parents:
-                    continue
-                p.founded = True
-                if not p.find(block_elements):
-                    if HtmlContentExtractor.is_link_intensive(p):
-                        continue
-                    if p.name in preserved_tags:
-                        yield unicode(p)
-                    else:
-                        yield p.get_text(separator=u'', strip=False, types=(NavigableString,))
-                else:
-                    # Miss yield from here
-                    for grand_p in deepest_block_element_first_search(p):
-                        yield grand_p
-
         partial_summaries = []
         len_of_summary = 0
-        for p in deepest_block_element_first_search(self.article):
-            if len(tokenize(p)) > 20:  # consider it to be a paragraph
-                # A tag should be considered atom
-                p_mat = re.search(r'<([a-z]+)[^>]*>([^<]*)</\1>', p)
-                if p_mat:
-                    partial_summaries.append(p)
-                    len_of_summary += len(p_mat.group(2))
-                    if len_of_summary > max_length:
-                        return ''.join(partial_summaries)
+        article_begun = False
+
+        for p in self.deepest_block_element_first_search(self.article):
+            if not article_begun and p in parents:
+                continue
+            # Filter out something like 'November 15, 2014 by XXX'
+            if not article_begun and re.search(r'meta|date|time|author|share|caption|clear|fix',
+                '%s %s' % (p.get('id', ''), ' '.join(p.get('class', []))), re.I):
+                continue
+            if not article_begun and HtmlContentExtractor.is_link_intensive(p):
+                continue
+            ps = p.get_text(separator=u'', strip=False, types=(NavigableString,))
+            if not article_begun and len(tokenize(ps)) < 15:
+                # Too short to be a paragraph
+                continue
+            article_begun = True
+            # Preserved tags should be considered atom
+            if p.name in preserved_tags:
+                p_str, p_str_len = self.cut_content_to_length(p, max_length-len_of_summary)
+                partial_summaries.append(p_str)
+                len_of_summary += p_str_len
+                if len_of_summary >= max_length:
+                    return ''.join(partial_summaries)
+            else:
+                if len_of_summary + len(ps) > max_length:
+                    for word in tokenize(ps):
+                        partial_summaries.append(word)
+                        len_of_summary += len(word)
+                        if len_of_summary > max_length:
+                            partial_summaries.append('...')
+                            return ''.join(partial_summaries)
                 else:
-                    if len_of_summary + len(p) > max_length:
-                        for word in tokenize(p):
-                            partial_summaries.append(word)
-                            len_of_summary += len(word)
-                            if len_of_summary > max_length:
-                                partial_summaries.append('...')
-                                return ''.join(partial_summaries)
-                    else:
-                        partial_summaries.append(p)
-                        len_of_summary += len(p)
-                partial_summaries.append(' ')
+                    partial_summaries.append(ps)
+                    len_of_summary += len(ps)
+            partial_summaries.append(' ')
 
         if partial_summaries:
-            return ''.join(partial_summaries)
+            return ''.join(partial_summaries[:-1])  # The last one is a space
         logger.info('Nothing qualifies a paragraph, get a jam')
         text = self.article.get_text(separator=u' ', strip=True, types=(NavigableString,))
         return text[:max_length]+' ...' if len(text) > max_length else text
