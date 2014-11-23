@@ -128,11 +128,16 @@ class PageContentExtractorTestCase(TestCase):
         # Test not breaking a sentence in the middle
         html_doc = '<pre>good</pre>'
         self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), (html_doc, 4))
-        # Test break on lines
+
+    def test_cut_content_to_length_break_on_lines(self):
         html_doc = '<pre>good\ngood</pre>'
         self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre>good</pre>', 4))
         html_doc = '<pre><code>good\ngood</code></pre>'
         self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre><code>good</code></pre>', 4))
+
+    def test_cut_content_to_length_with_self_closing_tag(self):
+        html_doc = '<pre>good<br>and<img></pre>'
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 10), ('<pre>good<br/>and<img/></pre>', 7))
 
     def test_get_summary_without_strip(self):
         html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)

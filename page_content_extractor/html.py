@@ -334,6 +334,8 @@ class HtmlContentExtractor(object):
                 ret.append(escape('\n'.join(t)))
             if cur_length >= length:
                 break
+        if len(ret) == 1:  # no children
+            return unicode(node), 0
         ret.append('</%s>' % node.name)
         return ''.join(ret), cur_length
 
