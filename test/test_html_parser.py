@@ -96,6 +96,11 @@ class PageContentExtractorTestCase(TestCase):
         # TODO test longer html
         self.assertEqual(article.get_summary(), '&lt;a href=&#34;&#34; title=&#34;&#34;&gt; &lt;')
 
+    def test_get_summary_with_meta_class(self):
+        html_doc = '<div><p class="meta">good</p><p>bad</p></div>'
+        article = HtmlContentExtractor(html_doc)
+        self.assertEqual(article.get_summary(4), 'bad')
+
     def test_get_summary_with_nested_div(self):
         html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a '*500, 'b '*500)
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('b'))
@@ -163,9 +168,9 @@ and supported by community <em>donations</em>.</p></article>
     # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
-        ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
+        # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
-        # ar = legendary_parser_factory('http://www.hackernews.im/')
+        ar = legendary_parser_factory('http://www.evget.com/article/2014/11/14/21821.html')
         # print ar.article
         print ar.get_summary()
 

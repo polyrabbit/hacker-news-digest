@@ -143,7 +143,7 @@ class HtmlContentExtractor(object):
         self.find_main_content(doc)
 
         # clean ups
-        self.clean_up_html()
+        # self.clean_up_html()
         self.relative_path2_abs_url()
         # print self.parents_of_article_header.cache_info()
 
