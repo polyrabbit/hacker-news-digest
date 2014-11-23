@@ -7,6 +7,7 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
 
+from markupsafe import escape
 from .exceptions import ParseError
 from .utils import tokenize, is_paragraph
 
@@ -45,7 +46,7 @@ class PdfExtractor(object):
             if len(tokenize(p)) > 20 and '.'*10 not in p:  # table of contents has many '...'
                 if len_of_summary + len(p) >= max_length:
                     for word in tokenize(p):
-                        partial_summaries.append(word)
+                        partial_summaries.append(escape(word))
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
                             partial_summaries.append(' ...')

@@ -39,7 +39,7 @@ class WebImage(object):
         if img_node.get('src').startswith('data:image/'):
             logger.info('Image is encoded in base64, too short')
             return
-        if 'avatar' in img_node.get('class', '')+img_node.get('id', '') + img_node.get('src', '').lower():
+        if 'avatar' in ' '.join(img_node.get('class', []))+img_node.get('id', '') + img_node.get('src', '').lower():
             logger.info('Maybe this is an avatar(%s)', img_node['src'])
             return
         self.base_url = base_url
@@ -353,7 +353,7 @@ class HtmlContentExtractor(object):
                 continue
             if not article_begun and HtmlContentExtractor.is_link_intensive(p):
                 continue
-            ps = p.get_text(separator=u' ', strip=True, types=(NavigableString,))
+            ps = p.text  # separator='', strip=False
             if not article_begun and len(tokenize(ps)) < 15:
                 # Too short to be a paragraph
                 continue
@@ -381,7 +381,7 @@ class HtmlContentExtractor(object):
         if partial_summaries:
             return ''.join(partial_summaries[:-1])  # The last one is a space
         logger.info('Nothing qualifies a paragraph, get a jam')
-        text = escape(self.article.get_text(separator=u' ', strip=True, types=(NavigableString,)))
+        text = escape(self.article.text)
         return text[:max_length]+' ...' if len(text) > max_length else text
 
     def get_top_image(self):
