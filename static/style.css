@@ -67,6 +67,15 @@ body {
     padding: 5px 0 0 5px;
 }
 
+.post-item .post-summary pre {
+    font-size: 1em;
+    background-color: #f5f5d5;
+    line-height: 1.42857143;
+    color: #333;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    border: none;
+}
+
 .modal-dialog {
     max-width: 600px;
 }
