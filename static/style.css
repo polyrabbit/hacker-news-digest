@@ -26,7 +26,6 @@ body {
 .post-item .post-title {
     display: block;
     text-decoration: none;
-    padding: 3px 10px;
     font-weight: normal;
     line-height: 42px;
     height: auto;
@@ -44,12 +43,11 @@ body {
     text-decoration: none;
 }
 
-.post-item .post-meta .next-to-icon {
-    margin-left: -10px;
+.post-item .post-meta .icon {
+    margin-left: 10px
 }
 
 .post-item .post-summary {
-    padding: 0px 5px;
     font-size: 1.1em;
     line-height: 1.5em;
     margin: 0 0 1.5em;
@@ -57,7 +55,7 @@ body {
 
 .post-item .post-summary .feature-image {
     border-radius: 7px;
-    margin-top:5px;
+    margin-top: 5px;
     margin-right: 8px;
     border: 1px solid #F7F7F7;
     float: left;
