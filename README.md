@@ -1,4 +1,4 @@
-Hacker News Digest
+[Hacker News Digest](http://www.hackernews.im/)
 ==================
 
 [![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
