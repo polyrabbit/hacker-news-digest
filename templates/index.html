@@ -53,7 +53,7 @@
 
     <div class="post-meta">
         {% if news.score %}
-            <span title="score">
+            <span title="Score">
                 <i class="icon icon-heart" style="color: red;"></i>
                 <span>
                     {{ news.score }}
@@ -61,7 +61,7 @@
             </span>
         {% endif %}
         {% if news.author_link %}
-            <span class="author-link" title="author">
+            <span class="author-link" title="Author">
                 <a href="{{ news.author_link }}" rel="author" target="_blank">
                     <i class="icon icon-user"></i>
                     <span>
@@ -70,12 +70,12 @@
                 </a>
             </span>
         {% endif %}
-        <span title="submit time">
+        <span title="Submit time">
             <i class="icon icon-calendar"></i>
             <span class="last-updated">{{ news.submit_time }}</span>
         </span>
         {% if news.comment_url %}
-            <span class="comment" title="comment">
+            <span class="comment" title="Comments">
                 <a href="{{ news.comment_url }}" rel="comment" target="_blank">
                     <i class="icon icon-comments"></i>
                     {{ news.comment_cnt }}
@@ -83,7 +83,7 @@
             </span>
         {% endif %}
         {% if news.comhead %}
-            <span title="host">
+            <span title="Host">
                 <i class="icon icon-external-link"></i>
                 <span>{{ news.comhead }}</span>
             </span>
