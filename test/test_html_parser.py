@@ -52,6 +52,9 @@ class PageContentExtractorTestCase(TestCase):
     #     img = WebImage('http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/', BS(html_doc).img)
     #     self.assertTrue(img.is_possible)
 
+    def test_non_top_image(self):
+        self.assertIsNone(HtmlContentExtractor('').get_top_image())
+
     def test_get_summary_from_all_short_paragraph(self):
         html_doc = u"""
         <p>1<h1>2</h1><div>3</div><h1>4</h1></p>
@@ -61,9 +64,8 @@ class PageContentExtractorTestCase(TestCase):
     def test_get_summary_from_short_and_long_paragraph(self):
         html_doc = u"""
         <h3 class="post-name">HTTP/2: The Long-Awaited Sequel</h3>
-        <span class="value">Thursday, October 9, 2014 2:01 AM</span>
+        <span class="post-date">Thursday, October 9, 2014 2:01 AM</span>
         <h2>Ready to speed things up? </h2>
-        <div>Ready to speed things up? </div>
         <p>Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due.</p>
         <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.</p>
         """
@@ -83,6 +85,7 @@ class PageContentExtractorTestCase(TestCase):
         # print HtmlContentExtractor(html_doc).get_summary(10)
         self.assertEqual(HtmlContentExtractor(html_doc).get_summary(10), '<pre><code>%s</code></pre>' % '\n'.join(['11']*5))
 
+    @unittest.skip('No need for now')
     def test_get_summary_with_link_intensive(self):
         html_doc = '<div><p><a href="whatever">' + '1 '*500 + '</a></p>'+\
                    '<p>'+'2 '*500+'</p></div>'
@@ -180,9 +183,9 @@ and supported by community <em>donations</em>.</p></article>
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
-        ar = legendary_parser_factory('http://www.hackernews.im')
-        # print ar.article
-        print ar.get_summary()
+        ar = legendary_parser_factory('http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
+        print ar.article
+        # print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

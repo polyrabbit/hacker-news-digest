@@ -4,10 +4,12 @@ import re
 import logging
 from urlparse import urljoin
 from collections import defaultdict
+from itertools import chain
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
 import imgsz
+from null import Null
 from .utils import tokenize, string_inclusion_ratio
 from backports.functools_lru_cache import lru_cache
 from markupsafe import escape
@@ -137,7 +139,7 @@ class HtmlContentExtractor(object):
         doc = BS(html)
 
         self.title = (doc.title.string if doc.title else u'') or u''
-        self.article = doc
+        self.article = Null
         self.base_url = base_url
         self.purge(doc)
         self.find_main_content(doc)
@@ -155,16 +157,15 @@ class HtmlContentExtractor(object):
         # First we give a high point to nodes who have
         # a descendant that is a header tag and matches title most
         def is_article_header(node):
-            if re.match(r'h\d+|td', node.name):
-                header_txt = node.get_text(separator=u' ', strip=True)
-                if string_inclusion_ratio(header_txt, self.title) > .85:
+            if re.match(r'h\d+|td', node.name, re.I):
+                if string_inclusion_ratio(node.text, self.title) > .85:
                     return True
             return False
 
         parents = []
         for node in doc.find_all(is_article_header):
             # Give eligible node a high score
-            logger.info('Found an eligible title: %s', node.get_text(separator=u' ', strip=True))
+            logger.info('Found an eligible title: %s', node.text)
             # self.scores[node] = 1000
             for parent in node.parents:
                 if not parent or parent is doc:
@@ -346,45 +347,35 @@ class HtmlContentExtractor(object):
         len_of_summary = 0
         article_begun = False
 
-        for p in self.deepest_block_element_first_search(self.article):
-            if not article_begun and p in parents:
-                continue
-            # Filter out something like 'November 15, 2014 by XXX'
-            if not article_begun and re.search(r'meta|date|time|author|share|caption|clear|fix|tag|manage|info|social',
-                '%s %s' % (p.get('id', ''), ' '.join(p.get('class', []))), re.I):
-                continue
-            if not article_begun and HtmlContentExtractor.is_link_intensive(p):
-                continue
-            ps = p.text  # separator='', strip=False
-            if not article_begun and len(tokenize(ps)) < 15:
-                # Too short to be a paragraph
-                continue
-            article_begun = True
-            # Preserved tags should be considered atom
-            if p.name in preserved_tags:
-                p_str, p_str_len = self.cut_content_to_length(p, max_length-len_of_summary)
-                partial_summaries.append(p_str)
-                len_of_summary += p_str_len
-                if len_of_summary >= max_length:
-                    return ''.join(partial_summaries)
-            else:
-                if len_of_summary + len(ps) > max_length:
-                    for word in tokenize(ps):
+        def is_meta_string(string_tag):
+            for tag in string_tag.parents:
+                if tag is self.article:
+                    break
+                for attr in chain(tag.get('class', []), [tag.get('id', '')], [tag.name]):
+                    if re.search(r'meta|date|time|author|share|caption|attr|title|header|'
+                                 'clear|fix|tag|manage|info|social|avatar|small',
+                                   attr, re.I):
+                        return True
+            return False
+
+        for string in self.article.strings:
+            if not is_meta_string(string):
+                if not string.strip():
+                    continue
+                if string_inclusion_ratio(string, self.title) > .85:
+                    continue
+                string = re.sub(u'[ 　]{2,}', ' ', string)  # squeeze spaces
+                if len_of_summary + len(string) > max_length:
+                    for word in tokenize(string):
                         partial_summaries.append(escape(word))
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
-                            partial_summaries.append('...')
+                            partial_summaries.append(' ...')
                             return ''.join(partial_summaries)
                 else:
-                    partial_summaries.append(escape(ps))
-                    len_of_summary += len(ps)
-            partial_summaries.append(' ')
-
-        if partial_summaries:
-            return ''.join(partial_summaries[:-1])  # The last one is a space
-        logger.info('Nothing qualifies a paragraph, get a jam')
-        text = escape(self.article.text)
-        return text[:max_length]+' ...' if len(text) > max_length else text
+                    partial_summaries.append(escape(string))
+                    len_of_summary += len(string)
+        return ''.join(partial_summaries)
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):
@@ -392,5 +383,6 @@ class HtmlContentExtractor(object):
             if img.is_possible:
                 logger.info('Found a top image %s', img.url)
                 return img
+        logger.info('No top image is found on %s', self.base_url)
         return None
 
