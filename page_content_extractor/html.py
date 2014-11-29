@@ -147,11 +147,17 @@ class HtmlContentExtractor(object):
         # clean ups
         # self.clean_up_html()
         self.relative_path2_abs_url()
-        # print self.parents_of_article_header.cache_info()
+
+    def __del__(self):
+        # TODO won't call
+        logger.info('calc_effective_text_len: %s, parents_of_article_header: %s, calc_img_area_len: %s',
+            self.calc_effective_text_len.cache_info(),
+            self.parents_of_article_header.cache_info(),
+            self.calc_img_area_len.cache_info())
 
     def set_title_parents_point(self, doc):
         for parent in self.parents_of_article_header(doc):
-            parent.score = self.calc_effective_text_len(parent) * 2
+            parent.score = parent.score or 0 + self.calc_effective_text_len(parent) * 2
 
     def parents_of_article_header(self, doc):
         # First we give a high point to nodes who have
@@ -342,40 +348,50 @@ class HtmlContentExtractor(object):
 
     def get_summary(self, max_length=300):
         preserved_tags = {'pre'}
-        parents = set(self.parents_of_article_header(self.article))
-        partial_summaries = []
-        len_of_summary = 0
-        article_begun = False
 
-        def is_meta_string(string_tag):
-            for tag in string_tag.parents:
-                if tag is self.article:
-                    break
-                for attr in chain(tag.get('class', []), [tag.get('id', '')], [tag.name]):
-                    if re.search(r'meta|date|time|author|share|caption|attr|title|header|'
-                                 'clear|fix|tag|manage|info|social|avatar|small',
-                                   attr, re.I):
-                        return True
+        def is_meta_tag(node):
+            for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
+                if re.search(r'meta|date|time|author|share|caption|attr|title|header|'
+                             'clear|fix|tag|manage|info|social|avatar|small|sidebar|views',
+                             attr, re.I):
+                    return True
             return False
 
-        for string in self.article.strings:
-            if not is_meta_string(string):
-                if not string.strip():
-                    continue
-                if string_inclusion_ratio(string, self.title) > .85:
-                    continue
-                string = re.sub(u'[ 　]{2,}', ' ', string)  # squeeze spaces
-                if len_of_summary + len(string) > max_length:
-                    for word in tokenize(string):
-                        partial_summaries.append(escape(word))
-                        len_of_summary += len(word)
-                        if len_of_summary > max_length:
-                            partial_summaries.append(' ...')
-                            return ''.join(partial_summaries)
-                else:
-                    partial_summaries.append(escape(string))
-                    len_of_summary += len(string)
-        return ''.join(partial_summaries)
+        def summarize(node, max_length):
+            partial_summaries = []
+
+            for child in node.children:
+                if isinstance(child, Tag):
+                    if is_meta_tag(child) and \
+                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
+                        continue
+                    if child.name in {'div', 'p'} and self.is_link_intensive(child) and \
+                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
+                        continue
+                    partial_summaries.append(summarize(child, max_length))
+                    max_length -= len(partial_summaries[-1])
+                    if max_length < 0:
+                        break
+                elif type(child) is NavigableString:
+                    if not child.strip():
+                        continue
+                    if re.match(r'h\d+|td', child.parent.name, re.I) and \
+                        string_inclusion_ratio(child, self.title) > .85:
+                        continue
+                    child = re.sub(u'[ 　]{2,}', ' ', child)  # squeeze spaces
+                    if len(child) > max_length:
+                        for word in tokenize(child):
+                            partial_summaries.append(escape(word))
+                            max_length -= len(partial_summaries[-1])
+                            if max_length < 0:
+                                partial_summaries.append(' ...')
+                                return ''.join(partial_summaries)
+                    else:
+                        partial_summaries.append(escape(child))
+                        max_length -= len(partial_summaries[-1])
+            return ''.join(partial_summaries)
+
+        return summarize(self.article, max_length)
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):

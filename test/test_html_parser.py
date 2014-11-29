@@ -120,9 +120,9 @@ class PageContentExtractorTestCase(TestCase):
         self.assertEqual(article.title, '')
 
     def test_deepest_block_element_first_search(self):
-        html_doc = '<div><p>1</p><p>2</p><p>3</p></div>'
+        html_doc = '<div><p>1</p><p>2</p><p>3</p>4</div>'
         func = lambda t: HtmlContentExtractor.deepest_block_element_first_search(BS(t))
-        self.assertListEqual(map(lambda n: n.text, list(func(html_doc))), ['1', '2', '3'])
+        self.assertListEqual(map(lambda n: n.text, list(func(html_doc))), ['1', '2', '3', '4'])
         # Test one without descendant blocks
         html_doc = '<div>1</div>'
         self.assertListEqual(map(lambda n: n.text, list(func(html_doc))), ['1'])
@@ -168,24 +168,32 @@ and supported by community <em>donations</em>.</p></article>
         """
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
 
+    def test_article_with_info_attr(self):
+        ar = legendary_parser_factory('http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
+        self.assertTrue(unicode(ar.article).startswith('<div id="content">'))
+        self.assertTrue(unicode(ar.get_summary()).startswith(u'2014年10月18日'))
+        self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
+
     def test_common_sites_forbes(self):
         ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
         self.assertTrue(unicode(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
+        print ar.get_summary()
         self.assertTrue(unicode(ar.get_summary()).startswith('Kind of like every baseball player will try'))
 
     def test_common_sites_ruanyifeng(self):
         ar = legendary_parser_factory('http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
+        self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
+        print ar.get_summary()
 
     # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
-        ar = legendary_parser_factory('http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
-        print ar.article
-        # print ar.get_summary()
+        ar = legendary_parser_factory('http://www.jianshu.com/p/25cdc7d608bb')
+        print ar.get_summary()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling
