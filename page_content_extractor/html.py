@@ -129,7 +129,7 @@ class HtmlContentExtractor(object):
     def __init__(self, html, base_url=''):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
         self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
-        self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
+        # self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
         self.parents_of_article_header = lru_cache(1024)(self.parents_of_article_header)
 
         self.max_score = -1
@@ -148,12 +148,12 @@ class HtmlContentExtractor(object):
         # self.clean_up_html()
         self.relative_path2_abs_url()
 
-    def __del__(self):
-        # TODO won't call
-        logger.info('calc_effective_text_len: %s, parents_of_article_header: %s, calc_img_area_len: %s',
-            self.calc_effective_text_len.cache_info(),
-            self.parents_of_article_header.cache_info(),
-            self.calc_img_area_len.cache_info())
+    # def __del__(self):
+    #     # TODO won't call
+    #     logger.info('calc_effective_text_len: %s, parents_of_article_header: %s, calc_img_area_len: %s',
+    #         self.calc_effective_text_len.cache_info(),
+    #         self.parents_of_article_header.cache_info(),
+    #         self.calc_img_area_len.cache_info())
 
     def set_title_parents_point(self, doc):
         for parent in self.parents_of_article_header(doc):
@@ -230,6 +230,8 @@ class HtmlContentExtractor(object):
         Calc the total the length of text in a child, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
+        if node.text_len is not None:
+            return node.text_len
         text_len = 0
         for child in node.children:
             if isinstance(child, Tag):
@@ -241,9 +243,8 @@ class HtmlContentExtractor(object):
             elif type(child) is NavigableString:
                 text_len += len(child.string.strip()) + child.string.count(',') + \
                             child.string.count(u'，')  # Chinese comma
-        if self.has_negative_effect(node):
-            return text_len * .2
-        return text_len
+        node.text_len = text_len * .2 if self.has_negative_effect(node) else text_len
+        return node.text_len
 
     def calc_img_area_len(self, cur_node):
         img_len = 0
@@ -351,7 +352,7 @@ class HtmlContentExtractor(object):
 
         def is_meta_tag(node):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
-                if re.search(r'meta|date|time|author|share|caption|attr|title|header|'
+                if re.search(r'meta|date|time|author|share|caption|attr|title|header|h\d+|'
                              'clear|fix|tag|manage|info|social|avatar|small|sidebar|views',
                              attr, re.I):
                     return True
