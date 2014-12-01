@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 
 # Beautifulsoup will convert all tag names to lower-case
 ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe', 'head')
+block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
+    'body', 'li', 'br', 'map', 'button', 'object', 'canvas', 'ol', 'caption',
+    'output', 'col', 'p', 'colgroup', 'pre', 'dd', 'progress', 'div', 'section',
+    'dl', 'table', 'dt', 'tbody', 'embed', 'textarea', 'fieldset', 'tfoot', 'figcaption',
+    'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'video'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
@@ -352,7 +358,7 @@ class HtmlContentExtractor(object):
 
         def is_meta_tag(node):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
-                if re.search(r'meta|date|time|author|share|caption|attr|title|header|h\d+|'
+                if re.search(r'meta|date|time|author|share|caption|attr|title|header|'
                              'clear|fix|tag|manage|info|social|avatar|small|sidebar|views|'
                             'created',
                              attr, re.I):
@@ -367,8 +373,9 @@ class HtmlContentExtractor(object):
                     if is_meta_tag(child) and \
                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
                         continue
-                    if child.name in {'div', 'p'} and self.is_link_intensive(child) and \
-                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
+                    if child.name in block_tags and \
+                            (self.is_link_intensive(child) or
+                                 len(tokenize(child.text)) < 15):  # Too short to be a paragraph
                         continue
                     partial_summaries.append(summarize(child, max_length))
                     max_length -= len(partial_summaries[-1])
@@ -378,7 +385,7 @@ class HtmlContentExtractor(object):
                     if not child.strip():
                         continue
                     if re.match(r'h\d+|td', child.parent.name, re.I) and \
-                        string_inclusion_ratio(child, self.title) > .85:
+                            string_inclusion_ratio(child, self.title) > .85:
                         continue
                     child = re.sub(u'[ 　]{2,}', ' ', child)  # squeeze spaces
                     if len(child) > max_length:

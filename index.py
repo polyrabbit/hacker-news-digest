@@ -2,7 +2,7 @@ import logging
 
 from flask import (
     Flask, render_template, abort, request, send_file,
-    Response
+    Response, jsonify
 )
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -67,13 +67,14 @@ def update(what):
     from hackernews import HackerNews
     from startupnews import StartupNews
     force = 'force' in request.args
+    stats = {}
     if what == 'hackernews' or what is None:
-        HackerNews().update(force)
+        stats['hackernews'] = HackerNews().update(force)
         models.LastUpdated.update('hackernews')
     if what == 'startupnews' or what is None:
-        StartupNews().update(force)
+        stats['startupnews'] = StartupNews().update(force)
         models.LastUpdated.update('startupnews')
-    return 'Great success!'
+    return jsonify(**stats)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=app.config['PORT'])
