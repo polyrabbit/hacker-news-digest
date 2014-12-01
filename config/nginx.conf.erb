@@ -1,3 +1,4 @@
+# https://github.com/ryandotsmith/nginx-buildpack
 daemon off;
 #Heroku dynos have at least 4 cores.
 worker_processes <%= ENV['NGINX_WORKERS'] || 4 %>;
@@ -20,7 +21,9 @@ http {
 
     server_tokens off;
 
-	access_log logs/nginx/access.log;
+    log_format heroku_log '$http_x_forwarded_for - [$time_local] ' '"$request" $status $body_bytes_sent "$http_referer" ' '"$http_user_agent"';
+
+	access_log logs/nginx/access.log heroku_log;
 	error_log logs/nginx/error.log;
 
 	include mime.types;
