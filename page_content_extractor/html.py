@@ -358,9 +358,9 @@ class HtmlContentExtractor(object):
 
         def is_meta_tag(node):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
-                if re.search(r'meta|date|time|author|share|caption|attr|title|header|name|'
+                if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
                              'clear|fix|tag|manage|info|social|avatar|small|sidebar|views|'
-                            'created',
+                            'created|name',
                              attr, re.I):
                     return True
             return False
