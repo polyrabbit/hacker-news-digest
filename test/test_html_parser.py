@@ -174,10 +174,16 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2014年10月18日'))
         self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
 
+    def test_article_title_donot_match_doc_title(self):
+        ar = legendary_parser_factory('http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
+        summary = unicode(ar.get_summary())
+        print `summary`
+        self.assertTrue(summary.startswith(u'A material that simultaneously'))
+        self.assertTrue(summary.endswith(u'...'))
+
     def test_common_sites_forbes(self):
         ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
         self.assertTrue(unicode(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
-        print ar.get_summary()
         self.assertTrue(unicode(ar.get_summary()).startswith('Kind of like every baseball player will try'))
 
     def test_common_sites_ruanyifeng(self):
@@ -192,7 +198,7 @@ and supported by community <em>donations</em>.</p></article>
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
-        ar = legendary_parser_factory('http://swampdragon.net/')
+        ar = legendary_parser_factory('https://community.emc.com/message/852040#852040')
         print ar.get_summary()
         # print ar.article
 

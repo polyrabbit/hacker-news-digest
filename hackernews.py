@@ -47,6 +47,7 @@ class HackerNews(object):
                     self.model_class.add(**news)
                     stats['added'] += 1
             except Exception as e:
+                logger.exception(e)
                 stats['errors'].append(e)
 
         if not force:

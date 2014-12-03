@@ -5,6 +5,7 @@ import logging
 from urlparse import urljoin
 from collections import defaultdict
 from itertools import chain
+from math import sqrt
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 import requests
 
@@ -25,7 +26,7 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
     'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'video'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
-    'shoutbox|sidebar|sponsor|vote|meta', re.IGNORECASE)
+    'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
     'section|text|preview|view|story-body', re.IGNORECASE)
 
@@ -136,7 +137,6 @@ class HtmlContentExtractor(object):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
         self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
         # self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
-        self.parents_of_article_header = lru_cache(1024)(self.parents_of_article_header)
 
         self.max_score = -1
         # dict uses __eq__ to identify key, while in BS two different nodes
@@ -162,10 +162,6 @@ class HtmlContentExtractor(object):
     #         self.calc_img_area_len.cache_info())
 
     def set_title_parents_point(self, doc):
-        for parent in self.parents_of_article_header(doc):
-            parent.score = parent.score or 0 + self.calc_effective_text_len(parent) * 2
-
-    def parents_of_article_header(self, doc):
         # First we give a high point to nodes who have
         # a descendant that is a header tag and matches title most
         def is_article_header(node):
@@ -174,7 +170,6 @@ class HtmlContentExtractor(object):
                     return True
             return False
 
-        parents = []
         for node in doc.find_all(is_article_header):
             # Give eligible node a high score
             logger.info('Found an eligible title: %s', node.text)
@@ -182,9 +177,8 @@ class HtmlContentExtractor(object):
             for parent in node.parents:
                 if not parent or parent is doc:
                     break
-                # Use array instead of yield here to best utilize cache
-                parents.append(parent)
-        return parents
+                parent.score = parent.score or 0 + \
+                           self.calc_effective_text_len(parent) * sqrt(len(node.text))
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
@@ -200,7 +194,7 @@ class HtmlContentExtractor(object):
         #TODO take image as a factor
         img_len = 0
         impact_factor = 2 if self.has_positive_effect(node) else 1
-        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth**1.4)
+        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth**1.5)
         if node.score > self.max_score:
             self.max_score = node.score
             self.article = node
@@ -308,26 +302,7 @@ class HtmlContentExtractor(object):
         link_text = 0
         for a in node.find_all('a'):
             link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
-        return float(link_text) / all_text >= .5
-
-    @staticmethod
-    def deepest_block_element_first_search(node):
-        # TODO add the **code** tag
-        block_elements = ['article', 'div', 'p', 'pre', 'blockquote', 'cite', 'section',
-                 'blockquote', 'input', 'legend', 'tr', 'th', 'textarea', 'thead', 'tfoot']
-
-        blocks = node.find_all(block_elements)
-        if not blocks:
-            # We have reached the farthest
-            yield node
-        # Else we continue travelling down
-        for p in blocks:
-            if p.founded:
-                continue
-            p.founded = True
-            # Miss yield from here
-            for grand_p in HtmlContentExtractor.deepest_block_element_first_search(p):
-                yield grand_p
+        return float(link_text) / all_text >= .65
 
     @staticmethod
     def cut_content_to_length(node, length):
@@ -360,7 +335,7 @@ class HtmlContentExtractor(object):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
                 if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
                              'clear|fix|tag|manage|info|social|avatar|small|sidebar|views|'
-                            'created|name',
+                            'created|name|related',
                              attr, re.I):
                     return True
             return False
