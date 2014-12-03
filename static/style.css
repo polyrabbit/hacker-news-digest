@@ -63,6 +63,7 @@ body {
 
 .post-item .post-summary .summary-text {
     padding: 5px 0 0 5px;
+    word-wrap: break-word;
 }
 
 .post-item .post-summary pre {
