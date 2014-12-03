@@ -1,7 +1,6 @@
 #coding: utf-8
 import re
 import logging
-from urlparse import urljoin
 
 import requests
 
@@ -31,44 +30,38 @@ class EmbeddableExtractor(object):
             raise ParseError('Invalid youku video url(%s)' % url)
         # TODO try bootstrap embed-responsive-item
         # see http://getbootstrap.com/components/#navbar-component-alignment
-        return """<iframe width="560" height="315" """\
-        """src="http://player.youku.com/embed/%s" frameborder="0" """\
+        return """<iframe src="http://player.youku.com/embed/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def youtube_parser(self, url):
         vid_mat = re.search(r'www\.youtube\.com/watch\?v=([^&]+)', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid youtube video url(%s)' % url)
-        return """<iframe width="560" height="315" """\
-        """src="//www.youtube.com/embed/%s" frameborder="0" """\
+        return """<iframe src="//www.youtube.com/embed/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def vimeo_parser(self, url):
         vid_mat = re.search(r'vimeo\.com/(\d+)', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid vimeo video url(%s)' % url)
-        return """<iframe width="560" height="315" """\
-        """src="//player.vimeo.com/video/%s" frameborder="0" """\
+        return """<iframe src="//player.vimeo.com/video/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def dailymotion_parser(self, url):
         vid_mat = re.search(r'www\.dailymotion\.com/video/([a-zA-Z0-9]+)_[-\w]+', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid dailymotion video url(%s)' % url)
-        return """<iframe width="560" height="315" """\
-        """src="//www.dailymotion.com/embed/video/%s" frameborder="0" """\
+        return """<iframe src="//www.dailymotion.com/embed/video/%s" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def tudou_parser(self, url):
         vid_mat = re.search(r'www\.tudou\.com/albumplay/(\w+?)/(\w+?)\.html', url, re.I)
         if vid_mat:
-            return """<iframe width="560" height="315" """\
-            """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
+            return """<iframe src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """\
             """allowfullscreen></iframe>""" % vid_mat.group(2)
         vid_mat = re.search(r'www\.tudou\.com/programs/view/([^/]+)/', url, re.I)
         if vid_mat:
-            return """<iframe width="560" height="315" """ \
-                   """src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """ \
+            return """<iframe src="http://www.tudou.com/programs/view/html5embed.action?code=%s" frameborder="0" """ \
                    """allowfullscreen></iframe>""" % vid_mat.group(1)
         raise ParseError('Invalid tudou video url(%s)' % url)
 
@@ -76,16 +69,14 @@ class EmbeddableExtractor(object):
         vid_mat = re.search(r'www\.ustream\.tv/recorded/(\d+)', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid ustream video url(%s)' % url)
-        return """<iframe width="560" height="315" """\
-        """src="http://www.ustream.tv/embed/recorded/%s?v=3&amp;wmode=direct" frameborder="0" """\
+        return """<iframe src="http://www.ustream.tv/embed/recorded/%s?v=3&amp;wmode=direct" frameborder="0" """\
         """allowfullscreen></iframe>""" % vid_mat.group(1)
 
     def bloomberg_parser(self, url):
         vid_mat = re.search(r'www\.bloomberg\.com/video/[-\w]+?-(\w+)\.', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid bloomberg video url(%s)' % url)
-        return """<object data='http://www.bloomberg.com/video/embed/%s"""\
-        """?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>""" % vid_mat.group(1)
+        return """<object data='http://www.bloomberg.com/video/embed/%s'></object>""" % vid_mat.group(1)
 
     def slideshare_parser(self, url):
         r = requests.get('http://www.slideshare.net/api/oembed/2', params={'url': url, 'format': 'json'})
@@ -95,6 +86,6 @@ class EmbeddableExtractor(object):
     def pdf_parser(self, url):
         if not re.search(r'//pdf.yt/d/\w+', url, re.I):
             raise ParseError('Invalid pdf.yt embeddable url(%s)' % url)
-        return '<iframe src="{}/embed?sparse=0" style="width: 100%; height: 700px; border: 0px;" allowfullscreen></iframe>'.format(url)
+        return '<iframe src="{}/embed?sparse=0" allowfullscreen></iframe>'.format(url)
 
 embeddables = frozenset(name.split('_')[0] for name in dir(EmbeddableExtractor) if name.endswith('_parser'))
