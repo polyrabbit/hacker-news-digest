@@ -348,11 +348,16 @@ class HtmlContentExtractor(object):
                     if is_meta_tag(child) and \
                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
                         continue
-                    if child.name in block_tags and \
-                            (self.is_link_intensive(child) or
-                                 len(tokenize(child.text)) < 15):  # Too short to be a paragraph
-                        continue
-                    partial_summaries.append(summarize(child, max_length))
+                    if child.name in block_tags:
+                        if self.is_link_intensive(child) or \
+                                len(tokenize(child.text)) < 15:  # Too short to be a paragraph
+                            continue
+                        if partial_summaries:
+                            # Put a space between two blocks
+                            partial_summaries.append(' ')
+                        partial_summaries.append(summarize(child, max_length).strip())
+                    else:
+                        partial_summaries.append(summarize(child, max_length))
                     max_length -= len(partial_summaries[-1])
                     if max_length < 0:
                         break
