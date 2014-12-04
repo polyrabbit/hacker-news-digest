@@ -182,8 +182,8 @@ class HtmlContentExtractor(object):
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
-            # Double their length
-            node.score = node.score or 0 + self.calc_effective_text_len(node)
+            # Should be less than most titles but better than short ones
+            node.score = node.score or 0 + self.calc_effective_text_len(node) * 2
 
     def calc_node_score(self, node, depth=.1):
         """
