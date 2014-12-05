@@ -349,8 +349,7 @@ class HtmlContentExtractor(object):
                             len(tokenize(child.text)) < 15:  # Too short to be a paragraph
                         continue
                     if child.name in block_tags:
-                        if not self.summary_begun and (self.is_link_intensive(child) or \
-                                len(tokenize(child.text)) < 15):  # Too short to be a paragraph
+                        if self.is_link_intensive(child) or len(tokenize(child.text)) < 15:
                             continue
                         # Put a space between two blocks
                         partial_summaries.append(' ')
