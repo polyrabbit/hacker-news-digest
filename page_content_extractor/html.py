@@ -345,12 +345,12 @@ class HtmlContentExtractor(object):
 
             for child in node.children:
                 if isinstance(child, Tag):
-                    if is_meta_tag(child) and \
+                    if not self.summary_begun and is_meta_tag(child) and \
                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
                         continue
                     if child.name in block_tags:
-                        if self.is_link_intensive(child) or \
-                                len(tokenize(child.text)) < 15:  # Too short to be a paragraph
+                        if not self.summary_begun and (self.is_link_intensive(child) or \
+                                len(tokenize(child.text)) < 15):  # Too short to be a paragraph
                             continue
                         if partial_summaries:
                             # Put a space between two blocks
@@ -367,7 +367,8 @@ class HtmlContentExtractor(object):
                     if re.match(r'h\d+|td', child.parent.name, re.I) and \
                             string_inclusion_ratio(child, self.title) > .85:
                         continue
-                    child = re.sub(u'[ 　]{2,}', ' ', child)  # squeeze spaces
+                    self.summary_begun = True
+                    child = re.sub(u'[ 　]{2,}', u' ', child)  # squeeze spaces
                     if len(child) > max_length:
                         for word in tokenize(child):
                             partial_summaries.append(escape(word))
@@ -380,6 +381,7 @@ class HtmlContentExtractor(object):
                         max_length -= len(partial_summaries[-1])
             return ''.join(partial_summaries)
 
+        self.summary_begun = False  # miss the nonlocal feature
         return summarize(self.article, max_length)
 
     def get_top_image(self):

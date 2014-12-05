@@ -177,8 +177,13 @@ and supported by community <em>donations</em>.</p></article>
     def test_article_title_donot_match_doc_title(self):
         ar = legendary_parser_factory('http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
         summary = unicode(ar.get_summary())
-        print `summary`
         self.assertTrue(summary.startswith(u'A material that simultaneously'))
+        self.assertTrue(summary.endswith(u'...'))
+
+    def test_content_with_meta_in_attr(self):
+        ar = legendary_parser_factory('http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
+        summary = unicode(ar.get_summary())
+        self.assertTrue(summary.startswith(u'The capture of transient scenes'))
         self.assertTrue(summary.endswith(u'...'))
 
     def test_common_sites_forbes(self):
@@ -194,12 +199,31 @@ and supported by community <em>donations</em>.</p></article>
         print ar.get_summary()
 
     # @unittest.skip('local test only')
+    def test_shit(self):
+        html_doc = u"""
+        <li id="ref1">
+            <span class="vcard author">
+                <span class="fn">Fuller, P. W. W.</span>
+            </span>
+            <span class="title">An introduction to high speed photography and photonics</span>.
+            <span class="source-title">Imaging Sci. J.</span> <span class="volume">57</span>,
+            <span class="start-page">293</span>–
+            <span class="end-page">302</span> (<span class="year">2009</span>)
+            <ul class="cleared">
+                <li><a href="http://dx.doi.org/10.1179/136821909X12490326247524">Article</a></li>
+            </ul>
+        </li>
+        """
+        ar = HtmlContentExtractor(html_doc)
+        print ar.get_summary()
+
+    # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('http://lists.warhead.org.uk/pipermail/iwe/2005-July/000130.html')
+        ar = legendary_parser_factory('http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
         print ar.get_summary()
         # print ar.article
 
