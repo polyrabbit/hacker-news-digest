@@ -334,7 +334,7 @@ class HtmlContentExtractor(object):
         def is_meta_tag(node):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
                 if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
-                             'tag|manage|info|social|avatar|small|sidebar|views|'
+                             'clear|tag|manage|info|social|avatar|small|sidebar|views|'
                             'created|name|related',
                              attr, re.I):
                     return True
@@ -346,15 +346,14 @@ class HtmlContentExtractor(object):
             for child in node.children:
                 if isinstance(child, Tag):
                     if not self.summary_begun and is_meta_tag(child) and \
-                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .5:
+                            len(tokenize(child.text)) < 15:  # Too short to be a paragraph
                         continue
                     if child.name in block_tags:
                         if not self.summary_begun and (self.is_link_intensive(child) or \
                                 len(tokenize(child.text)) < 15):  # Too short to be a paragraph
                             continue
-                        if partial_summaries:
-                            # Put a space between two blocks
-                            partial_summaries.append(' ')
+                        # Put a space between two blocks
+                        partial_summaries.append(' ')
                         partial_summaries.append(summarize(child, max_length).strip())
                     else:
                         partial_summaries.append(summarize(child, max_length))
@@ -382,7 +381,7 @@ class HtmlContentExtractor(object):
             return ''.join(partial_summaries)
 
         self.summary_begun = False  # miss the nonlocal feature
-        return summarize(self.article, max_length)
+        return summarize(self.article, max_length).strip()
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):
