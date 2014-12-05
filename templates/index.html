@@ -99,7 +99,7 @@
         </a>
     {% endif %}
     {% if news.summary %}
-        <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9{% else %}summary-text{% endif %}">
+        <div class="{% if news.summary.startswith(('<iframe', '<object')) %}embed-responsive embed-responsive-16by9{% else %}summary-text{% endif %}">
             {{ news.summary|safe }}
         </div>
     {% endif %}

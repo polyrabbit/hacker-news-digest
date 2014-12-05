@@ -172,7 +172,7 @@ class HtmlContentExtractor(object):
 
         for node in doc.find_all(is_article_header):
             # Give eligible node a high score
-            logger.info('Found an eligible title: %s', node.text)
+            logger.info('Found an eligible title: %s', node.text.strip())
             # self.scores[node] = 1000
             for parent in node.parents:
                 if not parent or parent is doc:
