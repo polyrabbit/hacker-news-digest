@@ -44,7 +44,7 @@ class EmbeddableParserTestCase(TestCase):
     def test_bloomberg_parser(self):
         parser = EmbeddableExtractor('bloomberg', 'http://www.bloomberg.com/video/paul-graham-and-jessica-livingston-studio-1-0-10-09-J5e3sjvtRrys6nd286HWUA.html')
         self.assertEqual(parser.get_summary(),
-                "<object data='http://www.bloomberg.com/video/embed/J5e3sjvtRrys6nd286HWUA'></object>")
+                "<object data='http://www.bloomberg.com/video/embed/J5e3sjvtRrys6nd286HWUA?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>")
 
     def test_slideshare_parser(self):
         parser = EmbeddableExtractor('slideshare', 'http://www.slideshare.net/earnestagency/the-yes-factor')

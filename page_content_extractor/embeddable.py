@@ -76,7 +76,7 @@ class EmbeddableExtractor(object):
         vid_mat = re.search(r'www\.bloomberg\.com/video/[-\w]+?-(\w+)\.', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid bloomberg video url(%s)' % url)
-        return """<object data='http://www.bloomberg.com/video/embed/%s'></object>""" % vid_mat.group(1)
+        return """<object data='http://www.bloomberg.com/video/embed/%s?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>""" % vid_mat.group(1)
 
     def slideshare_parser(self, url):
         r = requests.get('http://www.slideshare.net/api/oembed/2', params={'url': url, 'format': 'json'})
