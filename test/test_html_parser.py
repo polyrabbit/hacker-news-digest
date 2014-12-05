@@ -177,6 +177,7 @@ and supported by community <em>donations</em>.</p></article>
     def test_article_title_donot_match_doc_title(self):
         ar = legendary_parser_factory('http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
         summary = unicode(ar.get_summary())
+        print summary
         self.assertTrue(summary.startswith(u'A material that simultaneously'))
         self.assertTrue(summary.endswith(u'...'))
 
@@ -196,7 +197,6 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
         self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
         self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
-        print ar.get_summary()
 
     # @unittest.skip('local test only')
     def test_shit(self):
@@ -223,7 +223,7 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('https://github.com/mozilla/firefox-ios')
+        ar = legendary_parser_factory('http://www.evget.com/article/2014/12/1/21880.html')
         print ar.get_summary()
         # print ar.article
 

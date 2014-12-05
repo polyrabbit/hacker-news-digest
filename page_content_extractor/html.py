@@ -335,7 +335,7 @@ class HtmlContentExtractor(object):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
                 if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
                              'clear|tag|manage|info|social|avatar|small|sidebar|views|'
-                            'created|name|related',
+                            'created|name|related|nav|pull',
                              attr, re.I):
                     return True
             return False
@@ -346,9 +346,11 @@ class HtmlContentExtractor(object):
             for child in node.children:
                 if isinstance(child, Tag):
                     if not self.summary_begun and is_meta_tag(child) and \
-                            len(tokenize(child.text)) < 15:  # Too short to be a paragraph
+                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
+                            # len(tokenize(child.text)) < 40:
                         continue
                     if child.name in block_tags:
+                        # Ignore too many links and too short paragraphs
                         if self.is_link_intensive(child) or len(tokenize(child.text)) < 15:
                             continue
                         # Put a space between two blocks
