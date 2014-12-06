@@ -38,7 +38,7 @@ def legendary_parser_factory(url):
     elif ct.startswith('application/pdf'):
         logger.info('Get a pdf to parse, %s', resp.url)
         try:
-            return PdfExtractor(resp.content)
+            return PdfExtractor(resp.content, resp.url)
         except ParseError:
             logger.exception('Failed to parse this pdf file, %s', resp.url)
 
