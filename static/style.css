@@ -44,13 +44,12 @@ body {
 }
 
 .post-item .post-meta .icon {
-    margin-left: 10px
+    margin-left: 10px;
 }
 
 .post-item .post-meta img {
     width: 16px;
     height: 16px;
-    border-radius: 8px;
 }
 
 .post-item .post-summary {
