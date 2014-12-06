@@ -3,13 +3,12 @@ import utils
 utils.monkey_patch_requests()
 
 import logging
-from urlparse import urlsplit
 
 import requests
 
 from .exceptions import ParseError
 from .html import HtmlContentExtractor
-from .embeddable import EmbeddableExtractor, embeddables
+from .embeddable import EmbeddableExtractor
 from .pdf import PdfExtractor
 
 logger = logging.getLogger(__name__)
@@ -25,14 +24,12 @@ def legendary_parser_factory(url):
     # Sad, urllib2 cannot handle cookie/gzip automatically
     resp = requests.get(url)
 
-    # .hostname is in lower case
-    provider = urlsplit(resp.url).hostname.split('.')[-2]
-    if provider in embeddables:
-        logger.info('Get a %s embeddable to parse(%s)', provider, resp.url)
+    if EmbeddableExtractor.is_embeddable(url):
+        logger.info('Get an embeddable to parse(%s)', resp.url)
         try:
-            return EmbeddableExtractor(provider, resp.url)
+            return EmbeddableExtractor(resp.text, resp.url)
         except Exception as e:
-            logger.info('%s is not a %s embeddable, try another(%s)', resp.url, provider, e)
+            logger.info('%s is not an embeddable, try another(%s)', resp.url, e)
 
     ct = resp.headers.get('content-type', '').lower()
     if ct.startswith('text'):

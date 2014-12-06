@@ -83,6 +83,7 @@ class HackerNews(db.Model, HelperMixin):
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
     img_id = db.Column(db.String, db.ForeignKey('image.id', ondelete='CASCADE'))
+    favicon = db.Column(db.String)
 
     image = db.relationship('Image', cascade='delete')
 
@@ -106,6 +107,7 @@ class StartupNews(db.Model, HelperMixin):
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
     img_id = db.Column(db.String, db.ForeignKey('image.id', ondelete='CASCADE'))
+    favicon = db.Column(db.String)
 
     image = db.relationship('Image', cascade='delete')
 

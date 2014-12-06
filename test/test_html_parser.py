@@ -146,6 +146,19 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)
         self.assertIn(' ', HtmlContentExtractor(html_doc).get_summary())
 
+    def test_favicon_url(self):
+        html_doc = '''
+        <html>
+            <head>
+                <link rel="shortcut icon" href="/ico.favicon">
+            </head>
+            <body>
+                good
+            </body>
+        </html>
+        '''
+        self.assertEqual('http://local.host/ico.favicon', HtmlContentExtractor(html_doc, 'http://local.host').get_favicon_url())
+
     def test_clean_up_html_not_modify_iter_while_looping(self):
         html_doc = open(os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -224,8 +237,9 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
         ar = legendary_parser_factory('http://www.evget.com/article/2014/12/1/21880.html')
-        print ar.get_summary()
+        # print ar.get_summary()
         # print ar.article
+        print ar.get_favicon_url()
 
 if __name__ == '__main__':
     # basicConfig will only be called automatically when calling

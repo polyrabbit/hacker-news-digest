@@ -86,7 +86,11 @@
         {% endif %}
         {% if news.comhead %}
             <span title="Host">
-                <i class="icon icon-external-link"></i>
+                {% if news.favicon %}
+                    <img src="{{ news.favicon }}" class="icon"/>
+                {% else %}
+                    <i class="icon icon-external-link"></i>
+                {% endif %}
                 <span>{{ news.comhead }}</span>
             </span>
         {% endif %}
@@ -138,6 +142,10 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
     $('#img-preview-modal').modal();
     return false;
+});
+// If the favicon cannot be loaded, fail back to the default on.
+$('.post-item .post-meta img').error(function() {
+    $(this).replaceWith('<i class="icon icon-external-link"></i>');
 });
 </script>
 <script>

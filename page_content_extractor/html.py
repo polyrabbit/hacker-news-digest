@@ -133,7 +133,7 @@ class HtmlContentExtractor(object):
     """
     see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
     """
-    def __init__(self, html, base_url=''):
+    def __init__(self, html, url=''):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
         self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
         # self.calc_effective_text_len = lru_cache(1024)(self.calc_effective_text_len)
@@ -142,13 +142,15 @@ class HtmlContentExtractor(object):
         # dict uses __eq__ to identify key, while in BS two different nodes
         # will also be considered equal, DO not use that
         self.scores = defaultdict(int)
-        doc = BS(html)
+        self.doc = BS(html)
 
-        self.title = (doc.title.string if doc.title else u'') or u''
+        self.title = (self.doc.title.string if self.doc.title else u'') or u''
         self.article = Null
-        self.base_url = base_url
-        self.purge(doc)
-        self.find_main_content(doc)
+        self.url = url
+        # call it before purge
+        self.get_favicon_url()
+        self.purge()
+        self.find_main_content()
 
         # clean ups
         # self.clean_up_html()
@@ -203,12 +205,12 @@ class HtmlContentExtractor(object):
             if isinstance(child, Tag):
                 self.calc_node_score(child, depth+0.1)
 
-    def find_main_content(self, root):
-        self.calc_effective_text_len(root)
-        self.set_title_parents_point(root)  # Give them the highest score
-        self.set_article_tag_point(root)
+    def find_main_content(self):
+        self.calc_effective_text_len(self.doc)
+        self.set_title_parents_point(self.doc)  # Give them the highest score
+        self.set_article_tag_point(self.doc)
 
-        self.calc_node_score(root)
+        self.calc_node_score(self.doc)
         logger.info('Score of the main content is %s', self.article.score or 0)
 
     @staticmethod
@@ -249,17 +251,17 @@ class HtmlContentExtractor(object):
     def calc_img_area_len(self, cur_node):
         img_len = 0
         if cur_node.name == 'img':
-            img_len = WebImage(self.base_url, cur_node).to_text_len()
+            img_len = WebImage(self.url, cur_node).to_text_len()
         else:
             for node in cur_node.find_all('img', recursive=False):  # only search children first
                 img_len += self.calc_img_area_len(node)
         return img_len
 
-    def purge(self, doc):
+    def purge(self):
         for tname in ignored_tags:
-            for d in doc.find_all(tname):
+            for d in self.doc.find_all(tname):
                 d.extract()  # decompose calls extract with some more steps
-        for style_links in doc.find_all('link', attrs={'type': 'text/css'}):
+        for style_links in self.doc.find_all('link', attrs={'type': 'text/css'}):
             style_links.extract()
 
     def clean_up_html(self):
@@ -280,19 +282,10 @@ class HtmlContentExtractor(object):
         def _rp2au(soup, tp):
             d = {tp: True}
             for tag in soup.find_all(**d):
-                tag[tp] = urljoin(self.base_url, tag[tp])
+                tag[tp] = urljoin(self.url, tag[tp])
         _rp2au(self.article, 'href')
         _rp2au(self.article, 'src')
         _rp2au(self.article, 'background')
-
-    def get_main_content(self):
-        return self.get_article()
-
-    def get_article(self):
-        return self.article
-
-    def geturl(self):
-        return self.base_url
 
     @staticmethod
     def is_link_intensive(node):
@@ -386,10 +379,17 @@ class HtmlContentExtractor(object):
 
     def get_top_image(self):
         for img_node in self.article.find_all('img'):
-            img = WebImage(self.base_url, img_node)
+            img = WebImage(self.url, img_node)
             if img.is_possible:
                 logger.info('Found a top image %s', img.url)
                 return img
-        logger.info('No top image is found on %s', self.base_url)
+        logger.info('No top image is found on %s', self.url)
         return None
+
+    def get_favicon_url(self):
+        if not hasattr(self, '_favicon_url'):
+            fa = self.doc.find('link', rel=re.compile('icon', re.I))
+            favicon_path = fa.get('href', '/favicon.ico') if fa else '/favicon.ico'
+            self._favicon_url = urljoin(self.url, favicon_path)
+        return self._favicon_url
 

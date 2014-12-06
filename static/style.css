@@ -47,6 +47,12 @@ body {
     margin-left: 10px
 }
 
+.post-item .post-meta img {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+}
+
 .post-item .post-summary {
     font-size: 1.1em;
     line-height: 1.5em;
@@ -54,7 +60,6 @@ body {
 }
 
 .post-item .post-summary .feature-image {
-    border-radius: 7px;
     margin-top: 5px;
     margin-right: 8px;
     border: 1px solid #F7F7F7;

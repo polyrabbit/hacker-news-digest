@@ -36,6 +36,7 @@ class HackerNews(object):
                     try:
                         parser = legendary_parser_factory(news['url'])
                         news['summary'] = parser.get_summary(summary_length)
+                        news['favicon'] = parser.get_favicon_url()
                         tm = parser.get_top_image()
                         if tm:
                             img_id = models.Image.add(content_type=tm.content_type,
@@ -43,12 +44,12 @@ class HackerNews(object):
                             news['img_id'] = img_id
                     except Exception as e:
                         logger.exception('Failed to fetch %s, %s', news['url'], e)
-                        stats['errors'].append(e)
+                        stats['errors'].append(str(e))
                     self.model_class.add(**news)
                     stats['added'] += 1
             except Exception as e:
                 logger.exception(e)
-                stats['errors'].append(e)
+                stats['errors'].append(str(e))
 
         if not force:
             # clean up old items

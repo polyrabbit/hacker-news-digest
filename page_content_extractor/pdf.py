@@ -1,6 +1,7 @@
 #coding: utf-8
 import logging
 
+from urlparse import urljoin
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
@@ -15,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 class PdfExtractor(object):
 
-    def __init__(self, raw_data):
+    def __init__(self, raw_data, url=''):
         # TODO sort text according to their layouts
+        self.url = url
         try:
             self.load(raw_data)
         except Exception as e:
@@ -72,4 +74,7 @@ class PdfExtractor(object):
 
     def get_top_image(self):
         return None
+
+    def get_favicon_url(self):
+        return urljoin(self.url, '/favicon.ico')
 
