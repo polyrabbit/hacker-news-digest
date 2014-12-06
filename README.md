@@ -26,3 +26,5 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 
 ### LICENSE
 [LGPL v3](LICENSE-lgpl-3.0.txt)
+
+***中文版的 [Startup News Digest](http://www.hackernews.im/startupnews)***
