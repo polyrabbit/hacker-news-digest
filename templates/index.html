@@ -21,6 +21,13 @@
             alert('Help me to support IE~');
         </script>
     <![endif]-->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
+    <script>
+        function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
+            $(img).replaceWith('<i class="icon icon-external-link"></i>');
+        }
+    </script>
 </head>
 <body>
 <div class="container">
@@ -87,7 +94,7 @@
         {% if news.comhead %}
             <span title="Host">
                 {% if news.favicon %}
-                    <img src="{{ news.favicon }}" class="icon img-circle"/>
+                    <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
                 {% else %}
                     <i class="icon icon-external-link"></i>
                 {% endif %}
@@ -134,18 +141,12 @@
   </div>
 </div>
 
-<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-{#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
 $('.post-item .post-summary .feature-image').click(function (e) {
     $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
     $('#img-preview-modal').modal();
     return false;
-});
-// If the favicon cannot be loaded, fail back to the default on.
-$('.post-item .post-meta img').error(function() {
-    $(this).replaceWith('<i class="icon icon-external-link"></i>');
 });
 </script>
 <script>
