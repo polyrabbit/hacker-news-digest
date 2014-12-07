@@ -70,6 +70,10 @@ body {
     word-wrap: break-word;
 }
 
+.post-item .post-summary .summary-text .gist .gist-file .gist-data {
+    max-height: 250px;
+}
+
 .post-item .post-summary pre {
     font-size: 1em;
     background-color: #f5f5d5;
@@ -91,3 +95,4 @@ body {
 footer li, footer li a {
     color: #777;
 }
+

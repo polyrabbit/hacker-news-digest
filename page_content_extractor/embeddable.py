@@ -108,3 +108,8 @@ class EmbeddableExtractor(object):
             raise ParseError('Invalid pdf.yt embeddable url(%s)' % url)
         return '<iframe src="{}/embed?sparse=0" allowfullscreen></iframe>'.format(url)
 
+    def gist_github_com_parser(self, url):
+        path = urlsplit(url).path
+        if path.count('/') < 2:
+            raise ParseError('Invalid gist.github.com embeddable url(%s)' % url)
+        return '<script src="https://gist.github.com%s.js"></script>' % path
