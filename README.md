@@ -13,9 +13,9 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 
 ### Talk is cheap, illustrate what it can do for me!
 
-![image](https://cloud.githubusercontent.com/assets/2657334/5156278/03f9030a-72f2-11e4-8a8e-ae783c43359d.png)
+![image](https://cloud.githubusercontent.com/assets/2657334/5331788/076bdcae-7e75-11e4-8b85-6d1210af4ab0.png)
 
-![image](https://cloud.githubusercontent.com/assets/2657334/5156277/03f5cd66-72f2-11e4-954a-8fefb2cdfa71.png)
+![image](https://cloud.githubusercontent.com/assets/2657334/5331787/076634b6-7e75-11e4-9269-90b9a83f8f13.png)
 
 ### TODO
 - [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
