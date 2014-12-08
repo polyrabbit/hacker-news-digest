@@ -31,7 +31,7 @@
 </head>
 <body>
 <div class="container">
-<a href="https://github.com/polyrabbit/hacker-news-digest" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0; opacity: 0.8" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+<a href="https://github.com/polyrabbit/hacker-news-digest" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0; opacity: 0.8; filter: alpha(opacity=80);" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
 <nav class="navbar">
     <div class="navbar-header">
          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
@@ -106,7 +106,7 @@
     <div class="post-summary">
     {% if news.img_id %}
         <a class="feature-image" href="#">
-            <img class="img-rounded img-responsive" src="{{ url_for('image', img_id=news.img_id) }}" width="220px" height="160px">
+            <img class="img-rounded" src="{{ url_for('image', img_id=news.img_id) }}">
         </a>
     {% endif %}
     {% if news.summary %}

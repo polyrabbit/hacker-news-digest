@@ -65,6 +65,11 @@ body {
     float: left;
 }
 
+.post-item .post-summary .feature-image img {
+    width: 220px;
+    height: auto;
+}
+
 .post-item .post-summary .summary-text {
     padding: 5px 0 0 5px;
     word-wrap: break-word;
@@ -87,9 +92,10 @@ body {
     max-width: 600px;
 }
 
-.modal img {
+.modal .modal-dialog img {
     margin: auto;
     background-color: #FFF;
+    width: auto !important;
 }
 
 footer li, footer li a {
