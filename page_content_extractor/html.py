@@ -339,8 +339,8 @@ class HtmlContentExtractor(object):
             for child in node.children:
                 if isinstance(child, Tag):
                     if not self.summary_begun and is_meta_tag(child) and \
-                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
-                            # len(tokenize(child.text)) < 40:
+                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3 and \
+                            self.calc_effective_text_len(child) < max_length:
                         continue
                     if child.name in block_tags:
                         # Ignore too many links and too short paragraphs
