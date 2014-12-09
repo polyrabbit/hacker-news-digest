@@ -13,3 +13,4 @@ requests==2.2.1
 flask-sqlalchemy
 backports.functools_lru_cache
 null
+newrelic
