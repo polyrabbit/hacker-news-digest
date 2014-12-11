@@ -7,7 +7,7 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 
 ### Features
 * A responsive and modern interface that fits well on mobile phones
-* Summaries and illustrations are extracted for you to skim HN quickly
+* Summaries and illustrations make stories scannable
 * Common video sites, PDFs and gists of github are embedded directly
 * Subdomains and their lovely favicons are also shown
 
