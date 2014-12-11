@@ -63,6 +63,9 @@ body {
     margin-right: 8px;
     border: 1px solid #F7F7F7;
     float: left;
+    cursor: pointer;
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
 }
 
 .post-item .post-summary .feature-image img {
