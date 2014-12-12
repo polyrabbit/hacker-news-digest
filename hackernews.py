@@ -90,7 +90,7 @@ class HackerNews(object):
                 # In case of no comments yet
                 comment_cnt = (re.search('\d+', children_of_subtext_dom[4].get_text())
                         or re.search('0', '0')).group()
-                comment_url = children_of_subtext_dom[4]['href']
+                comment_url = self.get_comment_url(children_of_subtext_dom[4]['href'])
 
             items.append(dict(
                 rank = rank,
@@ -102,7 +102,7 @@ class HackerNews(object):
                 author_link = urljoin(self.end_point, author_link)  if author_link else None,
                 submit_time = submit_time,
                 comment_cnt = comment_cnt,
-                comment_url = urljoin(self.end_point, comment_url) if comment_url else None
+                comment_url = comment_url
             ))
         return items
 
@@ -119,6 +119,11 @@ class HackerNews(object):
             if len(ps)>1 and ps[1]:
                 comhead = '%s/%s' % (comhead, ps[1])
         return comhead
+
+    def get_comment_url(self, path):
+        if path is None:
+            return None
+        return 'http://cheeaun.github.io/hackerweb/#/item/%s' % re.search(r'\d+', path).group()
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
