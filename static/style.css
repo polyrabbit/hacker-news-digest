@@ -17,6 +17,10 @@ body {
     background-color: #888;
 }
 
+.navbar-brand {
+    padding-left: 0;
+}
+
 .post-item {
     border-bottom: 1px solid #dddddd;
     height: 100%!important;
@@ -47,8 +51,8 @@ body {
     text-decoration: none;
 }
 
-.post-item .post-meta .icon {
-    margin-left: 10px;
+.post-item .post-meta > span {
+    margin-right: 10px;
 }
 
 .post-item .post-meta img {
@@ -77,7 +81,7 @@ body {
 }
 
 .post-item .post-summary .summary-text {
-    padding: 5px 0 0 5px;
+    padding-top: 5px;
     word-wrap: break-word;
 }
 
