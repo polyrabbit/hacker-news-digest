@@ -74,6 +74,7 @@
 .post-item .post-summary .feature-image img {
     width: 220px;
     height: auto;
+    border: 1px solid #F7F7F7;
 }
 
 .post-item .post-summary .summary-text {
