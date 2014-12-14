@@ -3,11 +3,11 @@
 
 [![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
 
-This service extracts summaries and images from [hacker news](https://news.ycombinator.com/) stories for people who want to get the most out of hacker news while cutting down the time spent on deciding which articles to read and which to skip.
+This service extracts summaries and images from [hacker news](https://news.ycombinator.com/) articles for people who want to get the most out of hacker news while cutting down the time spent on deciding which one to read and which to skip.
 
 ### Features
 * A responsive and modern interface that fits well on mobile phones
-* Summaries and illustrations make stories scannable
+* Summaries and images make articles scannable
 * Common video sites, PDFs and gists of github are embedded directly
 * Subdomains and their lovely favicons are also shown
 
