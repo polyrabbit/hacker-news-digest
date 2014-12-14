@@ -345,11 +345,15 @@ class HtmlContentExtractor(object):
                     if child.name in block_tags:
                         # Ignore too many links and too short paragraphs
                         if self.is_link_intensive(child) or (len(tokenize(child.text)) < 15 and
-                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3):
+                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3):
                             continue
+                        child_summary = summarize(child, max_length)
+                        if len(tokenize(child_summary)) < 15 and \
+                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
+                             continue
                         # Put a space between two blocks
                         partial_summaries.append(' ')
-                        partial_summaries.append(summarize(child, max_length).strip())
+                        partial_summaries.append(child_summary)
                     else:
                         partial_summaries.append(summarize(child, max_length))
                     max_length -= len(partial_summaries[-1])
