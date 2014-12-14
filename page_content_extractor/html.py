@@ -24,7 +24,7 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
     'output', 'col', 'p', 'colgroup', 'pre', 'dd', 'progress', 'div', 'section',
     'dl', 'table', 'dt', 'tbody', 'embed', 'textarea', 'fieldset', 'tfoot', 'figcaption',
     'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'video'}
+    'video', 'td'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
