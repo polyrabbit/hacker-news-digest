@@ -360,8 +360,8 @@ class HtmlContentExtractor(object):
                     if max_length < 0:
                         break
                 elif type(child) is NavigableString:
-                    if not child.strip():
-                        continue
+                    # if not child.strip():
+                    #     continue
                     if re.match(r'h\d+|td', child.parent.name, re.I) and \
                             string_inclusion_ratio(child, self.title) > .85:
                         continue
