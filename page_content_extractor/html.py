@@ -382,7 +382,7 @@ class HtmlContentExtractor(object):
         return summarize(self.article, max_length).strip()
 
     def get_top_image(self):
-        for img_node in self.article.find_all('img'):
+        for img_node in self.article.find_all('img') + self.doc.find_all('img'):
             img = WebImage(self.url, img_node)
             if img.is_possible:
                 logger.info('Found a top image %s', img.url)
