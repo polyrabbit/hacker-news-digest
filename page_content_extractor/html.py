@@ -348,8 +348,7 @@ class HtmlContentExtractor(object):
                                 1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3):
                             continue
                         child_summary = summarize(child, max_length)
-                        if len(tokenize(child_summary)) < 15 and \
-                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
+                        if len(tokenize(child_summary)) < 15:
                              continue
                         # Put a space between two blocks
                         partial_summaries.append(' ')
