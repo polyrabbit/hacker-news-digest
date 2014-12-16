@@ -338,7 +338,9 @@ class HtmlContentExtractor(object):
 
             for child in node.children:
                 if isinstance(child, Tag):
-                    if not self.summary_begun and is_meta_tag(child) and \
+                    # Put a space between two blocks
+                    partial_summaries.append(' ')  # http://paulgraham.com/know.html
+                    if is_meta_tag(child) and \
                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
                         continue
@@ -347,11 +349,10 @@ class HtmlContentExtractor(object):
                         if self.is_link_intensive(child) or (len(tokenize(child.text)) < 15 and
                                 1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3):
                             continue
-                        child_summary = summarize(child, max_length)
-                        if len(tokenize(child_summary)) < 15:
+                        child_summary = summarize(child, max_length).strip()
+                        if len(tokenize(child_summary)) < 15 and \
+                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
                              continue
-                        # Put a space between two blocks
-                        partial_summaries.append(' ')
                         partial_summaries.append(child_summary)
                     else:
                         partial_summaries.append(summarize(child, max_length))
