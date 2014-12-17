@@ -104,7 +104,7 @@
 
     <div class="post-summary">
     {% if news.img_id %}
-        <a class="feature-image" href="#">
+        <a class="feature-image" href="{{ url_for('image', img_id=news.img_id) }}">
             <img class="img-rounded" src="{{ url_for('image', img_id=news.img_id) }}">
         </a>
     {% endif %}

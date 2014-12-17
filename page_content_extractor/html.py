@@ -340,6 +340,7 @@ class HtmlContentExtractor(object):
                 if isinstance(child, Tag):
                     # Put a space between two blocks
                     partial_summaries.append(' ')  # http://paulgraham.com/know.html
+                    # if self.summary_begun:  # http://v2ex.com/t/152930
                     if is_meta_tag(child) and \
                             1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
