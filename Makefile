@@ -9,4 +9,4 @@ run-in-heroku:
 test:
 	python -m unittest discover ./test
 drop:
-	python -c 'from models import db; db.drop_all()'	
+	python -c 'from models import db; db.drop_all()'

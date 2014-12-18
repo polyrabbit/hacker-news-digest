@@ -51,14 +51,17 @@ http {
 
         location /static/ {
             alias <%= Dir.pwd %>/static/;
+            expires 1d;
         }
 
         location /favicon.ico {
             root <%= Dir.pwd %>/static/;
+            expires 1d;
         }
 
         location /sitemap.xml {
             root <%= Dir.pwd %>/static/;
+            expires 1d;
         }
 
 	}
