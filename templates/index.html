@@ -42,17 +42,29 @@
         <a class="navbar-brand" href="{{ navs[0][1] }}" target="_blank">{{ navs[0][0] }}</a>
     </div>
     <div class="collapse navbar-collapse" id="hn-menu">
-    <ul class="nav navbar-nav">
-        {% for nav in navs[1:] %}
-        <li>
-            <a href="{{ nav[1] }}" target="_blank">{{ nav[0] }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+        <ul class="nav navbar-nav">
+            {% for nav in navs[1:] %}
+            <li>
+                <a href="{{ nav[1] }}" target="_blank">{{ nav[0] }}</a>
+            </li>
+            {% endfor %}
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                Sort by
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-hn-rank">HN rank</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-score">Score</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-comments">Comments</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-submit-time">Submit time</a></li>
+              </ul>
+            </li>
+        </ul>
     </div>
 </nav>
 {% for news in news_list %}
-<article class="post-item">
+<article class="post-item" data-rank="{{ news.rank }}">
     <div class="post-title">
         <h3>
             <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title|trim }}</a>
@@ -61,7 +73,7 @@
 
     <div class="post-meta">
         {% if news.score %}
-            <span title="Score">
+            <span class="score" title="Score">
                 <i class="icon icon-heart" style="color: red;"></i>
                 <span>
                     {{ news.score }}
@@ -78,7 +90,7 @@
                 </a>
             </span>
         {% endif %}
-        <span title="Submit time">
+        <span class="summit-time" title="Submit time">
             <i class="icon icon-calendar"></i>
             <span class="last-updated">{{ news.submit_time }}</span>
         </span>
@@ -91,7 +103,7 @@
             </span>
         {% endif %}
         {% if news.comhead %}
-            <span title="Host">
+            <span class="host" title="Host">
                 {% if news.favicon %}
                     <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
                 {% else %}
@@ -148,6 +160,7 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     return false;
 });
 </script>
+<script src="{{ url_for('static', filename='sort.js') }}"></script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

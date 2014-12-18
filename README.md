@@ -10,6 +10,7 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 * Summaries and images make articles scannable
 * Common video sites, PDFs and gists of github are embedded directly
 * Subdomains and their lovely favicons are also shown
+* Sort articles by score/comment/time
 
 ### Talk is cheap, illustrate what it can do for me!
 
@@ -21,7 +22,7 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 - [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
 - [ ] A more beautiful home page(maybe in HTML9)
 - [ ] A better algo to extract summaries
-- [ ] Sort by score/time/comment
+- [X] Sort articles by score/comment/time
 - [X] Have a good sleep !important
 
 ### LICENSE
