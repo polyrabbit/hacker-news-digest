@@ -2,6 +2,7 @@ $('#sort-by-hn-rank').click(function() {
     $('article').sort(function(a, b){
         return $(a).data('rank') - $(b).data('rank');
     }).insertBefore($('footer'));
+    $('.navbar-nav>li.dropdown').toggleClass("open");
     return false;
 });
 
@@ -13,6 +14,7 @@ $('#sort-by-score').click(function() {
             return $(a).data('rank') - $(b).data('rank');
         return score2 - score1;
     }).insertBefore($('footer'));
+    $('.navbar-nav>li.dropdown').toggleClass("open");
     return false;
 });
 
@@ -24,6 +26,7 @@ $('#sort-by-comments').click(function() {
             return $(a).data('rank') - $(b).data('rank');
         return comment2 - comment1;
     }).insertBefore($('footer'));
+    $('.navbar-nav>li.dropdown').toggleClass("open");
     return false;
 });
 
@@ -43,6 +46,7 @@ $('#sort-by-submit-time').click(function() {
         if(/day/i.test(s_t2)) t2 *= 86400;
         return t1 - t2;
     }).insertBefore($('footer'));
+    $('.navbar-nav>li.dropdown').toggleClass("open");
     return false;
 });
 
