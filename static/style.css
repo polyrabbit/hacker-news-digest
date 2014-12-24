@@ -111,3 +111,14 @@ footer li, footer li a {
     color: #777;
 }
 
+#scrollUp {
+    bottom: 10px;
+    right: 12px;
+    opacity: 0.8;
+    filter: alpha(opacity=80);
+}
+
+#scrollUp:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}

@@ -9,11 +9,11 @@
     <link rel="bookmark" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <!--[if IE 7]>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome-ie7.min.css">
     <![endif]-->
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}?r=5">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}?r=6">
     <!--[if lt IE 9]>
         <script src="{{ url_for('static', filename='respond.min.js') }}" type="text/javascript"></script>
         <script>
@@ -24,7 +24,7 @@
     {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
     <script>
         function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
-            $(img).replaceWith('<i class="icon icon-external-link"></i>');
+            $(img).replaceWith('<i class="fa fa-external-link"></i>');
         }
     </script>
 </head>
@@ -74,7 +74,7 @@
     <div class="post-meta">
         {% if news.score %}
             <span class="score" title="Score">
-                <i class="icon icon-heart" style="color: red;"></i>
+                <i class="fa fa-heart" style="color: red;"></i>
                 <span>
                     {{ news.score }}
                 </span>
@@ -83,7 +83,7 @@
         {% if news.author_link %}
             <span class="author-link" title="Author">
                 <a href="{{ news.author_link }}" rel="author" target="_blank">
-                    <i class="icon icon-user"></i>
+                    <i class="fa fa-user"></i>
                     <span>
                         {{ news.author }}
                     </span>
@@ -91,13 +91,13 @@
             </span>
         {% endif %}
         <span class="summit-time" title="Submit time">
-            <i class="icon icon-calendar"></i>
+            <i class="fa fa-clock-o"></i>
             <span class="last-updated">{{ news.submit_time }}</span>
         </span>
         {% if news.comment_url %}
             <span class="comment" title="Comments">
                 <a href="{{ news.comment_url }}" rel="comment">
-                    <i class="icon icon-comments"></i>
+                    <i class="fa fa-comments"></i>
                     {{ news.comment_cnt }}
                 </a>
             </span>
@@ -107,7 +107,7 @@
                 {% if news.favicon %}
                     <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
                 {% else %}
-                    <i class="icon icon-external-link"></i>
+                    <i class="fa fa-external-link"></i>
                 {% endif %}
                 <span>{{ news.comhead }}</span>
             </span>
@@ -151,7 +151,15 @@
         <img>
   </div>
 </div>
-
+<script src="{{ url_for('static', filename='jquery.scrollUp.min.js') }}"></script>
+<script>
+$(function () {
+    $.scrollUp({
+        scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
+        scrollTitle: 'Scroll to top'
+    });
+});
+</script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
 $('.post-item .post-summary .feature-image').click(function (e) {
@@ -172,48 +180,5 @@ $('.post-item .post-summary .feature-image').click(function (e) {
   ga('send', 'pageview');
 </script>
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async="async"></script>
-<script>
-// Include the UserVoice JavaScript SDK (only needed once on a page)
-UserVoice=window.UserVoice||[];(function(){var uv=document.createElement('script');uv.type='text/javascript';uv.async=true;uv.src='//widget.uservoice.com/U1BZtBFizvxXk702VQxrQ.js';var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(uv,s)})();
-
-//
-// UserVoice Javascript SDK developer documentation:
-// https://www.uservoice.com/o/javascript-sdk
-//
-
-// Set colors
-UserVoice.push(['set', {
-  accent_color: '#e2753a',
-  trigger_color: 'white',
-  trigger_background_color: 'rgba(46, 49, 51, 0.6)'
-}]);
-
-// Identify the user and pass traits
-// To enable, replace sample data with actual user traits and uncomment the line
-UserVoice.push(['identify', {
-  //email:      'john.doe@example.com', // User’s email address
-  //name:       'John Doe', // User’s real name
-  //created_at: 1364406966, // Unix timestamp for the date the user signed up
-  //id:         123, // Optional: Unique id of the user (if set, this should not change)
-  //type:       'Owner', // Optional: segment your users by type
-  //account: {
-  //  id:           123, // Optional: associate multiple users with a single account
-  //  name:         'Acme, Co.', // Account name
-  //  created_at:   1364406966, // Unix timestamp for the date the account was created
-  //  monthly_rate: 9.99, // Decimal; monthly rate of the account
-  //  ltv:          1495.00, // Decimal; lifetime value of the account
-  //  plan:         'Enhanced' // Plan name for the account
-  //}
-}]);
-
-// Add default trigger to the bottom-right corner of the window:
-UserVoice.push(['addTrigger', { mode: 'contact', trigger_position: 'bottom-right' }]);
-
-// Or, use your own custom trigger:
-//UserVoice.push(['addTrigger', '#id', { mode: 'contact' }]);
-
-// Autoprompt for Satisfaction and SmartVote (only displayed under certain conditions)
-UserVoice.push(['autoprompt', {}]);
-</script>
 </body>
 </html>
