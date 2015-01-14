@@ -23,9 +23,10 @@
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
     <script>
-        function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
-            $(img).replaceWith('<i class="fa fa-external-link"></i>');
-        }
+        // If the favicon cannot be loaded, fail back to the default on.
+        $(document).delegate('.post-item .post-meta .host img', 'error', function() {
+            $(this).replaceWith('<i class="fa fa-external-link"></i>');
+        })
     </script>
 </head>
 <body>
@@ -105,7 +106,7 @@
         {% if news.comhead %}
             <span class="host" title="Host">
                 {% if news.favicon %}
-                    <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
+                    <img src="{{ news.favicon }}" class="icon img-circle" />
                 {% else %}
                     <i class="fa fa-external-link"></i>
                 {% endif %}
