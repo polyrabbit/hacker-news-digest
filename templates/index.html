@@ -13,7 +13,7 @@
     <!--[if IE 7]>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome-ie7.min.css">
     <![endif]-->
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}?r=10">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}?r=9">
     <!--[if lt IE 9]>
         <script src="{{ url_for('static', filename='respond.min.js') }}" type="text/javascript"></script>
         <script>
@@ -23,10 +23,9 @@
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
     <script>
-        // If the favicon cannot be loaded, fail back to the default on.
-        $(document).delegate('.post-item .post-meta .host img', 'error', function() {
-            $(this).replaceWith('<i class="fa fa-external-link"></i>');
-        })
+        function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
+           $(img).replaceWith('<i class="fa fa-external-link"></i>');
+        }
     </script>
 </head>
 <body>
@@ -106,7 +105,7 @@
         {% if news.comhead %}
             <span class="host" title="Host">
                 {% if news.favicon %}
-                    <img src="{{ news.favicon }}" class="icon img-circle" />
+                    <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
                 {% else %}
                     <i class="fa fa-external-link"></i>
                 {% endif %}
