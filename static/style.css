@@ -122,10 +122,3 @@ footer li, footer li a {
     opacity: 1;
     filter: alpha(opacity=100);
 }
-
-/* Hide fork ribbon for mobile users */
-@media (max-width: 850px) {
-    .container > a {
-        display: none;
-    }
-}
