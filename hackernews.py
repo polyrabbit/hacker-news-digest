@@ -4,6 +4,7 @@ import logging
 from urlparse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup as BS
+from null import Null
 from page_content_extractor import legendary_parser_factory
 
 logger = logging.getLogger(__name__)
@@ -74,23 +75,18 @@ class HackerNews(object):
             # comhead = title_dom.span and title_dom.span.get_text(strip=True).strip('()') or None
             comhead = self.parse_comhead(url)
 
-            children_of_subtext_dom = subtext_dom.find('td', class_='subtext').contents
-            if len(children_of_subtext_dom) == 1:
-                score = \
-                author = \
-                author_link = \
-                comment_cnt = \
-                comment_url = None
-                submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[0]).group()
-            else:
-                score = re.search('\d+', children_of_subtext_dom[0].get_text(strip=True)).group()
-                author = children_of_subtext_dom[2].get_text()
-                author_link = children_of_subtext_dom[2]['href']
-                submit_time = re.search('\d+ \w+ ago', children_of_subtext_dom[3]).group()
-                # In case of no comments yet
-                comment_cnt = (re.search('\d+', children_of_subtext_dom[4].get_text())
-                        or re.search('0', '0')).group()
-                comment_url = self.get_comment_url(children_of_subtext_dom[4]['href'])
+
+            # pop up user first, so everything left has a pattern
+            author_dom = (subtext_dom.find('a', href=re.compile(r'^user', re.I)) or Null).extract()
+            author = author_dom.text.strip() or None
+            author_link = author_dom['href'] or None
+            score_human = subtext_dom.find(text=re.compile('\d+ points')) or '0'
+            score = re.search('\d+', score_human).group() or None
+            submit_time = subtext_dom.find(text=re.compile('\d+ \w+ ago')) or None
+            # In case of no comments yet
+            comment_dom = subtext_dom.find('a', text=re.compile('\d+ comments')) or Null
+            comment_cnt = re.search('\d+', comment_dom.get_text() or '0').group()
+            comment_url = self.get_comment_url(comment_dom['href'])
 
             items.append(dict(
                 rank = rank,
@@ -121,7 +117,7 @@ class HackerNews(object):
         return comhead
 
     def get_comment_url(self, path):
-        if path is None:
+        if not isinstance(path, basestring):
             return None
         return 'http://cheeaun.github.io/hackerweb/#/item/%s' % re.search(r'\d+', path).group()
 
