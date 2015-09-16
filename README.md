@@ -22,7 +22,7 @@ This service extracts summaries and images from [hacker news](https://news.ycomb
 - [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
 - [ ] A more beautiful home page(maybe in HTML9)
 - [ ] A better algo to extract summaries
-- [X] Sort articles by score/comment/time
+- [ ] Sort articles by score/comment/time
 - [X] Have a good sleep !important
 
 ### LICENSE
