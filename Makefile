@@ -14,5 +14,5 @@ test:
 dropdb:
 	python -c 'from models import db; db.drop_all()'
 initdb:
-	echo create database hndigest ENCODING "'UTF8'" TEMPLATE template0 | sudo -u postgres psql
+	-echo create database hndigest ENCODING "'UTF8'" TEMPLATE template0 | sudo -u postgres psql
 	python -c 'from models import db; db.create_all()'
