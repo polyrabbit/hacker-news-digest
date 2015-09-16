@@ -1,5 +1,6 @@
 import os
 import logging
+import multiprocessing
 
 DEBUG = 'DEBUG' in os.environ
 
@@ -16,7 +17,7 @@ HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
 DB_CONNECTION_LIMIT = 20
 # Database
 SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL",
-    'postgres://postgres@localhost:5432/postgres')\
+    'postgres://postgres@localhost:5432/hndigest')\
     .replace('postgres://', 'postgresql://')
 SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
@@ -25,7 +26,8 @@ SQLALCHEMY_ECHO = DEBUG
 # Gunicorn
 # As suggested by nginx-buildpack
 bind = "unix:/tmp/nginx.socket"
-workers = 3
+workers = multiprocessing.cpu_count()*2
+max_requests = 100
 threads = SQLALCHEMY_POOL_SIZE
 accesslog = '-'
 errorlog = '-'

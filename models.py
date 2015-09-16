@@ -25,7 +25,8 @@ class HelperMixin(object):
             session.add(obj)
             session.commit()
             return getattr(obj, pk_name)
-        except SQLAlchemyError:
+        # except SQLAlchemyError:
+        except Exception:
             logger.exception('Failed to save %s', kwargs.get(pk_name, 'image'))
             session.rollback()
 
@@ -165,7 +166,8 @@ class LastUpdated(db.Model):
     def __repr__(self):
         return u"%s<%s>" % (self.table_name, self.time_stamp)
 
-db.create_all()
+# gunicorn causes race condition when spawning multi processes
+# db.create_all()
 
 import threading, time
 def fun():
