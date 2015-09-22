@@ -26,7 +26,9 @@ SQLALCHEMY_ECHO = DEBUG
 # Gunicorn
 # As suggested by nginx-buildpack
 bind = "unix:/tmp/nginx.socket"
-workers = multiprocessing.cpu_count()*2
+# Each worker occupies 25M memory
+# workers = multiprocessing.cpu_count()*2
+workers = 3
 max_requests = 100
 threads = SQLALCHEMY_POOL_SIZE
 accesslog = '-'
