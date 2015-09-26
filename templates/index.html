@@ -8,14 +8,14 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="bookmark" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
     <!--[if IE 7]>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome-ie7.min.css">
     <![endif]-->
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='style.css') }}?r=9">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/style.css') }}?r=9">
     <!--[if lt IE 9]>
-        <script src="{{ url_for('static', filename='respond.min.js') }}" type="text/javascript"></script>
+        <script src="{{ url_for('static', filename='css/respond.min.js') }}" type="text/javascript"></script>
         <script>
             alert('IE is not fully supported!');
         </script>
@@ -151,7 +151,7 @@
         <img>
   </div>
 </div>
-<script src="{{ url_for('static', filename='jquery.scrollUp.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.scrollUp.min.js') }}"></script>
 <script>
 $(function () {
     $.scrollUp({
@@ -168,7 +168,7 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     return false;
 });
 </script>
-<script src="{{ url_for('static', filename='sort.js') }}?r=1"></script>
+<script src="{{ url_for('static', filename='js/sort.js') }}?r=1"></script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
