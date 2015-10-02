@@ -295,7 +295,6 @@ def _rassize(stream):
         raise ValueError('could not determine Sun raster size')
     return 'RAS', x, y
 
-
 def _pcxsize(stream):
     '''gets the width and height (in pixels) of a ZSoft PCX File.'''
     x, y = 0, 0
@@ -306,14 +305,25 @@ def _pcxsize(stream):
         raise ValueError('could not determine ZSoft PCX size')
     return 'PCX', x, y
 
+def _svgsize(stream):
+    '''gets the width and height (in pixels) of a SVG File.'''
+    header = stream.read(1024)
+    m = re.search(r'width\s*=\s*(["\'])(\d+)px\1', header, re.I)
+    n = re.search(r'height\s*=\s*(["\'])(\d+)px\1', header, re.I)
+    if m and n:
+        x = int(m.group(2))
+        y = int(n.group(2))
+        return 'SVG', x, y
+    raise ValueError('Unable to determine size of SVG data')
+
 # type_map used in function type_map_match
 TYPE_MAP = { re.compile(r'^\xFF\xD8')              : ('JPEG', _jpegsize),
         re.compile(r'^BM')                         : ('BMP',  _bmpsize),
         re.compile(r'^\x89PNG\x0d\x0a\x1a\x0a')    : ('PNG',  _pngsize),
         re.compile(r'^GIF8[7,9]a')                 : ('GIF',  _gifsize),
         re.compile(r'^P[1-7]')                     : ('PPM',  _ppmsize),
-        re.compile(r'\#define\s+\S+\s+\d+')        : ('XBM',  _xbmsize),
-        re.compile(r'\/\* XPM \*\/')               : ('XPM',  _xpmsize),
+        re.compile(r'^\#define\s+\S+\s+\d+')        : ('XBM',  _xbmsize),
+        re.compile(r'^\/\* XPM \*\/')               : ('XPM',  _xpmsize),
         re.compile(r'^MM\x00\x2a')                 : ('TIFF', _tiffsize),
         re.compile(r'^II\x2a\x00')                 : ('TIFF', _tiffsize),
         re.compile(r'^8BPS')                       : ('PSD',  _psdsize),
@@ -323,12 +333,13 @@ TYPE_MAP = { re.compile(r'^\xFF\xD8')              : ('JPEG', _jpegsize),
         re.compile(r'^\x8aMNG\x0d\x0a\x1a\x0a')    : ('MNG',  _mngsize),
         re.compile(r'^\x01\xDA[\x01\x00]')         : ('RGB',  _rgbsize),
         re.compile(r'^\x59\xA6\x6A\x95')           : ('RAS',  _rassize),
-        re.compile(r'^\x0A.\x01')                  : ('PCX',  _pcxsize)}
+        re.compile(r'^\x0A.\x01')                  : ('PCX',  _pcxsize),
+        re.compile(r'<svg ')                       : ('SVG',  _svgsize)}
 
 def _type_match(data):
     '''type_map_match to get MIME-TYPE and callback function'''
     for rx in TYPE_MAP:
-        if rx.match(data):
+        if rx.search(data):
             return TYPE_MAP[rx]
     else:
         raise ValueError('Unable to Recognize image file header')
