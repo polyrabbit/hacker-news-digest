@@ -31,7 +31,7 @@ class EmbeddableExtractor(object):
         provider = re.sub(r'^www\.', '', host.lower()).replace('.', '_')
         return hasattr(cls, '%s_parser' % provider)
 
-    def get_top_image(self):
+    def get_illustration(self):
         return None
 
     def get_favicon_url(self):

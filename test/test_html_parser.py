@@ -53,7 +53,7 @@ class PageContentExtractorTestCase(TestCase):
     #     self.assertTrue(img.is_possible)
 
     def test_non_top_image(self):
-        self.assertIsNone(HtmlContentExtractor('').get_top_image())
+        self.assertIsNone(HtmlContentExtractor('').get_illustration())
 
     @unittest.skip('Skipped because summary is too short')
     def test_get_summary_from_all_short_paragraph(self):

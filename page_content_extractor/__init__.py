@@ -11,13 +11,15 @@ from .html import HtmlContentExtractor
 from .embeddable import EmbeddableExtractor
 from .pdf import PdfExtractor
 
+__all__ = ['ParseError', 'legendary_parser_factory']
+
 logger = logging.getLogger(__name__)
 
 # dispatcher
 def legendary_parser_factory(url):
     """
         Returns the extracted object, which should have at least two
-        methods `get_summary` and `get_top_image`
+        methods `get_summary` and `get_illustration`
     """
     if not url.startswith('http'):
         url = 'http://' + url

@@ -383,7 +383,7 @@ class HtmlContentExtractor(object):
         self.summary_begun = False  # miss the nonlocal feature
         return summarize(self.article, max_length).strip()
 
-    def get_top_image(self):
+    def get_illustration(self):
         for img_node in self.article.find_all('img') + self.doc.find_all('img'):
             img = WebImage(self.url, img_node)
             if img.is_possible:

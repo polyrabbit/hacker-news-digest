@@ -72,7 +72,7 @@ class PdfExtractor(object):
         if p:
             yield ' '.join(p)
 
-    def get_top_image(self):
+    def get_illustration(self):
         return None
 
     def get_favicon_url(self):

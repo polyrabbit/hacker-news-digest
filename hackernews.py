@@ -38,7 +38,7 @@ class HackerNews(object):
                         parser = legendary_parser_factory(news['url'])
                         news['summary'] = parser.get_summary(summary_length)
                         news['favicon'] = parser.get_favicon_url()
-                        tm = parser.get_top_image()
+                        tm = parser.get_illustration()
                         if tm:
                             img_id = models.Image.add(content_type=tm.content_type,
                                     raw_data=tm.raw_data)
