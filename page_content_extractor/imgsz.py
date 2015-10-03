@@ -307,12 +307,13 @@ def _pcxsize(stream):
 
 def _svgsize(stream):
     '''gets the width and height (in pixels) of a SVG File.'''
+    #TODO add support for other units like: "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%"
     header = stream.read(1024)
-    m = re.search(r'width\s*=\s*(["\'])(\d+)px\1', header, re.I)
-    n = re.search(r'height\s*=\s*(["\'])(\d+)px\1', header, re.I)
+    m = re.search(r'width\s*=\s*(["\'])(\d*\.?\d+)px\1', header, re.I)
+    n = re.search(r'height\s*=\s*(["\'])(\d*\.?\d+)px\1', header, re.I)
     if m and n:
-        x = int(m.group(2))
-        y = int(n.group(2))
+        x = int(m.group(2).split('.')[0])
+        y = int(n.group(2).split('.')[0])
         return 'SVG', x, y
     raise ValueError('Unable to determine size of SVG data')
 
