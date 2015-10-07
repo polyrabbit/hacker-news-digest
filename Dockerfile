@@ -6,7 +6,7 @@ RUN sed -ie 's/md5/trust/' /etc/postgresql/9.4/main/pg_hba.conf
 RUN service postgresql start
 
 ENV HN_UPDATE_KEY mysecretkey
-RUN echo "*/10 * * * * curl -L 'http://localhost:5000/update' -d key=\$(cat /var/hndigest-update-key)" | crontab -
+RUN echo "10 * * * * curl -L 'http://localhost:5000/update' -d key=\$(cat /var/hndigest-update-key)" | crontab -
 
 RUN mkdir /app
 WORKDIR /app
