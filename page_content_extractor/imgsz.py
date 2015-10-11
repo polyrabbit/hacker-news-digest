@@ -345,7 +345,7 @@ TYPE_MAP = { re.compile(r'^\xFF\xD8')              : ('JPEG', _jpegsize),
         re.compile(r'^\x01\xDA[\x01\x00]')         : ('RGB',  _rgbsize),
         re.compile(r'^\x59\xA6\x6A\x95')           : ('RAS',  _rassize),
         re.compile(r'^\x0A.\x01')                  : ('PCX',  _pcxsize),
-        re.compile(r'<svg ')                       : ('SVG',  _svgsize)}
+        re.compile(r'<svg\s')                       : ('SVG',  _svgsize)}
 
 def _type_match(data):
     '''type_map_match to get MIME-TYPE and callback function'''
