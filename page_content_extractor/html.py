@@ -322,6 +322,8 @@ class HtmlContentExtractor(object):
         return ''.join(ret), cur_length
 
     def get_summary(self, max_length=300):
+        if not self.calc_effective_text_len(self.article):
+            return u''
         preserved_tags = {'pre'}
 
         def is_meta_tag(node):

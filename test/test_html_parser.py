@@ -33,6 +33,34 @@ class PageContentExtractorTestCase(TestCase):
         """
         self.assertEqual(HtmlContentExtractor(html_doc).article.text, '')
 
+    def test_no_content(self):
+        html_doc = u"""
+        <!DOCTYPE html>
+        <html class="no-js" dir="ltr" lang="en" prefix="content: http://purl.org/rss/1.0/modules/content/ dc: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/ og: http://ogp.me/ns# rdfs: http://www.w3.org/2000/01/rdf-schema# sioc: http://rdfs.org/sioc/ns# sioct: http://rdfs.org/sioc/types# skos: http://www.w3.org/2004/02/skos/core# xsd: http://www.w3.org/2001/XMLSchema#">
+            <body class="html not-front not-logged-in page-node page-node- page-node-371988 node-type-ubernode section-feature">
+            <div class="l-page ember-init-hide">
+            <header class="l-header container-fluid" role="banner"></header>
+            <div class="l-main">
+            <div class="l-content container-fluid" id="main" role="main">
+            <article about="/feature/remembering-george-mueller-leader-of-early-human-spaceflight" class="node node--ubernode node--full node--ubernode--full" role="article" typeof="sioc:Item foaf:Document">
+            <header>
+            <span class="rdf-meta element-hidden" content="Remembering George Mueller, Leader of Early Human Spaceflight" property="dc:title"></span> </header>
+            <div class="node__content">
+            </div>
+            </article>
+            </div>
+            </div>
+            <footer class="l-footer container-fluid" role="contentinfo"></footer>
+            </div>
+
+
+            </body>
+        </html>
+        """
+        page = HtmlContentExtractor(html_doc)
+        self.assertEquals(page.calc_effective_text_len(page.article), 0)
+        self.assertEquals(page.get_summary(), u'')
+
     def test_semantic_affect(self):
         # They are static methods
         self.assertTrue(HtmlContentExtractor.has_positive_effect(BS('<article>good</article>').article))
@@ -231,9 +259,8 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('http://paulgraham.com/know.html')
+        ar = legendary_parser_factory('http://www.nasa.gov/feature/remembering-george-mueller-leader-of-early-human-spaceflight')
         print ar.get_summary()
-        # print ar.article
         # print ar.get_favicon_url()
 
 if __name__ == '__main__':
