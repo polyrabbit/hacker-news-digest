@@ -149,6 +149,8 @@ class HtmlContentExtractor(object):
         self.url = url
         # call it before purge
         self.get_favicon_url()
+        self.get_meta_description()
+        self.get_meta_image()
         self.purge()
         self.find_main_content()
 
@@ -212,6 +214,22 @@ class HtmlContentExtractor(object):
 
         self.calc_node_score(self.doc)
         logger.info('Score of the main content is %s', self.article.score or 0)
+
+    def get_meta_description(self):
+        if not hasattr(self, '_meta_desc'):
+            self._meta_desc = ''
+            descs = self.doc.find_all('meta', attrs={'name': 'description'})
+            if descs:
+                self._meta_desc = descs[-1].get('content', '')
+        return self._meta_desc
+
+    def get_meta_image(self):
+        if not hasattr(self, '_meta_image'):
+            self._meta_image = None
+            descs = self.doc.find_all('meta', property='og:image')
+            if descs:
+                self._meta_image = descs[-1].get('content', None)
+        return self._meta_image
 
     @staticmethod
     def has_positive_effect(node):
@@ -383,7 +401,7 @@ class HtmlContentExtractor(object):
             return ''.join(partial_summaries)
 
         self.summary_begun = False  # miss the nonlocal feature
-        return summarize(self.article, max_length).strip()
+        return summarize(self.article, max_length).strip() or self.get_meta_description()
 
     def get_illustration(self):
         for img_node in self.article.find_all('img') + self.doc.find_all('img'):
@@ -391,6 +409,9 @@ class HtmlContentExtractor(object):
             if img.is_possible:
                 logger.info('Found a top image %s', img.url)
                 return img
+        # Only as a fall back
+        # if self.get_meta_image():
+        #     return self.get_meta_image()
         logger.info('No top image is found on %s', self.url)
         return None
 
