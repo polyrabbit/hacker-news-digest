@@ -35,8 +35,9 @@ def tokenize(s):  # not using yield just for cache
     return tuple(tokens)  # sorry but list is unhashable
 
 def my_default_user_agent(name="python-requests"):
-    return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 " \
-           "(KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
+    return 'Twitterbot/2.0'
+    # return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 " \
+    #        "(KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
 
 origin_build_response = requests.adapters.HTTPAdapter.build_response.im_func
 
