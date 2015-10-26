@@ -218,7 +218,7 @@ class HtmlContentExtractor(object):
     def get_meta_description(self):
         if not hasattr(self, '_meta_desc'):
             self._meta_desc = ''
-            descs = self.doc.find_all('meta', attrs={'name': 'description'})
+            descs = self.doc.find_all('meta', attrs={'name': re.compile('description', re.I)})
             if descs:
                 self._meta_desc = descs[-1].get('content', '')
         return self._meta_desc
@@ -340,8 +340,6 @@ class HtmlContentExtractor(object):
         return ''.join(ret), cur_length
 
     def get_summary(self, max_length=300):
-        if not self.calc_effective_text_len(self.article):
-            return u''
         preserved_tags = {'pre'}
 
         def is_meta_tag(node):
@@ -401,7 +399,13 @@ class HtmlContentExtractor(object):
             return ''.join(partial_summaries)
 
         self.summary_begun = False  # miss the nonlocal feature
-        return summarize(self.article, max_length).strip() or self.get_meta_description()
+        smr = u''
+        if self.calc_effective_text_len(self.article):
+            smr = summarize(self.article, max_length).strip()
+        if len(smr) <= len(self.get_meta_description()):
+            logger.info('Calculated summary is shorter than meta description(%s)', self.url)
+            return self.get_meta_description()
+        return smr
 
     def get_illustration(self):
         for img_node in self.article.find_all('img') + self.doc.find_all('img'):
