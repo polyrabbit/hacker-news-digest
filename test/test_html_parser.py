@@ -73,15 +73,29 @@ class PageContentExtractorTestCase(TestCase):
     #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
     #     print HtmlContentExtractor(resp.read()).get_summary()
 
-    # def test_check_image(self):
-    #     html_doc = """
-    #     <img src="http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg" />
-    #     """
-    #     img = WebImage('http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/', BS(html_doc).img)
-    #     self.assertTrue(img.is_possible)
+    def test_check_image(self):
+        html_doc = """
+        <img src="http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg" />
+        """
+        img = WebImage.from_attrs(
+            src='http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg',
+            referrer='http://www.washingtonpost.com/')
+        self.assertTrue(img.is_candidate)
 
     def test_non_top_image(self):
         self.assertIsNone(HtmlContentExtractor('').get_illustration())
+
+    def test_image_from_meta(self):
+        html_doc = """
+        <meta property="og:image" content="http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg">
+        <meta property="og:image" content="http://ww3.sinaimg.cn/large/e724cbefgw1exdqgziee9j207306mq2z.jpg">
+        <body>
+        <img src='fsda' />
+        </body>
+        """
+        # should choose the first meta image
+        self.assertEquals(HtmlContentExtractor(html_doc).get_illustration().url,
+                          'http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg')
 
     @unittest.skip('Skipped because summary is too short')
     def test_get_summary_from_all_short_paragraph(self):
@@ -259,8 +273,10 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('http://www.nasa.gov/feature/remembering-george-mueller-leader-of-early-human-spaceflight')
-        print ar.get_summary()
+        ar = legendary_parser_factory('http://www.vox.com/2014/10/26/6977315/buy-car-hassle-free')
+        # print ar.get_summary()
+        # print ar.article
+        print ar.get_illustration().url
         # print ar.get_favicon_url()
 
 if __name__ == '__main__':

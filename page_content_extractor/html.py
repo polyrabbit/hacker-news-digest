@@ -7,11 +7,10 @@ from collections import defaultdict
 from itertools import chain
 from math import sqrt
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
-import requests
 
-import imgsz
 from null import Null
 from .utils import tokenize, string_inclusion_ratio
+from .webimage import WebImage
 from backports.functools_lru_cache import lru_cache
 from markupsafe import escape
 
@@ -29,99 +28,6 @@ negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
     'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
     'section|text|preview|view|story-body', re.IGNORECASE)
-
-class WebImage(object):
-    is_possible = False
-    MIN_PX = 100
-    MIN_BYTES_SIZE = 4000
-    MAX_BYTES_SIZE = 2.5*1024*1024
-    SCALE_FROM_IMG_TO_TEXT = 22*22
-    raw_data = ''
-
-    def __init__(self, base_url, img_node):
-        # TODO cannot fetch image from washingtonpost
-        # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
-        if img_node.get('src') is None:
-            logger.info('No src')
-            return
-        # see https://bitbucket.org/raphaelzhang/novel-reader/src/d5f1e60c5387bfbc375e89cada55b3b05370cb01/extractor.py#cl-717
-        if img_node.get('src').startswith('data:image/'):
-            logger.info('Image is encoded in base64, too short')
-            return
-        if 'avatar' in ' '.join(img_node.get('class', []))+img_node.get('id', '') + img_node.get('src', '').lower():
-            logger.info('Maybe this is an avatar(%s)', img_node['src'])
-            return
-        self.base_url = base_url
-        img_node['src'] = urljoin(self.base_url, img_node['src'])
-        width, height = self.get_size(img_node)
-        # self.img_area_px = self.equivalent_text_len()
-        if not (width and height):
-            logger.info('Failed no width or height found, %s', img_node['src'])
-            return
-        if not self.check_dimension(width, height):
-            logger.info('Failed on dimension check(width=%s height=%s) %s',
-                    width, height, img_node['src'])
-            return
-        if not self.raw_data:
-            self.fetch_img(img_node['src'])
-        if not self.check_image_bytesize():
-            logger.info('Failed on image_bytesize check, size is %s, %s',
-                    len(self.raw_data), img_node['src'])
-            return
-        self.is_possible = True
-
-    def get_size(self, inode):
-        height = inode.get('height', '').strip().rstrip('px')
-        width = inode.get('width', '').strip().rstrip('px')
-        
-        if width.isdigit() and height.isdigit():
-            return int(width), int(height)
-
-        if self.fetch_img(inode['src']):
-            try:
-                return imgsz.fromstring(self.raw_data)[1:]
-            except ValueError as e:
-                logger.error('Error while determing the size of %s, %s', self.url, e)
-                return 0, 0
-        return 0, 0
-
-    def fetch_img(self, url):
-        try:
-            resp = requests.get(url, headers={'Referer': self.base_url})
-            # meta info
-            self.url = resp.url
-            self.raw_data = resp.content
-            self.content_type = resp.headers['Content-Type']
-            return True
-        except (IOError, KeyError) as e:
-            logger.info('Failed to fetch img(%s), %s', url, e)
-            return False
-    
-    def to_text_len(self):
-        return self.img_area_px / self.scale
-
-    def is_candidate_image(self):
-        pass
-
-    # See https://github.com/grangier/python-goose
-    def check_dimension(self, width, height):
-        """
-        returns true if we think this is kind of a bannery dimension
-        like 600 / 100 = 6 may be a fishy dimension for a good image
-        """
-        if width < self.MIN_PX or height < self.MIN_PX:
-            return False
-        dimension = 1.0 * width / height
-        return .2 < dimension < 5
-
-    def check_image_bytesize(self):
-        return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
-
-    def save(self, fp):
-        if isinstance(fp, basestring):
-            fp = open(fp, 'wb')
-        fp.write(self.raw_data)
-        fp.close()
 
 def tag_equal(self, other):
     return id(self) == id(other)
@@ -226,9 +132,9 @@ class HtmlContentExtractor(object):
     def get_meta_image(self):
         if not hasattr(self, '_meta_image'):
             self._meta_image = None
-            descs = self.doc.find_all('meta', property='og:image')
+            descs = self.doc.find_all('meta', property=re.compile('og:image', re.I))
             if descs:
-                self._meta_image = descs[-1].get('content', None)
+                self._meta_image = descs[0].get('content', None)
         return self._meta_image
 
     @staticmethod
@@ -267,13 +173,14 @@ class HtmlContentExtractor(object):
         return node.text_len
 
     def calc_img_area_len(self, cur_node):
-        img_len = 0
-        if cur_node.name == 'img':
-            img_len = WebImage(self.url, cur_node).to_text_len()
-        else:
-            for node in cur_node.find_all('img', recursive=False):  # only search children first
-                img_len += self.calc_img_area_len(node)
-        return img_len
+        return 0
+        # img_len = 0
+        # if cur_node.name == 'img':
+        #     img_len = WebImage.cached_builder(self.url, cur_node).to_text_len()
+        # else:
+        #     for node in cur_node.find_all('img', recursive=False):  # only search children first
+        #         img_len += self.calc_img_area_len(node)
+        # return img_len
 
     def purge(self):
         for tname in ignored_tags:
@@ -409,13 +316,16 @@ class HtmlContentExtractor(object):
 
     def get_illustration(self):
         for img_node in self.article.find_all('img') + self.doc.find_all('img'):
-            img = WebImage(self.url, img_node)
-            if img.is_possible:
+            img = WebImage.from_node(self.url, img_node)
+            if img.is_candidate:
                 logger.info('Found a top image %s', img.url)
                 return img
         # Only as a fall back
-        # if self.get_meta_image():
-        #     return self.get_meta_image()
+        if self.get_meta_image():
+            img = WebImage.from_attrs(src=self.get_meta_image(), referrer=self.url)
+            if img.is_candidate:
+                logger.info('Found a meta image %s', img.url)
+                return img
         logger.info('No top image is found on %s', self.url)
         return None
 

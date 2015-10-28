@@ -4,7 +4,7 @@ from StringIO import StringIO
 import datetime
 from hashlib import md5
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from index import db
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,9 @@ class HelperMixin(object):
             session.commit()
             return getattr(obj, pk_name)
         # except SQLAlchemyError:
+        except IntegrityError as e:  # if duplicated id, we just use the old one
+            session.rollback()
+            return e.params[pk_name]
         except Exception:
             logger.exception('Failed to save %s', kwargs.get(pk_name, 'image'))
             session.rollback()
