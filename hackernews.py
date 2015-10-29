@@ -18,44 +18,55 @@ class HackerNews(object):
     model_class = models.HackerNews
 
     def update(self, force=False):
-        stats = {'updated': 0, 'added': 0, 'errors': []}
+        stats = {'updated': 0, 'added': 0, 'removed': 0, 'errors': []}
         if force:
-            self.model_class.remove_except([])
+            stats['removed'] += self.model_class.remove_except([])
         news_list = self.parse_news_list()
         # add new items
         for news in news_list:
             try:
                 # Use news url as the key
-                if self.model_class.query.get(news['url']):
-                    logger.info('Updating %s', news['url'])
-                    stats['updated'] += 1
-                    # We need the url so we can't pop it here
-                    _news = news.copy()
-                    self.model_class.update(_news.pop('url'), **_news)
-                else:
-                    logger.info("Fetching %s", news['url'])
-                    try:
-                        parser = legendary_parser_factory(news['url'])
-                        news['summary'] = parser.get_summary(summary_length)
-                        news['favicon'] = parser.get_favicon_url()
-                        tm = parser.get_illustration()
-                        if tm:
-                            img_id = models.Image.add(content_type=tm.content_type,
-                                    raw_data=tm.raw_data)
-                            news['img_id'] = img_id
-                    except Exception as e:
-                        logger.exception('Failed to fetch %s, %s', news['url'], e)
-                        stats['errors'].append(str(e))
-                    self.model_class.add(**news)
-                    stats['added'] += 1
+                news_inst = self.model_class.query.get(news['url'])
+                if news_inst:
+                    if news_inst.summary:
+                        logger.info('Updating %s', news['url'])
+                        stats['updated'] += 1
+                        # We need the url so we can't pop it here
+                        _news = news.copy()
+                        self.model_class.update(_news.pop('url'), **_news)
+                        continue
+                    # If we don't find the summary, something has gone wrong,
+                    # just delete the whole and start over again.
+                    self.model_class.delete(news['url'])
+                    stats['removed'] += 1
+                self.insert_news(news, stats)
             except Exception as e:
                 logger.exception(e)
                 stats['errors'].append(str(e))
 
         if not force:
             # clean up old items
-            self.model_class.remove_except([n['url'] for n in news_list])
+            stats['removed'] += self.model_class.remove_except([n['url'] for n in news_list])
         return stats
+
+    def insert_news(self, news, stats):
+        try:
+            logger.info("Fetching %s", news['url'])
+            parser = legendary_parser_factory(news['url'])
+            news['summary'] = parser.get_summary(summary_length)
+            news['favicon'] = parser.get_favicon_url()
+            tm = parser.get_illustration()
+            if tm:
+                img_id = models.Image.add(
+                    content_type=tm.content_type,
+                    raw_data=tm.raw_data)
+                news['img_id'] = img_id
+        except Exception as e:
+            logger.exception('Failed to fetch %s, %s', news['url'], e)
+            stats['errors'].append(str(e))
+        finally:
+            self.model_class.add(**news)
+            stats['added'] += 1
 
     def parse_news_list(self):
         dom = BS(requests.get(self.end_point).text)

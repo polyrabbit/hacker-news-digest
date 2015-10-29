@@ -71,6 +71,8 @@ class HelperMixin(object):
         except SQLAlchemyError:
             logger.exception('Failed to clean old urls in %s', cls.__tablename__)
             session.rollback()
+        finally:
+            return rcnt + 1
 
 class HackerNews(db.Model, HelperMixin):
     __tablename__ = 'hackernews'

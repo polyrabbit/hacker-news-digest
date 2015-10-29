@@ -315,17 +315,18 @@ class HtmlContentExtractor(object):
         return smr
 
     def get_illustration(self):
-        for img_node in self.article.find_all('img') + self.doc.find_all('img'):
-            img = WebImage.from_node(self.url, img_node)
-            if img.is_candidate:
-                logger.info('Found a top image %s', img.url)
-                return img
-        # Only as a fall back
+        # meta images are the best choices
         if self.get_meta_image():
             img = WebImage.from_attrs(src=self.get_meta_image(), referrer=self.url)
             if img.is_candidate:
                 logger.info('Found a meta image %s', img.url)
                 return img
+        for img_node in self.article.find_all('img') + self.doc.find_all('img'):
+            img = WebImage.from_node(self.url, img_node)
+            if img.is_candidate:
+                logger.info('Found a top image %s', img.url)
+                return img
+
         logger.info('No top image is found on %s', self.url)
         return None
 

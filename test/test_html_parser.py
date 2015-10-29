@@ -273,10 +273,10 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('http://www.vox.com/2014/10/26/6977315/buy-car-hassle-free')
-        # print ar.get_summary()
+        ar = legendary_parser_factory('http://www.jianshu.com/p/5e997f9b7a9f')
+        print ar.get_summary()
         # print ar.article
-        print ar.get_illustration().url
+        # print ar.get_illustration().url
         # print ar.get_favicon_url()
 
 if __name__ == '__main__':
