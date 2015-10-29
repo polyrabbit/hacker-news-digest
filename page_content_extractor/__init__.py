@@ -33,7 +33,8 @@ def legendary_parser_factory(url):
         except Exception as e:
             logger.info('%s is not an embeddable, try another(%s)', resp.url, e)
 
-    ct = resp.headers.get('content-type', '').lower()
+    # if no content-type is provided, Chrome set as an html
+    ct = resp.headers.get('content-type', 'text').lower()
     if ct.startswith('text'):
         logger.info('Get an %s to parse', ct)
         return HtmlContentExtractor(resp.text, resp.url)
