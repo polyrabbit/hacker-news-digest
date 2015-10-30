@@ -127,15 +127,17 @@ class Image(db.Model, HelperMixin):
     __tablename__ = 'image'
 
     id = db.Column(db.String, default=md5_img, primary_key=True)
+    url = db.Column(db.String)
     content_type = db.Column(db.String)
     raw_data = db.Column(db.LargeBinary)
 
-    def __init__(self, content_type, raw_data):
+    def __init__(self, url, content_type, raw_data):
+        self.url = url
         self.content_type = content_type
         self.raw_data = raw_data
 
     def __repr__(self):
-        return u"%s<%s>" % (self.id, self.content_type)
+        return u"%s<%s>" % (self.id, self.url)
 
     def makefile(self):
         file = StringIO(self.raw_data)

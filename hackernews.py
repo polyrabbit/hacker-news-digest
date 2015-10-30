@@ -58,6 +58,7 @@ class HackerNews(object):
             tm = parser.get_illustration()
             if tm:
                 img_id = models.Image.add(
+                    url=tm.url,
                     content_type=tm.content_type,
                     raw_data=tm.raw_data)
                 news['img_id'] = img_id
