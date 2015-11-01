@@ -1,6 +1,5 @@
 import os
 import logging
-import multiprocessing
 
 DEBUG = 'DEBUG' in os.environ
 
