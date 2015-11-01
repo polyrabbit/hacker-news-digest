@@ -84,7 +84,7 @@ class HackerNews(db.Model, HelperMixin):
     score = db.Column(db.Integer)
     author = db.Column(db.String)
     author_link = db.Column(db.String)
-    submit_time = db.Column(db.String)
+    submit_time = db.Column(db.DateTime)
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
@@ -108,7 +108,7 @@ class StartupNews(db.Model, HelperMixin):
     score = db.Column(db.Integer)
     author = db.Column(db.String)
     author_link = db.Column(db.String)
-    submit_time = db.Column(db.String)
+    submit_time = db.Column(db.DateTime)
     comment_cnt = db.Column(db.Integer)
     comment_url = db.Column(db.String)
     summary = db.Column(db.String)
@@ -148,7 +148,7 @@ class LastUpdated(db.Model):
     __tablename__ = 'last_updated'
 
     table_name = db.Column(db.String, primary_key=True)
-    time_stamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    time_stamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __init__(self, tn, ts):
         self.table_name = tn
@@ -156,7 +156,7 @@ class LastUpdated(db.Model):
 
     @classmethod
     def update(cls, tn):
-       session.merge(cls(tn, datetime.datetime.now()))
+       session.merge(cls(tn, datetime.datetime.utcnow()))
        try:
             session.commit()
        except SQLAlchemyError:

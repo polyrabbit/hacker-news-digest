@@ -2,7 +2,7 @@ import re
 import logging
 from time import time
 from urlparse import urljoin
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import (
     Flask, render_template, abort, request, send_file,
@@ -40,7 +40,8 @@ def hackernews():
                     ('Ask', 'https://news.ycombinator.com/ask'),
                     ('Jobs', 'https://news.ycombinator.com/jobs'),
                     ('Submit', 'https://news.ycombinator.com/submit')],
-                last_updated = dt and human(dt, 1)
+                last_updated=dt,
+                site='hackernews',
             ))
     set_cache(resp, dt)
     return resp
@@ -59,7 +60,8 @@ def startupnews():
                     ('Comments', 'http://news.dbanotes.net/newcomments'),
                     ('Leaders', 'http://news.dbanotes.net/leaders'),
                     ('Submit', 'http://news.dbanotes.net/submit')],
-                last_updated = dt and human(dt, 1)
+                last_updated=dt,
+                site='startupnews',
             ))
     set_cache(resp, dt)
     return resp
@@ -90,48 +92,46 @@ def update(site):
         models.LastUpdated.update('startupnews')
     return jsonify(**stats)
 
-@app.route('/hackernews/feed', defaults={'site': 'hackernews'})
 @app.route('/startupnews/feed', defaults={'site': 'startupnews'})
+@app.route('/feed', defaults={'site': 'hackernews'})
 def feed(site):
     if site == 'hackernews':
-        title = 'Hacker News'
-        news_list = models.HackerNews.query.all()
+        title = 'Hacker News Digest'
+        news_list = models.HackerNews.query.order_by('submit_time desc').all()
     else:
-        title = 'Startup News'
-        news_list = models.StartupNews.query.all()
-
-    day_ago = hour_ago = minute_ago = 0
-    for news in news_list:
-        m = re.search(r'(?P<day>\d+) day', news.submit_time, re.I)
-        if m:
-            day_ago = int(m.group('day'))
-        m = re.search(r'(?P<hour>\d+) hour', news.submit_time, re.I)
-        if m:
-            hour_ago = int(m.group('hour'))
-        m = re.search(r'(?P<minute>\d+) minute', news.submit_time, re.I)
-        if m:
-            minute_ago = int(m.group('minute'))
-        news.submit_time = datetime.utcnow() - \
-                           timedelta(days=day_ago, hours=hour_ago, minutes=minute_ago)
-    news_list.sort(key=lambda n: n.submit_time, reversed=True)
+        title = 'Startup News Digest'
+        news_list = models.StartupNews.query.order_by('submit_time desc').all()
 
     feed = AtomFeed(title,
+                    updated=models.LastUpdated.get(site),
                     feed_url=request.url,
                     url=urljoin(request.url_root, url_for(site)),
-                    author='https://github.com/polyrabbit/')
+                    author={
+                        'name': 'polyrabbit',
+                        'uri': 'https://github.com/polyrabbit/'}
+                    )
     for news in news_list:
-        feed.add(news.title, news.summary,
-                 author=news.author,
+        feed.add(news.title,
+                 content=news.summary and news.summary +
+                     ('<p><img src="%s" style="width: 220px" /></p>' % news.image.url if news.img_id else ''),
+                 author={
+                     'name': news.author,
+                     'uri': news.author_link
+                 } if news.author_link else (),
                  url=news.url,
-                 updated=news.submit_time,
-                 published=news.submit_time)
+                 updated=news.submit_time,)
     return feed.get_response()
+
+@app.add_template_filter
+def natural_datetime(dt, precisoin):
+    # We use utc timezone because dt is in utc
+    return human(datetime.utcnow()-dt, precisoin)
 
 def set_cache(response, last_updated):
     delta = 0
     if last_updated:
         # Update every 10 minutes
-        delta = 10*60 - int((datetime.now() - last_updated).total_seconds())
+        delta = 10*60 - int((datetime.utcnow() - last_updated).total_seconds())
         if delta < 0:
             delta = 0
     response.cache_control.public = True

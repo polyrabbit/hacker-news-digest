@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="hacker news digest, startup news digest">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="{{ url_for('feed', site=site, _external=True) }}" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="bookmark" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
@@ -100,7 +101,7 @@
         {% endif %}
         <span class="summit-time" title="Submit time">
             <i class="fa fa-clock-o"></i>
-            <span class="last-updated">{{ news.submit_time }}</span>
+            <span class="last-updated" data-submitted="{{ news.submit_time }}">{{ news.submit_time|natural_datetime(1) }}</span>
         </span>
         {% if news.comment_url %}
             <span class="comment" title="Comments">
@@ -143,12 +144,14 @@
         |
         <li><a href="/startupnews">Startup News+</a></li>
         |
+        <li><a href="{{ url_for('feed', site=site) }}">RSS</a></li>
+        |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
         <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject=Hacker news digest feedback">Contact</a></li>
         {% if last_updated %}
         |
-            <li>Last updated: {{ last_updated }}</li>
+            <li data-updated="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
         {% endif %}
     </ul>
 </footer>
@@ -176,7 +179,7 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     return false;
 });
 </script>
-<script src="{{ url_for('static', filename='js/sort.js') }}?r=1"></script>
+<script src="{{ url_for('static', filename='js/sort.js') }}?r=3"></script>
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async="async"></script>
 </body>
 </html>
