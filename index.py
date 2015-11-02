@@ -1,4 +1,3 @@
-import re
 import logging
 from time import time
 from urlparse import urljoin
@@ -112,8 +111,9 @@ def feed(site):
                     )
     for news in news_list:
         feed.add(news.title,
-                 content=news.summary and news.summary +
-                     ('<p><img src="%s" style="width: 220px" /></p>' % news.image.url if news.img_id else ''),
+                 content=news.summary and 
+                 ('<img src="%s" style="width: 220px; float: left" />' % news.image.url if news.img_id else '') 
+                     + news.summary,
                  author={
                      'name': news.author,
                      'uri': news.author_link
