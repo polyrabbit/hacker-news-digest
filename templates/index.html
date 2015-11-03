@@ -148,7 +148,9 @@
         |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
-        <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject=Hacker news digest feedback">Contact</a></li>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=KWHUBFV5HCV22&item_name=Donate+for+the+{{ title|replace(' ', '+') }}" title="Please support my development!">Donate</a></li>
+        |
+        <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
         {% if last_updated %}
         |
             <li data-updated="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
