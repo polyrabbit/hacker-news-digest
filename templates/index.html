@@ -23,6 +23,7 @@
     <![endif]-->
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
+    <script src="{{ url_for('static', filename='js/jquery.lazyload.min.js') }}"></script>
     <script>
         function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
            $(img).replaceWith('<i class="fa fa-external-link"></i>');
@@ -126,7 +127,7 @@
     <div class="post-summary">
     {% if news.img_id %}
         <a class="feature-image" href="{{ url_for('image', img_id=news.img_id) }}">
-            <img class="img-rounded" src="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" onerror="this.src=this.alt"/>
+            <img class="img-rounded lazy" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" onerror="this.src=this.alt"/>
         </a>
     {% endif %}
     {% if news.summary %}
@@ -158,30 +159,37 @@
     </ul>
 </footer>
 </div>
+
 <!-- The modal dialog, which will be used to wrap the lightbox content -->
 <div class="modal fade in" id="img-preview-modal" tabindex="-1">
   <div class="modal-dialog">
         <img>
   </div>
 </div>
+<!-- End of the modal dialog -->
+
+<script>
+    $("img.lazy").lazyload({
+        threshold: 200
+    });
+</script>
 <script src="{{ url_for('static', filename='js/jquery.scrollUp.min.js') }}"></script>
 <script>
-$(function () {
+// We don't need to wait for the document.ready event, that costs a lot of time.
     $.scrollUp({
         scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
         scrollTitle: 'Scroll to top'
     });
-});
 </script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
-$('.post-item .post-summary .feature-image').click(function (e) {
-    $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
-    $('#img-preview-modal').modal();
-    return false;
-});
+    $('.post-item .post-summary .feature-image').click(function (e) {
+        $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
+        $('#img-preview-modal').modal();
+        return false;
+    });
 </script>
-<script src="{{ url_for('static', filename='js/sort.js') }}?r=3"></script>
-<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async="async"></script>
+<script src="{{ url_for('static', filename='js/sort.js') }}?r=3" async></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js" async></script>
+<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async></script>
 </body>
 </html>
