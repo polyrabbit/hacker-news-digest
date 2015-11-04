@@ -170,8 +170,12 @@
 
 <script>
     $("img.lazy").lazyload({
-        threshold: 200
+        threshold: 600
     });
+    // Load them all after 1 second
+    setTimeout(function() {
+        $("img.lazy").trigger("appear");
+    }, 60000);
 </script>
 <script src="{{ url_for('static', filename='js/jquery.scrollUp.min.js') }}"></script>
 <script>
