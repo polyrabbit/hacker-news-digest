@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% set title = 'Hacker News Digest' %}
+{% set site = 'hackernews' %}
+
+{% block head %}
+    <meta name="description" content="Hacker news digest is a responsive interface of hacker news with summaries and illustrations">
+    {{ super() }}
+{% endblock %}
+
+{% block nav_brand %}
+    <a class="navbar-brand" href="https://news.ycombinator.com/news" target="_blank">Hacker News</a>
+{% endblock %}
+
+{% block nav_links %}
+    <li>
+        <a href="https://news.ycombinator.com/newest" target="_blank">New</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/newcomments" target="_blank">Comments</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/show" target="_blank">Show</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/ask" target="_blank">Ask</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/jobs" target="_blank">Jobs</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/submit" target="_blank">Submit</a>
+    </li>
+{% endblock %}

@@ -28,20 +28,10 @@ def hackernews():
     dt = models.LastUpdated.get('hackernews')
     if dt and not is_resource_modified(request.environ, None, None, last_modified=dt):
         return Response(status=304)
-    resp = Response(render_template('index.html',
-                title='Hacker News Digest',
+    resp = Response(render_template(
+                'hackernews.html',
                 news_list=models.HackerNews.query.order_by('rank').all(),
-                navs=[
-                    ('Hacker News', 'https://news.ycombinator.com/news'),
-                    ('New', 'https://news.ycombinator.com/newest'),
-                    ('Comments', 'https://news.ycombinator.com/newcomments'),
-                    ('Show', 'https://news.ycombinator.com/show'),
-                    ('Ask', 'https://news.ycombinator.com/ask'),
-                    ('Jobs', 'https://news.ycombinator.com/jobs'),
-                    ('Submit', 'https://news.ycombinator.com/submit')],
-                last_updated=dt,
-                site='hackernews',
-            ))
+                last_updated=dt))
     set_cache(resp, dt)
     return resp
 
@@ -50,18 +40,10 @@ def startupnews():
     dt = models.LastUpdated.get('startupnews')
     if dt and not is_resource_modified(request.environ, None, None, last_modified=dt):
         return Response(status=304)
-    resp = Response(render_template('index.html',
-                title='Startup News Digest',
+    resp = Response(render_template(
+                'startupnews.html',
                 news_list=models.StartupNews.query.order_by('rank').all(),
-                navs=[
-                    ('Startup News', 'http://news.dbanotes.net/news'),
-                    ('New', 'http://news.dbanotes.net/newest'),
-                    ('Comments', 'http://news.dbanotes.net/newcomments'),
-                    ('Leaders', 'http://news.dbanotes.net/leaders'),
-                    ('Submit', 'http://news.dbanotes.net/submit')],
-                last_updated=dt,
-                site='startupnews',
-            ))
+                last_updated=dt))
     set_cache(resp, dt)
     return resp
 

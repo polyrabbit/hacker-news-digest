@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% set title = 'Startup News Digest' %}
+{% set site = 'startupnews' %}
+
+{% block head %}
+    <meta name="description" content="自动提取 Startup News 上文章的概要和配图">
+    {{ super() }}
+{% endblock %}
+
+{% block nav_brand %}
+    <a class="navbar-brand" href="http://news.dbanotes.net/news" target="_blank">Startup News</a>
+{% endblock %}
+
+{% block nav_links %}
+    <li>
+        <a href="http://news.dbanotes.net/newest" target="_blank">New</a>
+    </li>
+    <li>
+        <a href="http://news.dbanotes.net/newcomments" target="_blank">Comments</a>
+    </li>
+    <li>
+        <a href="http://news.dbanotes.net/leaders" target="_blank">Leaders</a>
+    </li>
+    <li>
+        <a href="http://news.dbanotes.net/submit" target="_blank">Submit</a>
+    </li>
+{% endblock %}
+

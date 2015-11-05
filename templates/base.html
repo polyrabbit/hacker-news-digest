@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+    {% block head %}
     <title>{{ title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="hacker news digest, startup news digest">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="{{ url_for('feed', site=site, _external=True) }}" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -37,42 +37,41 @@
       ga('create', 'UA-36049801-3', 'auto');
       ga('send', 'pageview');
     </script>
+    {% endblock head %}
 </head>
 <body>
 <div class="container">
 <a href="https://github.com/polyrabbit/hacker-news-digest" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0; opacity: 0.8; filter: alpha(opacity=80);" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" class="hidden-xs"></a>
+
 <nav class="navbar">
     <div class="navbar-header">
-         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-          </button>
-        <a class="navbar-brand" href="{{ navs[0][1] }}" target="_blank">{{ navs[0][0] }}</a>
+        </button>
+        {% block nav_brand %} {% endblock %}
     </div>
     <div class="collapse navbar-collapse" id="hn-menu">
         <ul class="nav navbar-nav nav-pills">
-            {% for nav in navs[1:] %}
-            <li>
-                <a href="{{ nav[1] }}" target="_blank">{{ nav[0] }}</a>
-            </li>
-            {% endfor %}
+            {% block nav_links %} {% endblock %}
             <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
-                Sort by
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-hn-rank">HN rank</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-score">Score</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-comments">Comments</a></li>
-                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-submit-time">Submit time</a></li>
-              </ul>
+                <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                    Sort by
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-hn-rank">HN rank</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-score">Score</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-comments">Comments</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-submit-time">Submit time</a></li>
+                </ul>
             </li>
         </ul>
     </div>
 </nav>
+
 {% for news in news_list %}
 <article class="post-item" data-rank="{{ news.rank }}">
     <div class="post-title">
