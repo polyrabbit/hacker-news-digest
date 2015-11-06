@@ -23,7 +23,6 @@
     <![endif]-->
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
-    <script src="{{ url_for('static', filename='js/jquery.lazyload.min.js') }}"></script>
     <script>
         function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
            $(img).replaceWith('<i class="fa fa-external-link"></i>');
@@ -126,7 +125,8 @@
     <div class="post-summary">
     {% if news.img_id %}
         <a class="feature-image" href="{{ url_for('image', img_id=news.img_id) }}">
-            <img class="img-rounded lazy" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" onerror="this.src=this.alt"/>
+            {# Thanks to http://loading.io/ for the spinner #}
+            <img class="img-rounded lazy" src="{{ url_for('static', filename='spinner.gif') }}" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" />
         </a>
     {% endif %}
     {% if news.summary %}
@@ -148,7 +148,9 @@
         |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
+        {% block donate %}
         <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=KWHUBFV5HCV22&item_name=Donate+for+the+{{ title|replace(' ', '+') }}" title="Please support my development!">Donate</a></li>
+        {% endblock %}
         |
         <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
         {% if last_updated %}
@@ -167,16 +169,25 @@
 </div>
 <!-- End of the modal dialog -->
 
+{# https://github.com/tuupola/jquery_lazyload #}
+<script src="{{ url_for('static', filename='js/jquery.lazyload.min.js') }}"></script>
 <script>
     $("img.lazy").lazyload({
-        threshold: 600
-    });
+        threshold: 600,
+    }).one('error', function() {
+        //XXX jquery.lazyload uses another img tag to load img, so putting error event
+        // here won't work, I hardcoded the lazyload.min.js to handler the onerror event,
+        // here is redundant
+        this.src = this.alt;
+    })
     // Load them all after 1 second
     setTimeout(function() {
         $("img.lazy").trigger("appear");
     }, 60000);
 </script>
-<script src="{{ url_for('static', filename='js/jquery.scrollUp.min.js') }}"></script>
+
+{# https://github.com/markgoodyear/scrollup #}
+<script src="//cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
 <script>
 // We don't need to wait for the document.ready event, that costs a lot of time.
     $.scrollUp({
@@ -184,6 +195,7 @@
         scrollTitle: 'Scroll to top'
     });
 </script>
+
 <script>
     $('.post-item .post-summary .feature-image').click(function (e) {
         $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
