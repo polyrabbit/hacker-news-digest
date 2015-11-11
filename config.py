@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 
 DEBUG = 'DEBUG' in os.environ
 
@@ -7,7 +8,11 @@ logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(levelname)s - [%(asctime)s] %(message)s')
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-PORT = int(os.environ.get('PORT', 5000))
+try:
+    PORT = int(os.environ['VCAP_APP_PORT'])
+except KeyError:
+    # Easier to ask for forgiveness rather than permission
+    PORT = int(os.environ.get('PORT', 5000))
 
 # Fail fast
 HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
@@ -15,9 +20,12 @@ HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
 # Free account on heroku
 DB_CONNECTION_LIMIT = 20
 # Database
-SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL",
-    'postgres://postgres@localhost:5432/hndigest')\
-    .replace('postgres://', 'postgresql://')
+try:
+    vcap_services = os.environ['VCAP_SERVICES']
+    SQLALCHEMY_DATABASE_URI = json.loads(vcap_services)['postgresql-9.1'][0]['credentials']['uri']
+except Exception:
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", 'postgres://postgres@localhost:5432/hndigest')
+SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://')
 SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
