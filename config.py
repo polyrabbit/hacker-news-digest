@@ -15,9 +15,12 @@ HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
 # Free account on heroku
 DB_CONNECTION_LIMIT = 20
 # Database
-SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL",
-    'postgres://postgres@localhost:5432/hndigest')\
-    .replace('postgres://', 'postgresql://')
+try:
+    SQLALCHEMY_DATABASE_URI = os.environ['VCAP_SERVICES']['postgresql-9.1'][0]['credentials']['uri']
+except KeyError:
+    # Easier to ask for forgiveness rather than permission
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", 'postgres://postgres@localhost:5432/hndigest')
+SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://')
 SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
