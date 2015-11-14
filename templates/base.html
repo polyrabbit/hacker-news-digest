@@ -11,6 +11,11 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
+    <script type="text/javascript">
+        // handle Ads inserted by ISP
+        if (window != top)
+                top.location.href = window.location.href;
+    </script>
     <!--[if IE 7]>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome-ie7.min.css">
     <![endif]-->
