@@ -43,6 +43,7 @@ accesslog = '-'
 errorlog = '-'
 preload_app = True
 worker_class = "gevent"
+timeout = 10*60
 
 summary_length = 250
 sites_for_users = ('github.com', 'medium.com')
