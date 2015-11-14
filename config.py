@@ -35,11 +35,14 @@ SQLALCHEMY_ECHO = DEBUG
 bind = "unix:/tmp/nginx.socket"
 # Each worker occupies 25M memory
 # workers = multiprocessing.cpu_count()*2
-workers = 3
+# workers = 3
+# needs restarting or something wired will happen
 max_requests = 100
-threads = SQLALCHEMY_POOL_SIZE
+# threads = SQLALCHEMY_POOL_SIZE
 accesslog = '-'
 errorlog = '-'
+preload_app = True
+worker_class = "gevent"
 
 summary_length = 250
 sites_for_users = ('github.com', 'medium.com')
