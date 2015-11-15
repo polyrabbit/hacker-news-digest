@@ -2,6 +2,7 @@
 ==================
 
 [![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
+[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/polyrabbit/hacker-news-digest)
 
 This service extracts summaries and illustrations from [hacker news](https://news.ycombinator.com/) articles for people who want to get the most out of hacker news while cutting down the time spent on deciding which one to read and which to skip.
 
