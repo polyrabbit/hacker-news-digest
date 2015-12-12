@@ -9,13 +9,15 @@ run: initdb
 run-in-docker: initdb
 	gunicorn -b 0.0.0.0:5000 -c config.py index:app
 
-run-in-heroku: initdb setcron initoneapm
+run-in-heroku: initdb setcron initnewrelic
 	mkdir -p logs/nginx
 	touch /tmp/app-initialized
+	# blueware-admin run-program 
 	[ -f bin/start-nginx ] && \
-		blueware-admin run-program \
-		bin/start-nginx gunicorn -c config.py index:app || \
-		blueware-admin run-program \
+		bin/start-nginx \
+		newrelic-admin run-program \
+		gunicorn -c config.py index:app || \
+		newrelic-admin run-program \
 		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
 
 test:
