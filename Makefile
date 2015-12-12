@@ -1,4 +1,4 @@
-export NEWRELIC_CONFIG_FILE=config/newrelic.ini
+export NEW_RELIC_CONFIG_FILE=config/newrelic.ini
 export BLUEWARE_CONFIG_FILE=config/blueware.ini 
 
 .PHONY: run test initdb dropdb
@@ -9,12 +9,15 @@ run: initdb
 run-in-docker: initdb
 	gunicorn -b 0.0.0.0:5000 -c config.py index:app
 
-run-in-heroku: initdb setcron initoneapm
+run-in-heroku: initdb setcron initnewrelic
 	mkdir -p logs/nginx
 	touch /tmp/app-initialized
-	blueware-admin run-program \
+	# blueware-admin run-program 
 	[ -f bin/start-nginx ] && \
-		bin/start-nginx gunicorn -c config.py index:app || \
+		bin/start-nginx \
+		newrelic-admin run-program \
+		gunicorn -c config.py index:app || \
+		newrelic-admin run-program \
 		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
 
 test:
@@ -33,7 +36,8 @@ setcron:
 	while true; do sleep 600; curl -s -H "User-Agent: Update from internal" -L "http://localhost:$(PORT)/update" -X POST `[ -z $${HN_UPDATE_KEY} ] && echo '' || echo -d key=$${HN_UPDATE_KEY}`; done &
 
 initnewrelic:
-	sed -i "s/xxxxxxxxx/${NEW_RELIC_API_KEY}/" ${NEWRELIC_CONFIG_FILE}
+	pip install newrelic
+	sed -i "s/xxxxxxxxx/${NEW_RELIC_API_KEY}/" ${NEW_RELIC_CONFIG_FILE}
 
 initoneapm:
 	pip install -i http://pypi.oneapm.com/simple --trusted-host pypi.oneapm.com blueware
