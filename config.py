@@ -4,6 +4,8 @@ import json
 
 DEBUG = 'DEBUG' in os.environ
 
+# SERVER_NAME = 'www.hackernews.im'
+
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(levelname)s - [%(asctime)s] %(message)s')
 logging.getLogger("requests").setLevel(logging.WARNING)
