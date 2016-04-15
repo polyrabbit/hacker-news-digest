@@ -149,12 +149,15 @@
         |
         <li><a href="/startupnews">Startup News+</a></li>
         |
-        <li><a href="{{ url_for('feed', site=site) }}">RSS</a></li>
+        <li><a href="{{ url_for('feed', site=site) }}" data-toggle="tooltip"
+               title="Add a parameter <code>gte</code> to filter for greater or equal scores,
+               e.g., <code>{{ url_for('feed', site=site) }}?gte=200</code> will extract news
+               whose score is greater or equal than 200">RSS</a></li>
         |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
         {% block donate %}
-        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=KWHUBFV5HCV22&item_name=Donate+for+the+{{ title|replace(' ', '+') }}" title="Please support my development!">Donate</a></li>
+        <li><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=KWHUBFV5HCV22&item_name=Donate+for+the+{{ title|replace(' ', '+') }}" data-toggle="tooltip" title="Please support my development!">Donate</a></li>
         {% endblock %}
         |
         <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
@@ -200,7 +203,6 @@
         scrollTitle: 'Scroll to top'
     });
 </script>
-
 <script>
     $('.post-item .post-summary .feature-image').click(function (e) {
         $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
@@ -209,7 +211,12 @@
     });
 </script>
 <script src="{{ url_for('static', filename='js/sort.js') }}?r=3" async></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js" async></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script>
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip({html: true});
+    })
+</script>
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async></script>
 </body>
 </html>

@@ -76,12 +76,19 @@ def update(site):
 @app.route('/startupnews/feed', defaults={'site': 'startupnews'})
 @app.route('/feed', defaults={'site': 'hackernews'})
 def feed(site):
+    gte = request.args.get('gte', 0)
+    try:
+        gte = int(gte)
+    except ValueError:
+        gte = 0
     if site == 'hackernews':
         title = 'Hacker News Digest'
-        news_list = models.HackerNews.query.order_by('submit_time desc').all()
+        news_list = models.HackerNews.query\
+            .filter(models.HackerNews.score>=gte).order_by('submit_time desc').all()
     else:
         title = 'Startup News Digest'
-        news_list = models.StartupNews.query.order_by('submit_time desc').all()
+        news_list = models.StartupNews.query\
+            .filter(models.StartupNews.score>=gte).order_by('submit_time desc').all()
 
     feed = AtomFeed(title,
                     updated=models.LastUpdated.get(site),
