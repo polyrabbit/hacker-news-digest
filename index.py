@@ -81,14 +81,20 @@ def feed(site):
         gte = int(gte)
     except ValueError:
         gte = 0
+    substr = request.args.get('contain', '')
+    substr = '%' + substr + '%'
     if site == 'hackernews':
         title = 'Hacker News Digest'
         news_list = models.HackerNews.query\
-            .filter(models.HackerNews.score>=gte).order_by('submit_time desc').all()
+            .filter(models.HackerNews.score>=gte)\
+            .filter(models.HackerNews.title.ilike(substr))\
+            .order_by('submit_time desc').all()
     else:
         title = 'Startup News Digest'
         news_list = models.StartupNews.query\
-            .filter(models.StartupNews.score>=gte).order_by('submit_time desc').all()
+            .filter(models.StartupNews.score>=gte)\
+            .filter(models.StartupNews.title.ilike(substr))\
+            .order_by('submit_time desc').all()
 
     feed = AtomFeed(title,
                     updated=models.LastUpdated.get(site),

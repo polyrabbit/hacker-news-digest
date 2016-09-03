@@ -150,9 +150,9 @@
         <li><a href="/startupnews">Startup News+</a></li>
         |
         <li><a href="{{ url_for('feed', site=site) }}" data-toggle="tooltip"
-               title="Add a parameter <code>gte</code> to filter for greater or equal scores,
-               e.g., <code>{{ url_for('feed', site=site) }}?gte=200</code> will extract news
-               whose score is greater or equal than 200">RSS</a></li>
+        title="<p class='text-left'>Feed supporting parameters:</p>
+        <li class='text-left'><code>gte</code> filters for greater or equal scores</li>
+        <li class='text-left'><code>contain</code> filters for news whose title contains certain string">RSS</a></li>
         |
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
