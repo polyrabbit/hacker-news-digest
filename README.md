@@ -12,6 +12,7 @@ This service extracts summaries and illustrations from [hacker news](https://new
 * Common video sites, PDFs and gists of github are embedded directly
 * Subdomains and their lovely favicons are also shown
 * Sort articles by score/comment/time
+* RSS feed can be customized by score and keyword
 
 ### Talk is cheap, illustrate what it can do for me!
 
