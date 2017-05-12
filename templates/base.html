@@ -163,7 +163,7 @@
         <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
         {% if last_updated %}
         |
-            <li data-updated="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
+        <li data-updated="{{ last_updated }}" data-toggle="tooltip" title="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
         {% endif %}
     </ul>
 </footer>
