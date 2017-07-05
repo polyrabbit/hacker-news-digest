@@ -164,13 +164,13 @@
         <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
         |
         {% block donate %}
-        <li><a href="https://www.paypal.me/polyrabbit" data-toggle="tooltip" title="Thanks for supporting hacker-news-digest!">Donate</a></li>
+        <li><a href="https://www.paypal.me/polyrabbit" data-toggle="tooltip" title="Thanks for supporting hacker-news-digest" target="_blank">Donate</a></li>
         {% endblock %}
         |
         <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
         {% if last_updated %}
         |
-            <li data-updated="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
+        <li data-updated="{{ last_updated }}" data-toggle="tooltip" title="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
         {% endif %}
     </ul>
 </footer>
