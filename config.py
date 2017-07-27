@@ -4,7 +4,7 @@ import json
 
 DEBUG = 'DEBUG' in os.environ
 
-# SERVER_NAME = 'www.hackernews.im'
+# SERVER_NAME = 'hackernews.betacat.io'
 
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(levelname)s - [%(asctime)s] %(message)s')

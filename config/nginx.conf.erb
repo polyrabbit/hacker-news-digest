@@ -39,7 +39,7 @@ http {
 
 	server {
 		listen <%= ENV["PORT"] || 80 %> default_server;
-        server_name www.hackernews.im hackernews.im
+        server_name hackernews.betacat.io;
 		keepalive_timeout 5;
 
 		location / {
@@ -68,7 +68,7 @@ http {
 
     server {
 		listen <%= ENV["PORT"] || 80 %>;
-        server_name the-hacker-news.herokuapp.com;
-        rewrite  ^/(.*)$ http://www.hackernews.im/$1 permanent;
+        server_name the-hacker-news.herokuapp.com www.hackernews.im hackernews.im;
+        rewrite  ^/(.*)$ http://hackernews.betacat.io/$1 permanent;
     }
 }

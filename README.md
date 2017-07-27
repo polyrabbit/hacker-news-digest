@@ -1,4 +1,4 @@
-[Hacker News Digest](http://www.hackernews.im/)
+[Hacker News Digest](http://hackernews.betacat.io/)
 ==================
 
 [![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
@@ -31,4 +31,4 @@ This service extracts summaries and illustrations from [hacker news](https://new
 ### LICENSE
 [LGPL v3](LICENSE-lgpl-3.0.txt)
 
-***中文版的 [Startup News Digest](http://www.hackernews.im/startupnews)***
+***中文版的 [Startup News Digest](http://hackernews.betacat.io/startupnews)***
