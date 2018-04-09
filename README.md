@@ -31,9 +31,7 @@ This service extracts summaries and illustrations from [hacker news](https://new
 ### LICENSE
 [LGPL v3](LICENSE-lgpl-3.0.txt)
 
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/G8ZV529iq7CuaDw7NF5Qfy7h/polyrabbit/hacker-news-digest'>
-  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/G8ZV529iq7CuaDw7NF5Qfy7h/polyrabbit/hacker-news-digest.svg' />
-</a>
+
 
 ***中文版的 [Startup News Digest](http://hackernews.betacat.io/startupnews)***
 
