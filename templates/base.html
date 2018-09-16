@@ -138,7 +138,7 @@
     {% if news.img_id %}
         <a class="feature-image" href="{{ url_for('image', img_id=news.img_id) }}">
             {# Thanks to http://loading.io/ for the spinner #}
-            <img class="img-rounded lazy" src="{{ url_for('static', filename='spinner.gif') }}" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" />
+            <img class="img-rounded lazy" src="{{ url_for('static', filename='spinner.gif') }}" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" lazyload="on" />
         </a>
     {% endif %}
     {% if news.summary %}

@@ -10,7 +10,7 @@ gunicorn==19.1.1
 lxml==3.3.6
 null==0.6.1
 pdfminer==20140328
-psycopg2==2.5.4
+psycopg2==2.7.1
 requests==2.2.1
 SQLAlchemy==0.9.4
 trollius==1.0.1

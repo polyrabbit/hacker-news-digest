@@ -6,7 +6,7 @@
 
 This service extracts summaries and illustrations from [hacker news](https://news.ycombinator.com/) articles for people who want to get the most out of hacker news while cutting down the time spent on deciding which one to read and which to skip.
 
-Also see my note on [How to extract main content from web pages using Machine-Learning](%5Btutorial%5D%20How-to-extract-main-content-from-web-pages-using-Machine-Learning.ipynb).
+Also see my guide on [How to extract main content from web pages using Machine-Learning](%5Btutorial%5D%20How-to-extract-main-content-from-web-pages-using-Machine-Learning.ipynb).
 
 ### Features
 * A responsive and modern interface that fits well on mobile phones
@@ -33,4 +33,7 @@ Also see my note on [How to extract main content from web pages using Machine-Le
 ### LICENSE
 [LGPL v3](LICENSE-lgpl-3.0.txt)
 
+
+
 ***中文版的 [Startup News Digest](http://hackernews.betacat.io/startupnews)***
+
