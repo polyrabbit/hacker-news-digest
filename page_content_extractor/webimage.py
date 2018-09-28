@@ -33,9 +33,10 @@ class WebImage(object):
         if self.url.startswith('data:image/'):
             logger.info('Image is encoded in base64, too short')
             return False
-        if 'avatar' in '%s %s %s' % (' '.join(self.attrs.get('class', [])),
-                self.attrs.get('id', ''), urlparse(self.url).path.lower()):
-            logger.info('Maybe this is an avatar(%s)', self.url)
+        attr_str = '%s %s %s %s' % (' '.join(self.attrs.get('class', [])),
+                self.attrs.get('id', ''), self.attrs.get('alt', ''), urlparse(self.url).path.lower())
+        if 'avatar' in attr_str or 'spinner' in attr_str:
+            logger.info('Maybe this is an avatar/spinner(%s)', self.url)
             return False
         width, height = self.get_size()
         # self.img_area_px = self.equivalent_text_len()

@@ -132,9 +132,9 @@ class HtmlContentExtractor(object):
     def get_meta_image(self):
         if not hasattr(self, '_meta_image'):
             self._meta_image = None
-            descs = self.doc.find_all('meta', property=re.compile('og:image', re.I))
-            if descs:
-                self._meta_image = descs[0].get('content', None)
+            og_images = self.doc.find_all('meta', property=re.compile('og:image', re.I))
+            if og_images:
+                self._meta_image = og_images[0].get('content', None)
         return self._meta_image
 
     @staticmethod

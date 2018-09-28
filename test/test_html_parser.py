@@ -90,7 +90,7 @@ class PageContentExtractorTestCase(TestCase):
         <meta property="og:image" content="http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg">
         <meta property="og:image" content="http://ww3.sinaimg.cn/large/e724cbefgw1exdqgziee9j207306mq2z.jpg">
         <body>
-        <img src='fsda' />
+        <img src="https://assets-cdn.github.com/images/spinners/octocat-spinner-128.gif" alt="Octocat Spinner Icon" class="m-2" width="28">
         </body>
         """
         # should choose the first meta image
