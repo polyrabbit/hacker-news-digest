@@ -133,7 +133,7 @@ class HackerNews(object):
     def get_comment_url(self, path):
         if not isinstance(path, basestring):
             return None
-        return 'http://cheeaun.github.io/hackerweb/#/item/%s' % re.search(r'\d+', path).group()
+        return 'https://news.ycombinator.com/item?id=%s' % re.search(r'\d+', path).group()
 
     def human2datetime(self, text):
         """Convert human readable time strings to datetime
