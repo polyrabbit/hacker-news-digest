@@ -3,7 +3,7 @@ backports.functools-lru-cache==1.0.3
 beautifulsoup4==4.3.2
 cchardet==0.3.5
 chardet==2.2.1
-Flask==0.10.1
+Flask==1.0
 Flask-SQLAlchemy==2.0
 futures==2.1.6
 gunicorn==19.1.1
