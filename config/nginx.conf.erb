@@ -64,6 +64,11 @@ http {
             expires 1d;
         }
 
+        location /ads.txt {
+            root <%= Dir.pwd %>/static/;
+            expires 1d;
+        }
+
 	}
 
     server {

@@ -46,7 +46,7 @@ coverage.xml
 .ropeproject
 
 # PyCharm
-.idea
+.idea/
 
 # Django stuff:
 *.log
@@ -57,3 +57,5 @@ docs/_build/
 
 # os X
 .DS_Store
+
+.env
