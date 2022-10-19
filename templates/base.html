@@ -2,100 +2,147 @@
 <html>
 <head>
     {% block head %}
-    <title>{{ title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="{{ url_for('feed', site=site, _external=True) }}" />
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="bookmark" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
-    <script type="text/javascript">
-        // handle Ads inserted by ISP
-        if (window != top)
-                top.location.href = window.location.href;
-    </script>
-    <!--[if IE 7]>
+        <title>{{ title }}</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="/feed"/>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        <link rel="bookmark" href="/static/favicon.ico">
+        <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+        <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+        <script type="text/javascript">
+          // handle Ads inserted by ISP
+          if (window !== top)
+            top.location.href = window.location.href;
+        </script>
+        <!--[if IE 7]>
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.1.0/css/font-awesome-ie7.min.css">
-    <![endif]-->
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/style.css') }}?r=9">
-    <!--[if lt IE 9]>
-        <script src="{{ url_for('static', filename='css/respond.min.js') }}" type="text/javascript"></script>
+        <![endif]-->
+        <link rel="stylesheet" type="text/css" media="screen"
+              href="/static/css/style.css?r=9">
+        <!--[if lt IE 9]>
+        <script src="/static/css/respond.min.js" type="text/javascript"></script>
         <script>
             alert('IE is not fully supported!');
         </script>
-    <![endif]-->
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
-    <script>
-        function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
-           $(img).replaceWith('<i class="fa fa-external-link"></i>');
-        }
-    </script>
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-36049801-3', 'auto');
-      ga('send', 'pageview');
-    </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <![endif]-->
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
+        <script>
+          function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
+            $(img).replaceWith('<i class="fa fa-external-link"></i>');
+          }
+        </script>
+        <script>
+          (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+              (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+              m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+          })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+          ga('create', 'UA-36049801-3', 'auto');
+          ga('send', 'pageview');
+        </script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     {% endblock head %}
 </head>
 <body>
 <div class="container">
-<a target="_blank" href="https://github.com/polyrabbit/hacker-news-digest" class="github-corner" aria-label="View source on GitHub">
-    <svg class="hidden-xs" width="80" height="80" viewBox="0 0 250 250" style="fill:#FD6C6C; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <a target="_blank" href="https://github.com/polyrabbit/hacker-news-digest" class="github-corner"
+       aria-label="View source on GitHub">
+        <svg class="hidden-xs" width="80" height="80" viewBox="0 0 250 250"
+             style="fill:#FD6C6C; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+                  fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+                  fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+    }
 
-<nav class="navbar">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-        </button>
-        {% block nav_brand %} {% endblock %}
-    </div>
-    <div class="collapse navbar-collapse" id="hn-menu">
-        <ul class="nav navbar-nav nav-pills">
-            {% block nav_links %} {% endblock %}
-            <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
-                    Sort by
-                    <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-hn-rank">HN rank</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-score">Score</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-comments">Comments</a></li>
-                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-submit-time">Submit time</a></li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-</nav>
-{% for news in news_list %}
-<article class="post-item" data-rank="{{ news.rank }}">
-    <div class="post-title">
-        <h3>
-            <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title|trim }}</a>
-        </h3>
-    </div>
+    @keyframes octocat-wave {
+        0%, 100% {
+            transform: rotate(0)
+        }
+        20%, 60% {
+            transform: rotate(-25deg)
+        }
+        40%, 80% {
+            transform: rotate(10deg)
+        }
+    }
 
-    <div class="post-meta">
-        {% if news.score %}
-            <span class="score" title="Score">
+    @media (max-width: 500px) {
+        .github-corner:hover .octo-arm {
+            animation: none
+        }
+
+        .github-corner .octo-arm {
+            animation: octocat-wave 560ms ease-in-out
+        }
+    }</style>
+
+    <nav class="navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hn-menu">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            {% block nav_brand %} {% endblock %}
+        </div>
+        <div class="collapse navbar-collapse" id="hn-menu">
+            <ul class="nav navbar-nav nav-pills">
+                {% block nav_links %} {% endblock %}
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                        Sort by
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-hn-rank">HN
+                            rank</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-score">Score</a>
+                        </li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   id="sort-by-comments">Comments</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" id="sort-by-submit-time">Submit
+                            time</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% for news in news_list %}
+        <article class="post-item" data-rank="{{ news.rank }}">
+            <div class="post-title">
+                <h3>
+                    <a target="_blank" class="post-url" href="{{ news.url }}">{{ news.title|trim }}</a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                {% if news.score %}
+                    <span class="score" title="Score">
                 <i class="fa fa-heart" style="color: red;"></i>
                 <span>
                     {{ news.score }}
                 </span>
             </span>
-        {% endif %}
-        {% if news.author_link %}
-            <span class="author-link" title="Author">
+                {% endif %}
+                {% if news.author_link %}
+                    <span class="author-link" title="Author">
                 <a href="{{ news.author_link }}" rel="author" target="_blank">
                     <i class="fa fa-user"></i>
                     <span>
@@ -103,134 +150,155 @@
                     </span>
                 </a>
             </span>
-        {% endif %}
-        <span class="summit-time" title="Submit time">
+                {% endif %}
+                <span class="summit-time" title="Submit time">
             <i class="fa fa-clock-o"></i>
-            <span class="last-updated" data-submitted="{{ news.submit_time }}">{{ news.submit_time|natural_datetime(1) }}</span>
+            <span class="last-updated"
+                  data-submitted="{{ news.submit_time }} UTC"><span>{{ news.submit_time }} UTC</span></span>
         </span>
-        {% if news.comment_url %}
-            <span class="comment" title="Comments">
+                {% if news.comment_url %}
+                    <span class="comment" title="Comments">
                 <a href="{{ news.comment_url }}" rel="comment">
                     <i class="fa fa-comments"></i>
                     {{ news.comment_cnt }}
                 </a>
             </span>
-        {% endif %}
-        {% if news.comhead %}
-            <span class="host" title="Host">
+                {% endif %}
+                {% if news.comhead %}
+                    <span class="host" title="Host">
                 {% if news.favicon %}
                     <img src="{{ news.favicon }}" class="icon img-circle" onerror="fail_back(this);"/>
                 {% else %}
                     <i class="fa fa-external-link"></i>
                 {% endif %}
-                <span>{{ news.comhead }}</span>
+                        <span>{{ news.comhead }}</span>
             </span>
-        {% endif %}
-    </div>
+                {% endif %}
+            </div>
 
-    <div class="post-summary">
-    {% if news.img_id %}
-        <a class="feature-image" href="{{ url_for('image', img_id=news.img_id) }}">
-            {# Thanks to http://loading.io/ for the spinner #}
-            <img class="img-rounded lazy" src="{{ url_for('static', filename='spinner.gif') }}" data-original="{{ url_for('image', img_id=news.img_id) }}" alt="{{ news.image.url }}" lazyload="on" />
-        </a>
-    {% endif %}
-    {% if news.summary %}
-        <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9{% else %}summary-text{% endif %}">
-            {{ news.summary|truncate(300)|safe }}
-        </div>
-    {% endif %}
-    <div style="clear: both;"></div>
-    </div>
-</article>
-{% if loop.index0 == 1 or loop.index0 == 27 %}
-<article class="post-item" data-rank="{{ loop.index0 }}">
-    <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-format="fluid"
-        data-ad-layout-key="-et-7-f-rh+149"
-        data-ad-client="ca-pub-9393129008813908"
-        data-ad-slot="4020487288"></ins>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-</article>
-{% endif %}
-{% endfor %}
-
-<footer>
-    <ul class="list-inline text-center">
-        <li><a href="/">Hacker News+</a></li>
-        |
-        <li><a href="/startupnews">Startup News+</a></li>
-        |
-        <li><a href="{{ url_for('feed', site=site) }}" data-toggle="tooltip"
-        title="<p class='text-left'>Feed supporting parameters:</p>
-        <li class='text-left'><code>gte</code> filters for greater or equal scores</li>
-        <li class='text-left'><code>contain</code> filters for news whose title contains certain string">RSS</a></li>
-        |
-        <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a></li>
-        |
-        {% block donate %}
-        <li><a href="https://www.paypal.me/polyrabbit" data-toggle="tooltip" title="Thanks for supporting hacker-news-digest" target="_blank">Donate</a></li>
-        {% endblock %}
-        |
-        <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
-        {% if last_updated %}
-        |
-        <li data-updated="{{ last_updated }}" data-toggle="tooltip" title="{{ last_updated }}">Last updated: {{ last_updated|natural_datetime(1) }}</li>
+            <div class="post-summary">
+                {% if news.img_id %}
+                    <a class="feature-image" href="/image/{{ news.img_id }}">
+                        {# Thanks to http://loading.io/ for the spinner #}
+                        <img class="img-rounded lazy" src="/static/spinner.gif"
+                             data-original="/image/{{ news.img_id }}" alt="{{ news.image.url }}"
+                             lazyload="on"/>
+                    </a>
+                {% endif %}
+                {% if news.summary %}
+                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9{% else %}summary-text{% endif %}">
+                        {{ news.summary|truncate(300)|safe }}
+                    </div>
+                {% endif %}
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        {% if loop.index0 == 1 or loop.index0 == 27 %}
+            <article class="post-item" data-rank="{{ loop.index0 }}">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="fluid"
+                     data-ad-layout-key="-et-7-f-rh+149"
+                     data-ad-client="ca-pub-9393129008813908"
+                     data-ad-slot="4020487288"></ins>
+                <script>
+                  (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </article>
         {% endif %}
-    </ul>
-</footer>
+    {% endfor %}
+
+    <footer>
+        <ul class="list-inline text-center">
+            <li><a href="/">Hacker News+</a></li>
+            |
+            <li><a href="/startupnews">Startup News+</a></li>
+            |
+            <li><a href="/feed" data-toggle="tooltip"
+                    {#                   title="<p class='text-left'>Feed supporting parameters:</p>#}
+                    {#        <li class='text-left'><code>gte</code> filters for greater or equal scores</li>#}
+                    {#        <li class='text-left'><code>contain</code> filters for news whose title contains certain string"#}
+            >RSS</a></li>
+            |
+            <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Fork me on GitHub" target="_blank">GitHub</a>
+            </li>
+            |
+            {% block donate %}
+                <li><a href="https://www.paypal.me/polyrabbit" data-toggle="tooltip"
+                       title="Thanks for supporting hacker-news-digest" target="_blank">Donate</a></li>
+            {% endblock %}
+            |
+            <li><a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a></li>
+            {% if last_updated %}
+                |
+                <li class="last-updated"
+                    data-submitted="{{ last_updated }} UTC" data-toggle="tooltip" title="{{ last_updated }} UTC">Last
+                    updated: <span>{{ last_updated }} UTC</span>
+                </li>
+            {% endif %}
+        </ul>
+    </footer>
 </div>
 
 <!-- The modal dialog, which will be used to wrap the lightbox content -->
 <div class="modal fade in" id="img-preview-modal" tabindex="-1">
-  <div class="modal-dialog">
+    <div class="modal-dialog">
         <img>
-  </div>
+    </div>
 </div>
 <!-- End of the modal dialog -->
 
 {# https://github.com/tuupola/jquery_lazyload #}
-<script src="{{ url_for('static', filename='js/jquery.lazyload.min.js') }}"></script>
+<script src="/static/js/jquery.lazyload.min.js"></script>
 <script>
-    $("img.lazy").lazyload({
-        threshold: 600,
-    }).one('error', function() {
-        //XXX jquery.lazyload uses another img tag to load img, so putting error event
-        // here won't work, I hardcoded the lazyload.min.js to handler the onerror event,
-        // here is redundant
-        this.src = this.alt;
-    })
-    // Load them all after 1 second
-    setTimeout(function() {
-        $("img.lazy").trigger("appear");
-    }, 60000);
+  $("img.lazy").lazyload({
+    threshold: 600,
+  }).one('error', function () {
+    //XXX jquery.lazyload uses another img tag to load img, so putting error event
+    // here won't work, I hardcoded the lazyload.min.js to handler the onerror event,
+    // here is redundant
+    this.src = this.alt;
+  })
+  // Load them all after 1 second
+  setTimeout(function () {
+    $("img.lazy").trigger("appear");
+  }, 60000);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js"
+        integrity="sha512-RDaBwBkrx27JSZ1vH3cS93Z5uw56uVSb0ODiqL8FYQk+NaMaJUsPUiYj4heJFLCTFAqBjGZ6jivYdLbwG/AGfA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  $('.last-updated').each((index, item) => {
+    $(item).find('span').text(humanizeDuration(new Date() - new Date($(item).data('submitted')), {
+      largest: 1,
+      round: false
+    }) + ' ago')
+  })
 </script>
 
 {# https://github.com/markgoodyear/scrollup #}
 <script src="//cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
 <script>
-// We don't need to wait for the document.ready event, that costs a lot of time.
-    $.scrollUp({
-        scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
-        scrollTitle: 'Scroll to top'
-    });
+  // We don't need to wait for the document.ready event, that costs a lot of time.
+  $.scrollUp({
+    scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
+    scrollTitle: 'Scroll to top'
+  });
 </script>
 <script>
-    $('.post-item .post-summary .feature-image').click(function (e) {
-        $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
-        $('#img-preview-modal').modal();
-        return false;
-    });
+  $('.post-item .post-summary .feature-image').click(function (e) {
+    $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
+    $('#img-preview-modal').modal();
+    return false;
+  });
 </script>
-<script src="{{ url_for('static', filename='js/sort.js') }}?r=3" async></script>
+<script src="/static/js/sort.js?r=3" async></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip({html: true});
-    })
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip({html: true});
+  })
 </script>
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54894cfc53321667" async></script>
 </body>

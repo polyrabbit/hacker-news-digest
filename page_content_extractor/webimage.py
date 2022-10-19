@@ -1,18 +1,19 @@
-#coding: utf-8
+# coding: utf-8
 import logging
-from urlparse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 
 import requests
-import imgsz
-from backports.functools_lru_cache import lru_cache
+from . import imgsz
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
+
 
 class WebImage(object):
     MIN_PX = 100
     MIN_BYTES_SIZE = 4000
-    MAX_BYTES_SIZE = 2.5*1024*1024
-    SCALE_FROM_IMG_TO_TEXT = 22*22
+    MAX_BYTES_SIZE = 2.5 * 1024 * 1024
+    SCALE_FROM_IMG_TO_TEXT = 22 * 22
 
     def __init__(self, src='', referrer='', **attrs):
         # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
@@ -34,7 +35,8 @@ class WebImage(object):
             logger.info('Image is encoded in base64, too short')
             return False
         attr_str = '%s %s %s %s' % (' '.join(self.attrs.get('class', [])),
-                self.attrs.get('id', ''), self.attrs.get('alt', ''), urlparse(self.url).path.lower())
+                                    self.attrs.get('id', ''), self.attrs.get('alt', ''),
+                                    urlparse(self.url).path.lower())
         if 'avatar' in attr_str or 'spinner' in attr_str:
             logger.info('Maybe this is an avatar/spinner(%s)', self.url)
             return False
@@ -60,7 +62,7 @@ class WebImage(object):
             return int(width), int(height)
 
         try:
-            return imgsz.fromstring(self.raw_data)[1:]
+            return imgsz.frombytes(self.raw_data)[1:]
         except ValueError as e:
             logger.error('Error while determing the size of %s, %s', self.url, e)
         return 0, 0
@@ -80,7 +82,7 @@ class WebImage(object):
             # if anything goes wrong, do not set self._raw_data
             # so it will try again the next time.
             logger.info('Failed to fetch img(%s), %s', self.url, e)
-            return ''
+            return b''
 
     def to_text_len(self):
         return self.img_area_px / self.scale
@@ -100,7 +102,7 @@ class WebImage(object):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
 
     def save(self, fp):
-        if isinstance(fp, basestring):
+        if isinstance(fp, (str, bytes)):
             fp = open(fp, 'wb')
         fp.write(self.raw_data)
         fp.close()
@@ -116,7 +118,7 @@ class WebImage(object):
     @classmethod
     def from_node(cls, referrer, node):
         attrs = {'referrer': referrer}
-        for key, value in node.attrs.items():
+        for key, value in list(node.attrs.items()):
             # convert SRC to src, and list to tuple because list is unhashable
             attrs[key.lower()] = tuple(value) if isinstance(value, list) else value
         return cls.from_attrs(**attrs)

@@ -1,7 +1,12 @@
-#coding: utf-8
+# coding: utf-8
 import re
-import requests
-from backports.functools_lru_cache import lru_cache
+import requests.utils
+import requests.adapters
+from functools import lru_cache
+
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+
 
 # def word_count(s):
 #     return len(list(jieba.cut(s)))
@@ -16,7 +21,9 @@ def is_paragraph(s):
     except UnicodeEncodeError:
         return len(s) > 120
 
-ascii_patt = re.compile(ur'([\u0000-\u00FF]+)', re.U)
+
+ascii_patt = re.compile(r'([\u0000-\u00FF]+)', re.U)
+
 
 @lru_cache(maxsize=32)
 def tokenize(s):  # not using yield just for cache
@@ -29,32 +36,39 @@ def tokenize(s):  # not using yield just for cache
     for t in ascii_patt.split(s.strip()):
         if t:
             if ascii_patt.match(t):
-                tokens.extend([tt+' ' for tt in t.split()])
+                tokens.extend([tt + ' ' for tt in t.split()])
             else:
                 tokens.extend(list(t))
     return tuple(tokens)  # sorry but list is unhashable
+
 
 def my_default_user_agent(name="python-requests"):
     return 'Twitterbot/1.0'
     # return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 " \
     #        "(KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36"
 
-origin_build_response = requests.adapters.HTTPAdapter.build_response.im_func
+
+origin_build_response = requests.adapters.HTTPAdapter.build_response
+
 
 def my_build_response(self, req, resp):
     """Get encoding from html content instead of setting it blindly to ISO-8859-1"""
     r = origin_build_response(self, req, resp)
     if r.encoding == 'ISO-8859-1':
-        r.encoding = (requests.utils.get_encodings_from_content(r.content) \
-                    or ['ISO-8859-1'])[-1]  # the last one overwrites the first one
+        r.encoding = (requests.utils.get_encodings_from_content(str(r.content))
+                      or ['ISO-8859-1'])[-1]  # the last one overwrites the first one
     return r
 
-origin_send = requests.adapters.HTTPAdapter.send.im_func
+
+origin_send = requests.adapters.HTTPAdapter.send
+
 
 def send_with_default_args(*args, **kwargs):
     kwargs['verify'] = False
-    kwargs['timeout'] = kwargs['timeout'] or 40
+    kwargs['timeout'] = kwargs['timeout'] or 10
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     return origin_send(*args, **kwargs)
+
 
 def monkey_patch_requests():
     # A monkey patch to impersonate my chrome
@@ -62,19 +76,21 @@ def monkey_patch_requests():
     requests.adapters.HTTPAdapter.build_response = my_build_response
     requests.adapters.HTTPAdapter.send = send_with_default_args
 
+
 @lru_cache(maxsize=128)
 def LCS_length(x, y):
     """
-    Return the length of longest common subsequence of *iterable* x and y
+    Return length of the longest common subsequence of *iterable* x and y
     """
-    len_x, len_y = len(x)+1, len(y)+1
+    len_x, len_y = len(x) + 1, len(y) + 1
     lcs = [[0] for i in range(len_x)]
     lcs[0] = [0 for j in range(len_y)]
     for i in range(1, len_x):
         for j in range(1, len_y):
-            lcs[i].append(lcs[i-1][j-1] + 1 if x[i-1]==y[j-1] else
-                    max(lcs[i-1][j], lcs[i][j-1]))
-    return lcs[len_x-1][len_y-1]
+            lcs[i].append(lcs[i - 1][j - 1] + 1 if x[i - 1] == y[j - 1] else
+                          max(lcs[i - 1][j], lcs[i][j - 1]))
+    return lcs[len_x - 1][len_y - 1]
+
 
 @lru_cache(maxsize=128)
 def string_inclusion_ratio(needle, haystack):
@@ -82,4 +98,3 @@ def string_inclusion_ratio(needle, haystack):
     if not needle.strip() or not haystack.strip():
         return 0
     return LCS_length(tokenize(needle), tokenize(haystack)) / float(len(tokenize(needle)))
-

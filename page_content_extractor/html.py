@@ -1,8 +1,8 @@
-#coding: utf-8
+# coding: utf-8
 import re
 
 import logging
-from urlparse import urljoin
+from urllib.parse import urljoin
 from collections import defaultdict
 from itertools import chain
 from math import sqrt
@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup as BS, Tag, NavigableString
 from null import Null
 from .utils import tokenize, string_inclusion_ratio
 from .webimage import WebImage
-from backports.functools_lru_cache import lru_cache
+from functools import lru_cache
 from markupsafe import escape
 
 logger = logging.getLogger(__name__)
@@ -19,18 +19,21 @@ logger = logging.getLogger(__name__)
 # Beautifulsoup will convert all tag names to lower-case
 ignored_tags = ('option', 'script', 'noscript', 'style', 'iframe', 'head')
 block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
-    'body', 'li', 'br', 'map', 'button', 'object', 'canvas', 'ol', 'caption',
-    'output', 'col', 'p', 'colgroup', 'pre', 'dd', 'progress', 'div', 'section',
-    'dl', 'table', 'dt', 'tbody', 'embed', 'textarea', 'fieldset', 'tfoot', 'figcaption',
-    'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'video', 'td'}
+              'body', 'li', 'br', 'map', 'button', 'object', 'canvas', 'ol', 'caption',
+              'output', 'col', 'p', 'colgroup', 'pre', 'dd', 'progress', 'div', 'section',
+              'dl', 'table', 'dt', 'tbody', 'embed', 'textarea', 'fieldset', 'tfoot', 'figcaption',
+              'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+              'video', 'td'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
-    'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
+                           'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|column|main|content|'
-    'section|text|preview|view|story-body', re.IGNORECASE)
+                           'section|text|preview|view|story-body', re.IGNORECASE)
+
 
 def tag_equal(self, other):
     return id(self) == id(other)
+
+
 # Use tag as keys in dom scores,
 # two tags with the same content and attributes should not consider equal to each other.
 # Tag.__eq__ = tag_equal
@@ -39,6 +42,7 @@ class HtmlContentExtractor(object):
     """
     see https://github.com/scyclops/Readable-Feeds/blob/master/readability/hn.py
     """
+
     def __init__(self, html, url=''):
         # see http://stackoverflow.com/questions/14946264/python-lru-cache-decorator-per-instance
         self.calc_img_area_len = lru_cache(1024)(self.calc_img_area_len)
@@ -48,9 +52,9 @@ class HtmlContentExtractor(object):
         # dict uses __eq__ to identify key, while in BS two different nodes
         # will also be considered equal, DO not use that
         self.scores = defaultdict(int)
-        self.doc = BS(html)
+        self.doc = BS(html, features="lxml")
 
-        self.title = (self.doc.title.string if self.doc.title else u'') or u''
+        self.title = (self.doc.title.string if self.doc.title else '') or ''
         self.article = Null
         self.url = url
         # call it before purge
@@ -88,7 +92,7 @@ class HtmlContentExtractor(object):
                 if not parent or parent is doc:
                     break
                 parent.score = parent.score or 0 + \
-                           self.calc_effective_text_len(parent) * sqrt(len(node.text))
+                               self.calc_effective_text_len(parent) * sqrt(len(node.text))
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
@@ -101,17 +105,17 @@ class HtmlContentExtractor(object):
         """
         text_len = self.calc_effective_text_len(node)
         # img_len = self.calc_img_area_len(cur_node)
-        #TODO take image as a factor
+        # TODO take image as a factor
         img_len = 0
         impact_factor = 2 if self.has_positive_effect(node) else 1
-        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth**1.5)
+        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth ** 1.5)
         if node.score > self.max_score:
             self.max_score = node.score
             self.article = node
 
         for child in node.children:  # the direct children, not descendants
             if isinstance(child, Tag):
-                self.calc_node_score(child, depth+0.1)
+                self.calc_node_score(child, depth + 0.1)
 
     def find_main_content(self):
         self.calc_effective_text_len(self.doc)
@@ -168,7 +172,7 @@ class HtmlContentExtractor(object):
             # so we should not use isinstance(child, NavigableString)
             elif type(child) is NavigableString:
                 text_len += len(child.string.strip()) + child.string.count(',') + \
-                            child.string.count(u'，')  # Chinese comma
+                            child.string.count('，')  # Chinese comma
         node.text_len = text_len * .2 if self.has_negative_effect(node) else text_len
         return node.text_len
 
@@ -208,18 +212,19 @@ class HtmlContentExtractor(object):
             d = {tp: True}
             for tag in soup.find_all(**d):
                 tag[tp] = urljoin(self.url, tag[tp])
+
         _rp2au(self.article, 'href')
         _rp2au(self.article, 'src')
         _rp2au(self.article, 'background')
 
     @staticmethod
     def is_link_intensive(node):
-        all_text = len(node.get_text(separator=u'', strip=True, types=(NavigableString,)))
+        all_text = len(node.get_text(separator='', strip=True, types=(NavigableString,)))
         if not all_text:
             return False
         link_text = 0
         for a in node.find_all('a'):
-            link_text += len(a.get_text(separator=u'', strip=True, types=(NavigableString,)))
+            link_text += len(a.get_text(separator='', strip=True, types=(NavigableString,)))
         return float(link_text) / all_text >= .65
 
     @staticmethod
@@ -228,12 +233,12 @@ class HtmlContentExtractor(object):
         ret = ['<%s>' % node.name]
         for child in node.children:
             if isinstance(child, Tag):
-                cs, cl = HtmlContentExtractor.cut_content_to_length(child, length-cur_length)
+                cs, cl = HtmlContentExtractor.cut_content_to_length(child, length - cur_length)
                 ret.append(cs)
                 cur_length += cl
             else:
                 t = []
-                for line in unicode(child).split('\n'):
+                for line in str(child).split('\n'):
                     t.append(line)
                     cur_length += len(t[-1])
                     if cur_length >= length:
@@ -242,7 +247,7 @@ class HtmlContentExtractor(object):
             if cur_length >= length:
                 break
         if len(ret) == 1:  # no children
-            return unicode(node), 0
+            return str(node), 0
         ret.append('</%s>' % node.name)
         return ''.join(ret), cur_length
 
@@ -253,7 +258,7 @@ class HtmlContentExtractor(object):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
                 if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
                              'clear|tag|manage|info|social|avatar|small|sidebar|views|'
-                            'created|name|related|nav|pull',
+                             'created|name|related|nav|pull',
                              attr, re.I):
                     return True
             return False
@@ -267,18 +272,21 @@ class HtmlContentExtractor(object):
                     partial_summaries.append(' ')  # http://paulgraham.com/know.html
                     # if self.summary_begun:  # http://v2ex.com/t/152930
                     if is_meta_tag(child) and \
-                            1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3 and \
+                            1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(
+                        self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
                         continue
                     if child.name in block_tags:
                         # Ignore too many links and too short paragraphs
                         if self.is_link_intensive(child) or (len(tokenize(child.text)) < 15 and
-                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3):
+                                                             1.0 * self.calc_effective_text_len(
+                                    child) / self.calc_effective_text_len(self.article) < .3):
                             continue
                         child_summary = summarize(child, max_length).strip()
                         if len(tokenize(child_summary)) < 15 and \
-                                1.0*self.calc_effective_text_len(child)/self.calc_effective_text_len(self.article) < .3:
-                             continue
+                                1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(
+                            self.article) < .3:
+                            continue
                         partial_summaries.append(child_summary)
                     else:
                         partial_summaries.append(summarize(child, max_length))
@@ -292,7 +300,7 @@ class HtmlContentExtractor(object):
                             string_inclusion_ratio(child, self.title) > .85:
                         continue
                     self.summary_begun = True
-                    child = re.sub(u'[ 　]{2,}', u' ', child)  # squeeze spaces
+                    child = re.sub('[ 　]{2,}', ' ', child)  # squeeze spaces
                     if len(child) > max_length:
                         for word in tokenize(child):
                             partial_summaries.append(escape(word))
@@ -306,7 +314,7 @@ class HtmlContentExtractor(object):
             return ''.join(partial_summaries)
 
         self.summary_begun = False  # miss the nonlocal feature
-        smr = u''
+        smr = ''
         if self.calc_effective_text_len(self.article):
             smr = summarize(self.article, max_length).strip()
         if len(smr) <= len(self.get_meta_description()):
@@ -332,7 +340,11 @@ class HtmlContentExtractor(object):
     def get_favicon_url(self):
         if not hasattr(self, '_favicon_url'):
             fa = self.doc.find('link', rel=re.compile('icon', re.I))
-            favicon_path = fa.get('href', '/favicon.ico') if fa else '/favicon.ico'
+            if fa:
+                favicon_path = fa.get('href', '/favicon.ico')
+            elif 'archive.org' in self.url:
+                favicon_path = '/_static/images/archive.ico'
+            else:
+                favicon_path = '/favicon.ico'
             self._favicon_url = urljoin(self.url, favicon_path)
         return self._favicon_url
-

@@ -1,23 +1,26 @@
-#coding: utf-8
+# coding: utf-8
 import logging
 
-from urlparse import urljoin
+from urllib.parse import urljoin
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
-from cStringIO import StringIO
+from io import BytesIO, StringIO
 
 from markupsafe import escape
 from .exceptions import ParseError
-from .utils import tokenize, is_paragraph
+from .utils import tokenize
 
 logger = logging.getLogger(__name__)
+max_size = 1 << 12  # 4k
+
 
 class PdfExtractor(object):
 
     def __init__(self, raw_data, url=''):
         # TODO sort text according to their layouts
+        self.article = ''
         self.url = url
         try:
             self.load(raw_data)
@@ -25,27 +28,30 @@ class PdfExtractor(object):
             raise ParseError(e)
 
     def load(self, raw_data):
-        pdf_fp = StringIO(raw_data)
+        pdf_fp = BytesIO(raw_data)
         output_fp = StringIO()
         codec = 'utf-8'
         laparams = LAParams()
         rsrcmgr = PDFResourceManager()
-        device = TextConverter(rsrcmgr, output_fp, codec=codec, laparams=laparams)
+        device = TextConverter(rsrcmgr, output_fp, laparams=laparams)
         # Create a PDF interpreter object.
         interpreter = PDFPageInterpreter(rsrcmgr, device)
 
         # Process each page contained in the document.
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
+            if len(output_fp.getvalue()) > max_size:
+                logger.warning("%s too long, truncate to %d", self.url, len(output_fp.getvalue()))
+                break
 
-        self.article = output_fp.getvalue().decode('utf-8')
+        self.article = output_fp.getvalue()
 
     def get_summary(self, max_length=300):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
             # if is_paragraph(p):  # eligible to be a paragraph
-            if len(tokenize(p)) > 20 and '.'*10 not in p:  # table of contents has many '...'
+            if len(tokenize(p)) > 20 and '.' * 10 not in p:  # table of contents has many '...'
                 if len_of_summary + len(p) >= max_length:
                     for word in tokenize(p):
                         partial_summaries.append(escape(word))
@@ -77,4 +83,3 @@ class PdfExtractor(object):
 
     def get_favicon_url(self):
         return urljoin(self.url, '/favicon.ico')
-
