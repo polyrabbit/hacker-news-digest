@@ -38,8 +38,6 @@ jobs:
         with:
           # Version range or exact version of Python or PyPy to use, using SemVer's version range syntax. Reads from .python-version if unset.
           python-version: 3.9.13
-          # Used to specify a package manager for caching in the default directory. Supported values: pip, pipenv, poetry.
-          cache: pipenv
       - name: Install Python dependencies
         uses: py-actions/py-dependency-install@v3
       - name: Generate Pages
