@@ -6,7 +6,7 @@
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="/feed"/>
+        <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="/feed.xml"/>
         <link rel="shortcut icon" href="/static/favicon.ico">
         <link rel="bookmark" href="/static/favicon.ico">
         <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
@@ -154,7 +154,7 @@
                 <span class="summit-time" title="Submit time">
             <i class="fa fa-clock-o"></i>
             <span class="last-updated"
-                  data-submitted="{{ news.submit_time }} UTC"><span>{{ news.submit_time }} UTC</span></span>
+                  data-submitted="{{ news.submit_time.strftime("%Y-%m-%dT%H:%M:%SZ") }}"><span>{{ news.submit_time.replace(microsecond=0) }} UTC</span></span>
         </span>
                 {% if news.comment_url %}
                     <span class="comment" title="Comments">
@@ -212,9 +212,7 @@
         <ul class="list-inline text-center">
             <li><a href="/">Hacker News+</a></li>
             |
-            <li><a href="/startupnews">Startup News+</a></li>
-            |
-            <li><a href="/feed" data-toggle="tooltip"
+            <li><a href="/feed.xml" data-toggle="tooltip"
                     {#                   title="<p class='text-left'>Feed supporting parameters:</p>#}
                     {#        <li class='text-left'><code>gte</code> filters for greater or equal scores</li>#}
                     {#        <li class='text-left'><code>contain</code> filters for news whose title contains certain string"#}
@@ -232,8 +230,9 @@
             {% if last_updated %}
                 |
                 <li class="last-updated"
-                    data-submitted="{{ last_updated }} UTC" data-toggle="tooltip" title="{{ last_updated }} UTC">Last
-                    updated: <span>{{ last_updated }} UTC</span>
+                    data-submitted="{{ last_updated.strftime("%Y-%m-%dT%H:%M:%SZ") }}" data-toggle="tooltip"
+                    title="{{ last_updated.replace(microsecond=0) }} UTC">Last
+                    updated: <span>{{ last_updated.replace(microsecond=0) }} UTC</span>
                 </li>
             {% endif %}
         </ul>
@@ -272,7 +271,7 @@
   $('.last-updated').each((index, item) => {
     $(item).find('span').text(humanizeDuration(new Date() - new Date($(item).data('submitted')), {
       largest: 1,
-      round: false
+      round: true
     }) + ' ago')
   })
 </script>
@@ -297,6 +296,8 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
   $(function () {
+    let lastUpdate = $('li.last-updated[data-toggle="tooltip"]');
+    lastUpdate.prop('title', new Date(lastUpdate.data('submitted')).toLocaleString());
     $('[data-toggle="tooltip"]').tooltip({html: true});
   })
 </script>

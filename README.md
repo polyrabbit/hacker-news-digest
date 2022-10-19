@@ -2,6 +2,7 @@
 ==================
 
 [![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
+[![Github Pages](https://github.com/polyrabbit/hacker-news-digest/actions/workflows/static.yml/badge.svg)](https://github.com/polyrabbit/hacker-news-digest/actions/workflows/static.yml)
 [![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/polyrabbit/hacker-news-digest)
 
 This service extracts summaries and illustrations from [hacker news](https://news.ycombinator.com/) articles for people who want to get the most out of hacker news while cutting down the time spent on deciding which one to read and which to skip.
@@ -28,12 +29,8 @@ Also see my guide on [How to extract main content from web pages using Machine-L
 - [ ] A better algo to extract summaries
 - [X] Sort articles by score/comment/time
 - [X] RSS
+- [X] Deploy on github pages
 - [X] Have a good sleep !important
 
 ### LICENSE
 [LGPL v3](LICENSE-lgpl-3.0.txt)
-
-
-
-***中文版的 [Startup News Digest](http://hackernews.betacat.io/startupnews)***
-

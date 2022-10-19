@@ -63,7 +63,7 @@ def gen_page(news_list):
 def gen_feed(news_list):
     feed = AtomFeed('Hacker News Digest',
                     updated=datetime.utcnow(),
-                    feed_url='http://hackernews.betacat.io/feed',
+                    feed_url='http://hackernews.betacat.io/feed.xml',
                     url='http://hackernews.betacat.io',
                     author={
                         'name': 'polyrabbit',
@@ -86,7 +86,7 @@ def gen_feed(news_list):
                      'href': news['comment_url'],
                  }],
                  updated=news['submit_time'], )
-    with open(os.path.join(output_dir, "feed"), "w") as fp:
+    with open(os.path.join(output_dir, "feed.xml"), "w") as fp:
         fp.write(feed.to_string())
 
 

@@ -25,6 +25,9 @@ gh_pages:
 	mkdir -p output/image
 	python publish.py
 	cp -r static output/static
+	cp static/ads.txt output/ads.txt
+	ln -s index.html output/hackernews  # backward compatibility
+	ln -s feed.xml output/feed
 
 test:
 	python -m unittest discover ./test
