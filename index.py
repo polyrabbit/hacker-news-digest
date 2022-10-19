@@ -1,15 +1,15 @@
 import logging
-from time import time
-from urlparse import urljoin
 from datetime import datetime
+from time import time
+from urllib.parse import urljoin
 
+from feedwerk.atom import AtomFeed
 from flask import (
     Flask, render_template, abort, request, send_file,
     Response, jsonify, url_for
 )
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.http import is_resource_modified
-from werkzeug.contrib.atom import AtomFeed
-from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -52,7 +52,7 @@ def image(img_id):
     if request.if_none_match or request.if_modified_since:
         return Response(status=304)
     img = models.Image.query.get_or_404(img_id)
-    return send_file(img.makefile(), img.content_type, cache_timeout=864000, conditional=True)
+    return send_file(img.makefile(), img.content_type, max_age=864000, conditional=True)
 
 @app.route('/update/hackernews', methods=['POST'], defaults={'site': 'hackernews'})
 @app.route('/update/startupnews', methods=['POST'], defaults={'site': 'startupnews'})

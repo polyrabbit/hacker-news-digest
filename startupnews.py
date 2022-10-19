@@ -1,6 +1,6 @@
 from hackernews import HackerNews
 import logging
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 import models
 

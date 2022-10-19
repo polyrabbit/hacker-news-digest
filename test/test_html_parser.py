@@ -21,7 +21,7 @@ class PageContentExtractorTestCase(TestCase):
         self.assertIsNone(e.doc.find('script'))
 
     def test_text_len_with_comma(self):
-        html_doc = u"""
+        html_doc = """
         <html>good,，</html>
         """
         doc = BS(html_doc, from_encoding='utf-8')
@@ -29,12 +29,12 @@ class PageContentExtractorTestCase(TestCase):
         self.assertEqual(length, 8)
 
     def test_parsing_empty_response(self):
-        html_doc = u"""
+        html_doc = """
         """
         self.assertEqual(HtmlContentExtractor(html_doc).article.text, '')
 
     def test_no_content(self):
-        html_doc = u"""
+        html_doc = """
         <!DOCTYPE html>
         <html class="no-js" dir="ltr" lang="en" prefix="content: http://purl.org/rss/1.0/modules/content/ dc: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/ og: http://ogp.me/ns# rdfs: http://www.w3.org/2000/01/rdf-schema# sioc: http://rdfs.org/sioc/ns# sioct: http://rdfs.org/sioc/types# skos: http://www.w3.org/2004/02/skos/core# xsd: http://www.w3.org/2001/XMLSchema#">
             <body class="html not-front not-logged-in page-node page-node- page-node-371988 node-type-ubernode section-feature">
@@ -58,8 +58,8 @@ class PageContentExtractorTestCase(TestCase):
         </html>
         """
         page = HtmlContentExtractor(html_doc)
-        self.assertEquals(page.calc_effective_text_len(page.article), 0)
-        self.assertEquals(page.get_summary(), u'')
+        self.assertEqual(page.calc_effective_text_len(page.article), 0)
+        self.assertEqual(page.get_summary(), '')
 
     def test_semantic_affect(self):
         # They are static methods
@@ -94,26 +94,27 @@ class PageContentExtractorTestCase(TestCase):
         </body>
         """
         # should choose the first meta image
-        self.assertEquals(HtmlContentExtractor(html_doc).get_illustration().url,
-                          'http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg')
+        self.assertEqual(HtmlContentExtractor(html_doc).get_illustration().url,
+                         'http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg')
 
     @unittest.skip('Skipped because summary is too short')
     def test_get_summary_from_all_short_paragraph(self):
-        html_doc = u"""
+        html_doc = """
         <p>1<h1>2</h1><div>3</div><h1>4</h1></p>
         """
-        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'1 2 3 4')
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), '1 2 3 4')
 
     def test_get_summary_from_short_and_long_paragraph(self):
-        html_doc = u"""
+        html_doc = """
         <h3 class="post-name">HTTP/2: The Long-Awaited Sequel</h3>
         <span class="post-date">Thursday, October 9, 2014 2:01 AM</span>
         <h2>Ready to speed things up? </h2>
         <p>Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due.</p>
         <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.</p>
         """
-        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(), u'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. '\
-        u"While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(),
+                         'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. ' \
+                         "While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
 
     def test_get_summary_word_cut(self):
         html_doc = '<p>'+'1 '*500+'</p>'+'<p>'+'2 '*500+'</p>'
@@ -205,52 +206,55 @@ class PageContentExtractorTestCase(TestCase):
             self.fail('%s, maybe delete something while looping.' % e)
 
     def test_CJK(self):
-        html_doc = u'我'*1000
+        html_doc = '我' * 1000
         self.assertLess(len(HtmlContentExtractor(html_doc).get_summary()), 1000)
 
     def test_tags_separated_by_space(self):
-        html_doc = u"""
+        html_doc = """
         <article><p>Python has a GIL, right? Not quite - PyPy STM is a python implementation
 without a GIL, so it can scale CPU-bound work to several cores.
 PyPy STM is developed by Armin Rigo and Remi Meier,
 and supported by community <em>donations</em>.</p></article>
         """
-        print HtmlContentExtractor(html_doc).get_summary(1000)
+        print((HtmlContentExtractor(html_doc).get_summary(1000)))
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
 
     def test_article_with_info_attr(self):
         ar = legendary_parser_factory('http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
-        self.assertTrue(unicode(ar.article).startswith('<div id="content">'))
-        self.assertTrue(unicode(ar.get_summary()).startswith(u'2014年10月18日'))
-        self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
+        self.assertTrue(str(ar.article).startswith('<div id="content">'))
+        self.assertTrue(str(ar.get_summary()).startswith('2014年10月18日'))
+        self.assertTrue(str(ar.get_summary()).endswith('...'))
 
     def test_article_title_donot_match_doc_title(self):
-        ar = legendary_parser_factory('http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
-        summary = unicode(ar.get_summary())
-        print summary
-        self.assertTrue(summary.startswith(u'A material that simultaneously'))
-        self.assertTrue(summary.endswith(u'...'))
+        ar = legendary_parser_factory(
+            'http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
+        summary = str(ar.get_summary())
+        print(summary)
+        self.assertTrue(summary.startswith('A material that simultaneously'))
+        self.assertTrue(summary.endswith('...'))
 
     def test_content_with_meta_in_attr(self):
         ar = legendary_parser_factory('http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
-        summary = unicode(ar.get_summary())
-        self.assertTrue(summary.startswith(u'The capture of transient scenes'))
-        self.assertTrue(summary.endswith(u'...'))
+        summary = str(ar.get_summary())
+        self.assertTrue(summary.startswith('The capture of transient scenes'))
+        self.assertTrue(summary.endswith('...'))
 
     def test_common_sites_forbes(self):
-        ar = legendary_parser_factory('http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
-        self.assertTrue(unicode(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
-        self.assertTrue(unicode(ar.get_summary()).startswith('Kind of like every baseball player will try'))
+        ar = legendary_parser_factory(
+            'http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
+        self.assertTrue(str(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
+        self.assertTrue(str(ar.get_summary()).startswith('Kind of like every baseball player will try'))
 
     def test_common_sites_ruanyifeng(self):
-        ar = legendary_parser_factory('http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
-        self.assertTrue(unicode(ar.article).startswith('<article class="hentry">'))
-        self.assertTrue(unicode(ar.get_summary()).startswith(u'2011年11月出版的'))
-        self.assertTrue(unicode(ar.get_summary()).endswith(u'...'))
+        ar = legendary_parser_factory(
+            'http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
+        self.assertTrue(str(ar.article).startswith('<article class="hentry">'))
+        self.assertTrue(str(ar.get_summary()).startswith('2011年11月出版的'))
+        self.assertTrue(str(ar.get_summary()).endswith('...'))
 
     # @unittest.skip('local test only')
     def test_shit(self):
-        html_doc = u"""
+        html_doc = """
         <li id="ref1">
             <span class="vcard author">
                 <span class="fn">Fuller, P. W. W.</span>
@@ -265,7 +269,7 @@ and supported by community <em>donations</em>.</p></article>
         </li>
         """
         ar = HtmlContentExtractor(html_doc)
-        print ar.get_summary()
+        print((ar.get_summary()))
 
     # @unittest.skip('local test only')
     def test_common_sites_xxx(self):
@@ -274,7 +278,7 @@ and supported by community <em>donations</em>.</p></article>
         # ar = legendary_parser_factory('http://devo.ps/')
         # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
         ar = legendary_parser_factory('http://www.jianshu.com/p/5e997f9b7a9f')
-        print ar.get_summary()
+        print((ar.get_summary()))
         # print ar.article
         # print ar.get_illustration().url
         # print ar.get_favicon_url()

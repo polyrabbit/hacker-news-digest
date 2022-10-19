@@ -12,6 +12,10 @@ class SvgSizeTestCase(TestCase):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/no-px-floating-point.svg')
         self.assertEqual(size(fpath), ('SVG', 90, 20))
 
+    def test_png_byte_compare(self):
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/home.png')
+        self.assertEqual(size(fpath), ('PNG', 128, 128))
+
 class WebImageTestCase(TestCase):
 
     @mock.patch('page_content_extractor.webimage.requests')
@@ -21,9 +25,9 @@ class WebImageTestCase(TestCase):
         node.attrs = {'src': 'https://avatars1.githubusercontent.com/u/2657334',
                      'whatever': 'whatever'}
 
-        for _ in xrange(10):
+        for _ in range(10):
             WebImage.from_node('https://github.com/polyrabbit/', node).is_candidate
-        self.assertEquals(mock_requests.get.call_count, 1)
+        self.assertEqual(mock_requests.get.call_count, 1)
 
     @mock.patch('page_content_extractor.webimage.urljoin', autospec=True)
     def test_no_src(self, mock_urljoin):

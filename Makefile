@@ -1,7 +1,7 @@
 export NEW_RELIC_CONFIG_FILE=config/newrelic.ini
 export BLUEWARE_CONFIG_FILE=config/blueware.ini 
 
-.PHONY: run test initdb dropdb
+.PHONY: run test initdb dropdb gh_pages
 run: initdb
 	# DEBUG=1 python index.py
 	python index.py
@@ -19,6 +19,12 @@ run-in-heroku: initdb setcron initnewrelic
 		gunicorn -c config.py index:app || \
 		newrelic-admin run-program \
 		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
+
+gh_pages:
+	rm -rf output
+	mkdir -p output/image
+	python publish.py
+	cp -r static output/static
 
 test:
 	python -m unittest discover ./test

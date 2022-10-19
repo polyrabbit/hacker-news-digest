@@ -1,5 +1,6 @@
-﻿#coding: utf-8
-import utils
+﻿# coding: utf-8
+from . import utils
+
 utils.monkey_patch_requests()
 
 import logging
@@ -14,6 +15,7 @@ from .pdf import PdfExtractor
 __all__ = ['ParseError', 'legendary_parser_factory']
 
 logger = logging.getLogger(__name__)
+
 
 # dispatcher
 def legendary_parser_factory(url):
@@ -46,4 +48,3 @@ def legendary_parser_factory(url):
             logger.exception('Failed to parse this pdf file, %s', resp.url)
 
     raise TypeError('I have no idea how the %s is formatted' % ct)
-

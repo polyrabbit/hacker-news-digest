@@ -11,11 +11,11 @@ New BSD license
 # see https://github.com/phuslu/imgsz
 
 __version__ = '2.1'
-__all__ = ['what', 'size', 'fromstring']
+__all__ = ['what', 'size', 'frombytes']
 
-
-import re, cStringIO
+import re, io
 from struct import unpack
+
 
 def _jpegsize(stream):
     '''gets the width and height (in pixels) of a JPEG file'''
@@ -58,7 +58,7 @@ def _pngsize(stream):
     x, y = 0, 0
     # Dummy read to skip header data
     stream.read(12)
-    if stream.read(4) == 'IHDR':
+    if stream.read(4) == b'IHDR':
         x, y = unpack('!LL', stream.read(8))
     else:
         raise ValueError('could not determine PNG size')
@@ -76,20 +76,21 @@ def _gifsize(stream):
     (sw, sh, x) = unpack('<HHB', buf)
     return 'GIF', sw, sh
 
+
 def _ppmsize(stream):
     '''gets data on the PPM/PGM/PBM family.'''
-    MIME_MAP = {'P1':'PBM', 'P2':'PGM', 'P3':'PPM',
-                'P4':'BPM', 'P5':'PGM', 'P6':'PPM'}
+    MIME_MAP = {'P1': 'PBM', 'P2': 'PGM', 'P3': 'PPM',
+                'P4': 'BPM', 'P5': 'PGM', 'P6': 'PPM'}
     mime, x, y = '', 0, 0
     header = stream.read(1024)
     # PPM file of some sort
-    re.sub(r'^\#.*', '', header, re.M)
-    m = re.match(r'^(P[1-6])\s+(\d+)\s+(\d+)', header, re.S)
+    re.sub(rb'^\#.*', '', header, re.M)
+    m = re.match(rb'^(P[1-6])\s+(\d+)\s+(\d+)', header, re.S)
     if m:
         (n, x, y) = m.group(1, 2, 3)
-        if n == 'P7':
-            mime = 'XV'
-            m = re.match(r'IMGINFO:(\d+)x(\d+)', header, re.S)
+        if n == b'P7':
+            mime = b'XV'
+            m = re.match(rb'IMGINFO:(\d+)x(\d+)', header, re.S)
             if m:
                 (x, y) = m.group(1, 2)
         elif n in MIME_MAP:
@@ -105,7 +106,7 @@ def _xbmsize(stream):
     '''size a XBM image'''
     x, y = 0, 0
     header = stream.read(1024)
-    m = re.match(r'^\#define\s*\S*\s*(\d+)\s*\n\#define\s*\S*\s*(\d+)', header, re.S|re.I)
+    m = re.match(rb'^\#define\s*\S*\s*(\d+)\s*\n\#define\s*\S*\s*(\d+)', header, re.S | re.I)
     if m:
         x, y = m.group(1, 2)
         return 'XBM', int(x), int(y)
@@ -120,11 +121,11 @@ def _xpmsize(stream):
     x, y = 0, 0
     while True:
         line = stream.readline()
-        if line == '':
+        if line == b'':
             break
-        m = re.compile(r'\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*', re.M).match(line, 1)
+        m = re.compile(rb'\s*(\d+)\s+(\d+)(\s+\d+\s+\d+){1,2}\s*', re.M).match(line, 1)
         if m:
-            x, y = map(int, m.group(1, 2))
+            x, y = list(map(int, m.group(1, 2)))
             break
     else:
         raise ValueError('could not determine XPM size')
@@ -135,32 +136,32 @@ def _tiffsize(stream):
     '''size a TIFF image'''
     x, y = 0, 0
 
-    be = '!'           # Default to big-endian; I like it better
-    if stream.read(4) == 'II\x2a\x00': # little-endian
+    be = '!'  # Default to big-endian; I like it better
+    if stream.read(4) == b'II\x2a\x00':  # little-endian
         be = '<'
 
     # Set up an association between data types and their corresponding
     # pack/unpack specification.  Don't take any special pains to deal with
     # signed numbers; treat them as unsigned because none of the image
     # dimensions should ever be negative.  (I hope.)
-    packspec = ( None,      # nothing (shouldn't happen)
-            'Bxxx',    # BYTE (8-bit unsigned integer)
-            None,      # ASCII
-            be+'Hxx',  # SHORT (16-bit unsigned integer)
-            be+'L',    # LONG (32-bit unsigned integer)
-            None,      # RATIONAL
-            'bxxx',    # SBYTE (8-bit signed integer)
-            None,      # UNDEFINED
-            be+'Hxx',  # SSHORT (16-bit unsigned integer)
-            be+'L'     # SLONG (32-bit unsigned integer)
-            )
+    packspec = (None,  # nothing (shouldn't happen)
+                'Bxxx',  # BYTE (8-bit unsigned integer)
+                None,  # ASCII
+                be + 'Hxx',  # SHORT (16-bit unsigned integer)
+                be + 'L',  # LONG (32-bit unsigned integer)
+                None,  # RATIONAL
+                'bxxx',  # SBYTE (8-bit signed integer)
+                None,  # UNDEFINED
+                be + 'Hxx',  # SSHORT (16-bit unsigned integer)
+                be + 'L'  # SLONG (32-bit unsigned integer)
+                )
 
-    offset = unpack(be+'L', stream.read(4))[0] # Get offset to IFD
+    offset = unpack(be + 'L', stream.read(4))[0]  # Get offset to IFD
 
     stream.seek(offset)
-    ifd = stream.read(2) # Get number of directory entries
-    num_dirent = unpack(be+'H', ifd)[0] # Make it useful
-    num_dirent = offset + (num_dirent * 12) # Calc. maximum offset of IFD
+    ifd = stream.read(2)  # Get number of directory entries
+    num_dirent = unpack(be + 'H', ifd)[0]  # Make it useful
+    num_dirent = offset + (num_dirent * 12)  # Calc. maximum offset of IFD
 
     # Do all the work
     ifd = ''
@@ -170,25 +171,25 @@ def _tiffsize(stream):
         ifd = stream.read(12)  # Get first directory entry
         if ifd == "" or stream.tell() > num_dirent:
             break
-        tag = unpack(be+'H', ifd[:2])[0] # ...and decode its tag
-        type = unpack(be+'H', ifd[2:2+2])[0] # ...and the data type
+        tag = unpack(be + 'H', ifd[:2])[0]  # ...and decode its tag
+        type = unpack(be + 'H', ifd[2:2 + 2])[0]  # ...and the data type
         # Check the type for sanity.
         if type > len(packspec) or packspec[type] is None:
             continue
-        if tag == 0x0100: # ImageWidth (x)
+        if tag == 0x0100:  # ImageWidth (x)
             # Decode the value
-            x = unpack(packspec[type], ifd[8:4+8])[0]
-        elif tag == 0x0101: # ImageLength (y)
+            x = unpack(packspec[type], ifd[8:4 + 8])[0]
+        elif tag == 0x0101:  # ImageLength (y)
             # Decode the value
-            y = unpack(packspec[type], ifd[8:4+8])[0]
+            y = unpack(packspec[type], ifd[8:4 + 8])[0]
 
     # Decide if we were successful or not
 
     if x == 0 or y == 0:
         error = '%s%s%s ' % ('ImageWidth ' if x == 0 else '',
-                            ' and '        if x+y>0  else '',
-                            'ImageHeigth ' if y == 0 else '')
-        error +=  'tag(s) could not be found'
+                             ' and ' if x + y > 0 else '',
+                             'ImageHeigth ' if y == 0 else '')
+        error += 'tag(s) could not be found'
         raise ValueError(error)
 
     return 'TIFF', x, y
@@ -206,21 +207,23 @@ def _psdsize(stream):
 
 # pcdsize :
 # Kodak photo-CDs are weird. Don't ask me why, you really don't want details.
-PCD_MAP = { 'base/16' : ( 192,  128  ),
-        'base/4'  : ( 384,  256  ),
-        'base'    : ( 768,  512  ),
-        'base4'      : ( 1536, 1024 ),
-        'base16'  : ( 3072, 2048 ),
-        'base64'  : ( 6144, 4096 )}
+PCD_MAP = {'base/16': (192, 128),
+           'base/4': (384, 256),
+           'base': (768, 512),
+           'base4': (1536, 1024),
+           'base16': (3072, 2048),
+           'base64': (6144, 4096)}
 # Default scale for PCD images
-PCD_SCALE = 'base';
+PCD_SCALE = 'base'
+
+
 def _pcdsize(stream):
     '''determine the size of a file in Kodak photo-CDs'''
     x, y = 0, 0
     buff = stream.read(0xf00)
-    if buff[0x800:3+0x800] != 'PCD':
+    if buff[0x800:3 + 0x800] != 'PCD':
         raise ValueError('Invalid/Corrupted PCD (bad header)')
-    orient = ord(buff[0x0e02:1+0x0e02]) & 1 # Clear down to one bit
+    orient = ord(buff[0x0e02:1 + 0x0e02]) & 1  # Clear down to one bit
     if orient:
         (x, y) = PCD_MAP[PCD_SCALE]
     else:
@@ -230,17 +233,17 @@ def _pcdsize(stream):
 
 def _bin(n, count=32):
     '''returns the binary of integer n, using count number of digits'''
-    return ''.join([str((n >> i) & 1) for i in range(count-1, -1, -1)])
+    return ''.join([str((n >> i) & 1) for i in range(count - 1, -1, -1)])
 
 
 def _swfsize(stream):
     '''determine size of ShockWave/Flash files.'''
     x, y = 0, 0
     header = stream.read(33)
-    bs = ''.join([_bin(c, 8) for c in unpack('B'*17, header[8:17+8])])
+    bs = ''.join([_bin(c, 8) for c in unpack('B' * 17, header[8:17 + 8])])
     bits = int(bs[:5], 2)
-    x = int(bs[(5+bits):bits+(5+bits)], 2)/20
-    y = int(bs[(5+bits*3):bits+(5+bits*3)], 2)/20
+    x = int(bs[(5 + bits):bits + (5 + bits)], 2) / 20
+    y = int(bs[(5 + bits * 3):bits + (5 + bits * 3)], 2) / 20
     if x == 0 or y == 0:
         raise ValueError('could not determine SWF size')
     return 'SWF', x, y
@@ -254,10 +257,10 @@ def _swfmxsize(stream):
     z = zlib.decompressobj()
     header = z.decompress(stream.read(1024))
     del z
-    bs = ''.join([_bin(c, 8) for c in unpack('B'*9, header[:9])])
+    bs = ''.join([_bin(c, 8) for c in unpack('B' * 9, header[:9])])
     bits = int(bs[:5], 2)
-    x = int(bs[(5+bits):bits+(5+bits)], 2)/20
-    y = int(bs[(5+bits*3):bits+(5+bits*3)], 2)/20
+    x = int(bs[(5 + bits):bits + (5 + bits)], 2) / 20
+    y = int(bs[(5 + bits * 3):bits + (5 + bits * 3)], 2) / 20
     if x == 0 or y == 0:
         raise ValueError('could not determine CWS size')
     return 'CWS', x, y
@@ -268,7 +271,7 @@ def _mngsize(stream):
        Basically a copy of pngsize.'''
     x, y = 0, 0
     stream.read(12)
-    if stream.read(4) == 'MHDR':
+    if stream.read(4) == b'MHDR':
         # MHDR = Image Header
         x, y = unpack('!LL', stream.read(8))
     else:
@@ -295,57 +298,61 @@ def _rassize(stream):
         raise ValueError('could not determine Sun raster size')
     return 'RAS', x, y
 
+
 def _pcxsize(stream):
     '''gets the width and height (in pixels) of a ZSoft PCX File.'''
     x, y = 0, 0
     stream.read(4)
     (xmin, ymin, xmax, ymax) = unpack('<HHHH', stream.read(8))
-    x, y = xmax-xmin+1, ymax-ymin+1
+    x, y = xmax - xmin + 1, ymax - ymin + 1
     if x == 0 or y == 0:
         raise ValueError('could not determine ZSoft PCX size')
     return 'PCX', x, y
 
+
 def _svgsize(stream):
     '''gets the width and height (in pixels) of a SVG File.'''
-    #TODO add support for other units like: "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%"
+    # TODO add support for other units like: "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%"
     header = stream.read(1024)
-    m = re.search(r'''width\s*=\s*(["\'])
+    m = re.search(rb'''width\s*=\s*(["\'])
             (\d*\.?\d+) # px maybe a floating-point
             (?:px)?  # unit maybe omitted too
             \1
             '''
-            , header, re.I|re.X)
-    n = re.search(r'''height\s*=\s*(["\'])
+                  , header, re.I | re.X)
+    n = re.search(rb'''height\s*=\s*(["\'])
             (\d*\.?\d+) # px maybe a floating-point
             (?:px)?  # unit maybe omitted too
             \1
             '''
-            , header, re.I|re.X)
+                  , header, re.I | re.X)
     if m and n:
-        x = int(m.group(2).split('.')[0])
-        y = int(n.group(2).split('.')[0])
+        x = int(m.group(2).split(b'.')[0])
+        y = int(n.group(2).split(b'.')[0])
         return 'SVG', x, y
     raise ValueError('Unable to determine size of SVG data')
 
+
 # type_map used in function type_map_match
-TYPE_MAP = { re.compile(r'^\xFF\xD8')              : ('JPEG', _jpegsize),
-        re.compile(r'^BM')                         : ('BMP',  _bmpsize),
-        re.compile(r'^\x89PNG\x0d\x0a\x1a\x0a')    : ('PNG',  _pngsize),
-        re.compile(r'^GIF8[7,9]a')                 : ('GIF',  _gifsize),
-        re.compile(r'^P[1-7]')                     : ('PPM',  _ppmsize),
-        re.compile(r'^\#define\s+\S+\s+\d+')        : ('XBM',  _xbmsize),
-        re.compile(r'^\/\* XPM \*\/')               : ('XPM',  _xpmsize),
-        re.compile(r'^MM\x00\x2a')                 : ('TIFF', _tiffsize),
-        re.compile(r'^II\x2a\x00')                 : ('TIFF', _tiffsize),
-        re.compile(r'^8BPS')                       : ('PSD',  _psdsize),
-        re.compile(r'^PCD_OPA')                    : ('PCD',  _pcdsize),
-        re.compile(r'^FWS')                        : ('SWF',  _swfsize),
-        re.compile(r'^CWS')                        : ('SWF',  _swfmxsize),
-        re.compile(r'^\x8aMNG\x0d\x0a\x1a\x0a')    : ('MNG',  _mngsize),
-        re.compile(r'^\x01\xDA[\x01\x00]')         : ('RGB',  _rgbsize),
-        re.compile(r'^\x59\xA6\x6A\x95')           : ('RAS',  _rassize),
-        re.compile(r'^\x0A.\x01')                  : ('PCX',  _pcxsize),
-        re.compile(r'<svg\s')                       : ('SVG',  _svgsize)}
+TYPE_MAP = {re.compile(rb'^\xFF\xD8'): ('JPEG', _jpegsize),
+            re.compile(rb'^BM'): ('BMP', _bmpsize),
+            re.compile(rb'^\x89PNG\x0d\x0a\x1a\x0a'): ('PNG', _pngsize),
+            re.compile(rb'^GIF8[7,9]a'): ('GIF', _gifsize),
+            re.compile(rb'^P[1-7]'): ('PPM', _ppmsize),
+            re.compile(rb'^\#define\s+\S+\s+\d+'): ('XBM', _xbmsize),
+            re.compile(rb'^\/\* XPM \*\/'): ('XPM', _xpmsize),
+            re.compile(rb'^MM\x00\x2a'): ('TIFF', _tiffsize),
+            re.compile(rb'^II\x2a\x00'): ('TIFF', _tiffsize),
+            re.compile(rb'^8BPS'): ('PSD', _psdsize),
+            re.compile(rb'^PCD_OPA'): ('PCD', _pcdsize),
+            re.compile(rb'^FWS'): ('SWF', _swfsize),
+            re.compile(rb'^CWS'): ('SWF', _swfmxsize),
+            re.compile(rb'^\x8aMNG\x0d\x0a\x1a\x0a'): ('MNG', _mngsize),
+            re.compile(rb'^\x01\xDA[\x01\x00]'): ('RGB', _rgbsize),
+            re.compile(rb'^\x59\xA6\x6A\x95'): ('RAS', _rassize),
+            re.compile(rb'^\x0A.\x01'): ('PCX', _pcxsize),
+            re.compile(rb'<svg\s'): ('SVG', _svgsize)}
+
 
 def _type_match(data):
     '''type_map_match to get MIME-TYPE and callback function'''
@@ -355,25 +362,28 @@ def _type_match(data):
     else:
         raise ValueError('Unable to Recognize image file header')
 
+
 def what(filename):
     '''Recognize image format from file header'''
-    stream = open(filename, 'rb')
-    data = stream.read(512)
-    stream.seek(0, 0)
-    mime, callback = _type_match(data)
-    return mime
+    with open(filename, 'rb') as stream:
+        data = stream.read(512)
+        stream.seek(0, 0)
+        mime, callback = _type_match(data)
+        return mime
+
 
 def size(filename):
     '''size image format'''
-    stream = open(filename, 'rb')
-    data = stream.read(512)
-    stream.seek(0, 0)
-    mime, callback = _type_match(data)
-    mime, x, y = callback(stream)
-    return mime, x, y
+    with open(filename, 'rb') as stream:
+        data = stream.read(512)
+        stream.seek(0, 0)
+        mime, callback = _type_match(data)
+        mime, x, y = callback(stream)
+        return mime, x, y
 
-def fromstring(data):
+
+def frombytes(data):
     '''size image from string'''
     mime, callback = _type_match(data)
-    mime, x, y = callback(cStringIO.StringIO(data))
+    mime, x, y = callback(io.BytesIO(data))
     return mime, x, y
