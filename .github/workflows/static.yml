@@ -13,7 +13,7 @@ on:
     types: [generate-gh-pages]
 
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -24,7 +24,7 @@ permissions:
 # Allow one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # Single deploy job since we're just deploying
