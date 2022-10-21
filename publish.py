@@ -80,11 +80,6 @@ def gen_feed(news_list):
                      'uri': news['author_link']
                  } if news['author_link'] else (),
                  url=news['url'],
-                 links=[{
-                     'type': 'comment',
-                     'title': 'comment',
-                     'href': news['comment_url'],
-                 }],
                  updated=news['submit_time'], )
     with open(os.path.join(output_dir, "feed.xml"), "w") as fp:
         fp.write(feed.to_string())
