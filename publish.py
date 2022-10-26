@@ -71,10 +71,11 @@ def gen_feed(news_list):
                     )
     for news in news_list:
         feed.add(news['title'],
-                 content='summary' in news and
-                         ('<img src="%s" style="width: 220px; float: left" />' % news['image'].url if 'image' in news
-                          else '')
-                         + news['summary'],
+                 content='%s%s%s' % (('<img src="%s" style="width: 220px; float: left" />' % news[
+                     'image'].url if 'image' in news and news['image'].url  # not None
+                                      else ''), (news['summary'] if 'summary' in news else ''), (
+                                         ' <a href="%s">[comments]</a>' % news[
+                                             'comment_url'] if 'comment_url' in news else '')),
                  author={
                      'name': news['author'],
                      'uri': news['author_link']
