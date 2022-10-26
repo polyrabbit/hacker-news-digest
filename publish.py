@@ -75,7 +75,7 @@ def gen_feed(news_list):
                      'image'].url if 'image' in news and news['image'].url  # not None
                                       else ''), (news['summary'] if 'summary' in news else ''), (
                                          ' <a href="%s">[comments]</a>' % news[
-                                             'comment_url'] if 'comment_url' in news else '')),
+                                             'comment_url'] if 'comment_url' in news and news['comment_url'] else '')),
                  author={
                      'name': news['author'],
                      'uri': news['author_link']

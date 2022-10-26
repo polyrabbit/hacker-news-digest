@@ -38,13 +38,13 @@ class HackerNewsParser(object):
             author_dom = (subtext_dom.find('a', href=re.compile(r'^user', re.I)) or Null).extract()
             author = author_dom.text.strip() or None
             author_link = author_dom['href'] or None
-            score_human = subtext_dom.find(string=re.compile(r'\d+.+points')) or '0'
+            score_human = subtext_dom.find(string=re.compile(r'\d+.+point')) or '0'
             score = re.search(r'\d+', score_human).group() or None
             submit_time = subtext_dom.find(string=re.compile(r'\d+ \w+ ago')) or None
             if submit_time:
                 submit_time = self.human2datetime(submit_time)
             # In case of no comments yet
-            comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comments')) or Null
+            comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comment')) or Null
             comment_cnt = re.search(r'\d+', comment_dom.get_text() or '0').group()
             comment_url = self.get_comment_url(comment_dom['href'])
 
