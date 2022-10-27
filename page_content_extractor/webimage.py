@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlparse, urljoin
 
 import requests
+
 from . import imgsz
 from functools import lru_cache
 
@@ -72,12 +73,22 @@ class WebImage(object):
         if hasattr(self, '_raw_data'):
             return self._raw_data
         try:
-            resp = requests.get(self.url, headers={'Referer': self.referrer})
+            resp = requests.get(self.url, headers={'Referer': self.referrer}, stream=True)
             # meta info
             self.url = resp.url
-            self._raw_data = resp.content
+            bytes = []
+            read_cnt = 0
+            for content in resp.iter_content(1 << 20):
+                bytes.append(content)
+                read_cnt += 1
+                if read_cnt >= 16:
+                    # To avoid infinite chunk response like - https://hookrace.net/time.gif
+                    raise IOError(
+                        "too much or infinite content - already read %d times, total size %d" % (
+                            read_cnt, sum(len(s) for s in bytes)))
+            self._raw_data = b''.join(bytes)
             self.content_type = resp.headers['Content-Type']
-            return resp.content
+            return self._raw_data
         except (IOError, KeyError) as e:
             # if anything goes wrong, do not set self._raw_data
             # so it will try again the next time.
