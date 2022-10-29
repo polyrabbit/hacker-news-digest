@@ -37,7 +37,7 @@ def legendary_parser_factory(url):
 
     # if no content-type is provided, Chrome set as an html
     ct = resp.headers.get('content-type', 'text').lower()
-    if ct.startswith('text'):
+    if ct.startswith('text') or 'html' in ct or 'xml' in ct or 'charset' in ct:
         logger.info('Get an %s to parse', ct)
         return HtmlContentExtractor(resp.text, resp.url)
     elif ct.startswith('application/pdf'):
