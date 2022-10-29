@@ -16,6 +16,11 @@ class SvgSizeTestCase(TestCase):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/home.png')
         self.assertEqual(size(fpath), ('PNG', 128, 128))
 
+    def test_webp_failback_to_pil(self):
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/medium_Comment_f406ff2a89.png')
+        self.assertEqual(size(fpath), ('WEBP', 1300, 787))
+
+
 class WebImageTestCase(TestCase):
 
     @mock.patch('page_content_extractor.webimage.requests')
@@ -23,7 +28,7 @@ class WebImageTestCase(TestCase):
         mock_requests.get.return_value.content = ''
         node = mock.Mock()
         node.attrs = {'src': 'https://avatars1.githubusercontent.com/u/2657334',
-                     'whatever': 'whatever'}
+                      'whatever': 'whatever'}
 
         for _ in range(10):
             WebImage.from_node('https://github.com/polyrabbit/', node).is_candidate

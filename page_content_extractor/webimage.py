@@ -64,7 +64,7 @@ class WebImage(object):
 
         try:
             return imgsz.frombytes(self.raw_data)[1:]
-        except ValueError as e:
+        except Exception as e:
             logger.error('Error while determing the size of %s, %s', self.url, e)
         return 0, 0
 

@@ -15,6 +15,7 @@ __all__ = ['what', 'size', 'frombytes']
 
 import re, io
 from struct import unpack
+from PIL import Image
 
 
 def _jpegsize(stream):
@@ -360,7 +361,9 @@ def _type_match(data):
         if rx.search(data):
             return TYPE_MAP[rx]
     else:
-        raise ValueError('Unable to Recognize image file header')
+        # fail back to PIL
+        with Image.open(io.BytesIO(data)) as im:
+            return im.format, lambda d: (im.format, im.width, im.height)
 
 
 def what(filename):
@@ -375,7 +378,7 @@ def what(filename):
 def size(filename):
     '''size image format'''
     with open(filename, 'rb') as stream:
-        data = stream.read(512)
+        data = stream.read()
         stream.seek(0, 0)
         mime, callback = _type_match(data)
         mime, x, y = callback(stream)
