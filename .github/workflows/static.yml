@@ -12,8 +12,8 @@ on:
   repository_dispatch:
     types: [generate-gh-pages]
 
-  schedule:
-    - cron: "*/10 * * * *"
+  # schedule:
+    # - cron: "*/10 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
