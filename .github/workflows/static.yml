@@ -24,7 +24,7 @@ permissions:
 # Allow one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true # Avoid batch pending when one job hangs
 
 jobs:
   # Single deploy job since we're just deploying
