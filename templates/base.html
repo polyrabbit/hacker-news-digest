@@ -186,8 +186,12 @@
                     </a>
                 {% endif %}
                 {% if news.summary %}
-                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9{% else %}summary-text{% endif %}">
-                        {{ news.summary|truncate(300)|safe }}
+                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}">
+                        {% if news.summary.startswith('<iframe') %}
+                            {{ news.summary|safe }}
+                        {% else %}
+                            {{ news.summary|truncate(300)|e }}
+                        {% endif %}
                     </div>
                 {% endif %}
                 <div style="clear: both;"></div>

@@ -6,7 +6,7 @@ from hashlib import md5
 from urllib.parse import urlparse
 
 from ago import human
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, runtime
 
 from feedwerk.atom import AtomFeed
 
@@ -27,7 +27,7 @@ def elapsed(dt):
 
 
 output_dir = os.path.join(os.path.dirname(__file__), "output/")
-environment = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")))
+environment = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")), autoescape=True)
 environment.filters["natural_datetime"] = natural_datetime
 environment.filters["elapsed"] = elapsed
 
@@ -70,14 +70,19 @@ def gen_feed(news_list):
                         'uri': 'https://github.com/polyrabbit/'}
                     )
     for news in news_list:
-        feed.add(news['title'],
+        summary_text = ''
+        if 'summary' in news:
+            summary_text = news['summary']
+            if not summary_text.startswith('<iframe'):
+                summary_text = runtime.escape(summary_text)
+        feed.add(runtime.escape(news['title']),
                  content='%s%s%s' % (('<img src="%s" style="width: 220px; float: left" />' % news[
                      'image'].url if 'image' in news and news['image'].url  # not None
-                                      else ''), (news['summary'] if 'summary' in news else ''), (
+                                      else ''), summary_text.strip(), (
                      ' <a href="%s" target="_blank">[comments]</a>' % news[
                          'comment_url'] if 'comment_url' in news and news['comment_url'] else '')),
                  author={
-                     'name': news['author'],
+                     'name': runtime.escape(news['author']),
                      'uri': news['author_link']
                  } if news['author_link'] else (),
                  url=news['url'],
