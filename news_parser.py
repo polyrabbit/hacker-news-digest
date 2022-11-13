@@ -7,6 +7,8 @@ from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup as BS
 from null import Null
 
+from page_content_extractor import ParseError
+
 logger = logging.getLogger(__name__)
 
 from config import sites_for_users
@@ -19,9 +21,8 @@ class HackerNewsParser(object):
     def parse_news_list(self):
         dom = BS(requests.get(self.end_point).text, features="lxml")
         items = []
-        # Sad BS doesn't support nth-of-type(3n)
         for rank, item_line in enumerate(
-                dom.select('table tr table.itemlist tr.athing')):
+                dom.select('table tr table tr.athing')):
             # previous_sibling won't work when there are spaces between them.
             subtext_dom = item_line.find_next_sibling('tr')
             title_dom = item_line.find('td', class_='title', align=False)
@@ -60,6 +61,8 @@ class HackerNewsParser(object):
                 comment_cnt=comment_cnt,
                 comment_url=comment_url
             ))
+        if len(items) == 0:
+            raise ParseError('failed to parse item list in hacker news')
         return items
 
     def parse_comhead(self, url):
