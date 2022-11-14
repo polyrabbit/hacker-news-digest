@@ -190,7 +190,7 @@
                         {% if news.summary.startswith('<iframe') %}
                             {{ news.summary|safe }}
                         {% else %}
-                            {{ news.summary|truncate(300)|e }}
+                            {{ news.summary|truncate(300)|safe }}
                         {% endif %}
                     </div>
                 {% endif %}

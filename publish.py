@@ -73,16 +73,16 @@ def gen_feed(news_list):
         summary_text = ''
         if 'summary' in news:
             summary_text = news['summary']
-            if not summary_text.startswith('<iframe'):
-                summary_text = runtime.escape(summary_text)
-        feed.add(runtime.escape(news['title']),
+            # if not summary_text.startswith('<iframe'):
+            #     summary_text = runtime.escape(summary_text)
+        feed.add(news['title'],
                  content='%s%s%s' % (('<img src="%s" style="width: 220px; float: left" />' % news[
                      'image'].url if 'image' in news and news['image'].url  # not None
                                       else ''), summary_text.strip(), (
-                     ' <a href="%s" target="_blank">[comments]</a>' % news[
-                         'comment_url'] if 'comment_url' in news and news['comment_url'] else '')),
+                                         ' <a href="%s" target="_blank">[comments]</a>' % news[
+                                             'comment_url'] if 'comment_url' in news and news['comment_url'] else '')),
                  author={
-                     'name': runtime.escape(news['author']),
+                     'name': news['author'],
                      'uri': news['author_link']
                  } if news['author_link'] else (),
                  url=news['url'],
