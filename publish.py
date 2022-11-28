@@ -71,7 +71,7 @@ def gen_feed(news_list):
                     )
     for news in news_list:
         summary_text = ''
-        if 'summary' in news:
+        if 'summary' in news and news['summary'] is not None:
             summary_text = news['summary']
             # if not summary_text.startswith('<iframe'):
             #     summary_text = runtime.escape(summary_text)
