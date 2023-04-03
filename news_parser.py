@@ -19,7 +19,8 @@ class HackerNewsParser(object):
     end_point = 'https://news.ycombinator.com/'
 
     def parse_news_list(self):
-        dom = BS(requests.get(self.end_point).text, features="lxml")
+        content = requests.get(self.end_point).text
+        dom = BS(content, features="lxml")
         items = []
         for rank, item_line in enumerate(
                 dom.select('table tr table tr.athing')):
@@ -62,7 +63,7 @@ class HackerNewsParser(object):
                 comment_url=comment_url
             ))
         if len(items) == 0:
-            raise ParseError('failed to parse item list in hacker news')
+            raise ParseError('failed to parse hacker news page, got 0 item, text %s' % content)
         return items
 
     def parse_comhead(self, url):
