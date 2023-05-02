@@ -2,7 +2,7 @@ ago==0.0.95
 beautifulsoup4==4.12.0
 cchardet==2.1.7
 chardet==5.1.0
-Flask==2.2.3
+Flask==2.3.2
 Flask-SQLAlchemy==3.0.3
 gunicorn==20.1.0
 lxml==4.9.2
