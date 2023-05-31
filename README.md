@@ -1,7 +1,6 @@
 [Hacker News Digest](http://hackernews.betacat.io/)
 ==================
 
-[![Build Status](https://travis-ci.org/polyrabbit/hacker-news-digest.svg?branch=master)](https://travis-ci.org/polyrabbit/hacker-news-digest)
 [![Github Pages](https://github.com/polyrabbit/hacker-news-digest/actions/workflows/static.yml/badge.svg)](https://github.com/polyrabbit/hacker-news-digest/actions/workflows/static.yml)
 [![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/polyrabbit/hacker-news-digest)
 

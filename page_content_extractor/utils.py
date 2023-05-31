@@ -12,17 +12,6 @@ from urllib3.util import timeout
 # def word_count(s):
 #     return len(list(jieba.cut(s)))
 
-def is_paragraph(s):
-    """
-    Guess if this string is eligible to be a paragraph
-    """
-    try:
-        # Favour CJK words
-        return len(s.encode('utf-8')) > 120
-    except UnicodeEncodeError:
-        return len(s) > 120
-
-
 ascii_patt = re.compile(r'([\u0000-\u00FF]+)', re.U)
 
 

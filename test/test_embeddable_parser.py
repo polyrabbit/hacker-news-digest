@@ -49,7 +49,7 @@ class EmbeddableParserTestCase(TestCase):
     def test_slideshare_net_parser(self):
         parser = EmbeddableExtractor('slideshare', 'http://www.slideshare.net/earnestagency/the-yes-factor')
         self.assertEqual(parser.get_summary(),
-                         '<iframe src="http://www.slideshare.net/slideshow/embed_code/40684167" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/earnestagency/the-yes-factor" title="The YES Factor: How to persuade business buyers to say yes." target="_blank">The YES Factor: How to persuade business buyers to say yes.</a> </strong> from <strong><a href="http://www.slideshare.net/earnestagency" target="_blank">Earnest</a></strong> </div>\n\n')
+                         '<iframe src="https://www.slideshare.net/slideshow/embed_code/key/80s1Kw32fHbvFc" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/earnestagency/the-yes-factor" title="The YES Factor: How to persuade business buyers to say yes." target="_blank">The YES Factor: How to persuade business buyers to say yes.</a> </strong> from <strong><a href="https://www.slideshare.net/earnestagency" target="_blank">Earnest</a></strong> </div>\n\n')
 
         self.assertRaises(requests.exceptions.HTTPError, EmbeddableExtractor, 'slideshare', 'http://www.slideshare.net/whatever404040404')
 

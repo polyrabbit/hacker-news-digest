@@ -15,3 +15,4 @@ gevent==22.10.2
 werkzeug==2.2.3
 feedwerk==1.1.0
 Pillow==9.5.0
+psycopg2==2.9.6

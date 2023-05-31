@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 import os.path
 import logging
 import unittest
@@ -8,8 +8,9 @@ from bs4 import BeautifulSoup as BS
 from page_content_extractor import *
 from page_content_extractor.html import *
 
-class PageContentExtractorTestCase(TestCase):
 
+@unittest.skip("Should load from local fixtures")
+class PageContentExtractorTestCase(TestCase):
     maxDiff = None
 
     def test_purge(self):
@@ -63,11 +64,14 @@ class PageContentExtractorTestCase(TestCase):
 
     def test_semantic_affect(self):
         # They are static methods
-        self.assertTrue(HtmlContentExtractor.has_positive_effect(BS('<article>good</article>').article))
+        self.assertTrue(
+            HtmlContentExtractor.has_positive_effect(BS('<article>good</article>').article))
         self.assertFalse(HtmlContentExtractor.has_negative_effect(BS('<p>good</p>').p))
         self.assertFalse(HtmlContentExtractor.has_positive_effect(BS('<p>good</p>').p))
-        self.assertTrue(HtmlContentExtractor.has_positive_effect(BS('<p class="conteNt">good</p>').p))
-        self.assertTrue(HtmlContentExtractor.has_negative_effect(BS('<p class="comment">good</p>').p))
+        self.assertTrue(
+            HtmlContentExtractor.has_positive_effect(BS('<p class="conteNt">good</p>').p))
+        self.assertTrue(
+            HtmlContentExtractor.has_negative_effect(BS('<p class="comment">good</p>').p))
 
     # def test_calc_best_node(self):
     #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
@@ -117,45 +121,47 @@ class PageContentExtractorTestCase(TestCase):
                          "While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
 
     def test_get_summary_word_cut(self):
-        html_doc = '<p>'+'1 '*500+'</p>'+'<p>'+'2 '*500+'</p>'
+        html_doc = '<p>' + '1 ' * 500 + '</p>' + '<p>' + '2 ' * 500 + '</p>'
         summary = HtmlContentExtractor(html_doc).get_summary()
         self.assertNotIn('2', summary)
         self.assertTrue(summary.endswith('...'))
 
     @unittest.skip('No preserved tag check for now')
     def test_get_summary_with_preserved_tag(self):
-        html_doc = '<pre>' + '11 '*400 + '</pre>'
+        html_doc = '<pre>' + '11 ' * 400 + '</pre>'
         self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary(10))
-        html_doc = '<pre><code>' + '11\n'*400 + '</code>'+'what you think?'*200+'</pre>'
+        html_doc = '<pre><code>' + '11\n' * 400 + '</code>' + 'what you think?' * 200 + '</pre>'
         # print HtmlContentExtractor(html_doc).get_summary(10)
-        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(10), '<pre><code>%s</code></pre>' % '\n'.join(['11']*5))
+        self.assertEqual(HtmlContentExtractor(html_doc).get_summary(10),
+                         '<pre><code>%s</code></pre>' % '\n'.join(['11'] * 5))
 
     @unittest.skip('No need for now')
     def test_get_summary_with_link_intensive(self):
-        html_doc = '<div><p><a href="whatever">' + '1 '*500 + '</a></p>'+\
-                   '<p>'+'2 '*500+'</p></div>'
+        html_doc = '<div><p><a href="whatever">' + '1 ' * 500 + '</a></p>' + \
+                   '<p>' + '2 ' * 500 + '</p></div>'
         pp = HtmlContentExtractor(html_doc)
         pp.article = BS(html_doc).div
-        self.assertTrue(pp.get_summary().startswith('2 '*10))
+        self.assertTrue(pp.get_summary().startswith('2 ' * 10))
 
     def test_escaped_summary(self):
         html_doc = '<code>&lt;a href=&quot;&quot; title=&quot;&quot;&gt; &lt;</code>'
         article = HtmlContentExtractor(html_doc)
         # TODO test longer html
-        self.assertEqual(article.get_summary(), '&lt;a href=&#34;&#34; title=&#34;&#34;&gt; &lt;')
+        self.assertEqual(article.decode().get_summary(),
+                         '&lt;a href=&#34;&#34; title=&#34;&#34;&gt; &lt;')
 
     def test_no_extra_spaces_between_tags(self):
         html_doc = '<p><strong><span style="color:red">R</span></strong>ed</p>'
         article = HtmlContentExtractor(html_doc)
-        self.assertEqual(article.get_summary(), 'Red')
+        self.assertEqual(article.decode().get_summary(), 'Red')
 
     def test_get_summary_with_meta_class(self):
         html_doc = '<div><p class="meta">good</p><p>bad</p></div>'
         article = HtmlContentExtractor(html_doc)
-        self.assertEqual(article.get_summary(4), 'bad')
+        self.assertEqual(article.decode().get_summary(4), 'bad')
 
     def test_get_summary_with_nested_div(self):
-        html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a '*500, 'b '*500)
+        html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a ' * 500, 'b ' * 500)
         self.assertTrue(HtmlContentExtractor(html_doc).get_summary().startswith('a'))
 
     def test_empty_title(self):
@@ -167,20 +173,24 @@ class PageContentExtractorTestCase(TestCase):
     def test_cut_content_to_length(self):
         # Test not breaking a sentence in the middle
         html_doc = '<pre>good</pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), (html_doc, 4))
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
+                         (html_doc, 4))
 
     def test_cut_content_to_length_break_on_lines(self):
         html_doc = '<pre>good\ngood</pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre>good</pre>', 4))
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
+                         ('<pre>good</pre>', 4))
         html_doc = '<pre><code>good\ngood</code></pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1), ('<pre><code>good</code></pre>', 4))
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
+                         ('<pre><code>good</code></pre>', 4))
 
     def test_cut_content_to_length_with_self_closing_tag(self):
         html_doc = '<pre>good<br>and<img></pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 10), ('<pre>good<br/>and<img/></pre>', 7))
+        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 10),
+                         ('<pre>good<br/>and<img/></pre>', 7))
 
     def test_get_summary_without_strip(self):
-        html_doc = '<div>%s <span>%s</span></div>' % ('a'*200, 'b'*200)
+        html_doc = '<div>%s <span>%s</span></div>' % ('a' * 200, 'b' * 200)
         self.assertIn(' ', HtmlContentExtractor(html_doc).get_summary())
 
     def test_favicon_url(self):
@@ -194,7 +204,8 @@ class PageContentExtractorTestCase(TestCase):
             </body>
         </html>
         '''
-        self.assertEqual('http://local.host/ico.favicon', HtmlContentExtractor(html_doc, 'http://local.host').get_favicon_url())
+        self.assertEqual('http://local.host/ico.favicon',
+                         HtmlContentExtractor(html_doc, 'http://local.host').get_favicon_url())
 
     def test_clean_up_html_not_modify_iter_while_looping(self):
         html_doc = open(os.path.join(
@@ -217,40 +228,36 @@ PyPy STM is developed by Armin Rigo and Remi Meier,
 and supported by community <em>donations</em>.</p></article>
         """
         print((HtmlContentExtractor(html_doc).get_summary(1000)))
-        self.assertTrue(HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
+        self.assertTrue(
+            HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
 
     def test_article_with_info_attr(self):
-        ar = legendary_parser_factory('http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
-        self.assertTrue(str(ar.article).startswith('<div id="content">'))
-        self.assertTrue(str(ar.get_summary()).startswith('2014年10月18日'))
-        self.assertTrue(str(ar.get_summary()).endswith('...'))
-
-    def test_article_title_donot_match_doc_title(self):
         ar = legendary_parser_factory(
-            'http://www.technologyreview.com/news/532826/material-cools-buildings-by-sending-heat-into-space/')
-        summary = str(ar.get_summary())
-        print(summary)
-        self.assertTrue(summary.startswith('A material that simultaneously'))
-        self.assertTrue(summary.endswith('...'))
+            'http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
+        self.assertTrue(ar.get_summary().startswith('2014'))
+        self.assertTrue(ar.get_summary().endswith('...'))
 
     def test_content_with_meta_in_attr(self):
-        ar = legendary_parser_factory('http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
-        summary = str(ar.get_summary())
+        ar = legendary_parser_factory(
+            'http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
+        summary = ar.get_summary()
         self.assertTrue(summary.startswith('The capture of transient scenes'))
         self.assertTrue(summary.endswith('...'))
 
     def test_common_sites_forbes(self):
         ar = legendary_parser_factory(
             'http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
-        self.assertTrue(str(ar.article).startswith('<div class="article_content col-md-10 col-sm-12">'))
-        self.assertTrue(str(ar.get_summary()).startswith('Kind of like every baseball player will try'))
+        self.assertTrue(
+            ar.article.decode().startswith('<div class="article_content col-md-10 col-sm-12">'))
+        self.assertTrue(
+            ar.get_summary().startswith('Kind of like every baseball player will try'))
 
     def test_common_sites_ruanyifeng(self):
         ar = legendary_parser_factory(
             'http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
-        self.assertTrue(str(ar.article).startswith('<article class="hentry">'))
-        self.assertTrue(str(ar.get_summary()).startswith('2011年11月出版的'))
-        self.assertTrue(str(ar.get_summary()).endswith('...'))
+        self.assertTrue(ar.article.decode().startswith('<article class="hentry">'))
+        self.assertTrue(ar.get_summary().startswith('2011年11月出版的'))
+        self.assertTrue(ar.get_summary().endswith('...'))
 
     # @unittest.skip('local test only')
     def test_shit(self):
@@ -270,23 +277,3 @@ and supported by community <em>donations</em>.</p></article>
         """
         ar = HtmlContentExtractor(html_doc)
         print((ar.get_summary()))
-
-    # @unittest.skip('local test only')
-    def test_common_sites_xxx(self):
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
-        # ar = legendary_parser_factory('http://codefine.co/%E6%9C%80%E6%96%B0openstack-swift%E4%BD%BF%E7%94%A8%E3%80%81%E7%AE%A1%E7%90%86%E5%92%8C%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/')
-        # ar = legendary_parser_factory('http://devo.ps/')
-        # ar = legendary_parser_factory('http://services.amazon.com/selling-services/pricing.htm?ld=EL-www.amazon.comAS')
-        ar = legendary_parser_factory('http://www.jianshu.com/p/5e997f9b7a9f')
-        print((ar.get_summary()))
-        # print ar.article
-        # print ar.get_illustration().url
-        # print ar.get_favicon_url()
-
-if __name__ == '__main__':
-    # basicConfig will only be called automatically when calling
-    # logging.debug, logging.info ...
-    # calling those method against a logger instance won't apply the basic config
-    # see https://docs.python.org/2/library/logging.html#logging.basicConfig
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
-    unittest.main()

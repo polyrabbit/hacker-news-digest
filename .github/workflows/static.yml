@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
   
   repository_dispatch:
-    types: [generate-gh-pages]
+    types: [ generate-gh-pages ]
 
-  # schedule:
+    # schedule:
     # - cron: "*/10 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -35,23 +35,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      #      - name: Dump GitHub Context
+      #        env:
+      #          GITHUB_CONTEXT: ${{ toJson(github) }}
+      #        run: echo "$GITHUB_CONTEXT"
+
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Setup Python
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.9.13
+          python-version: 3.9.16
+          cache: 'pip'
+
       - name: Install Python dependencies
-        uses: py-actions/py-dependency-install@v3
+        run: pip install -r requirements.txt
+
+      - name: Unit Test
+        run: python -m unittest
+        if: ${{ github.event_name == 'push' }}
+
       - name: Generate Pages
         run: make gh_pages
+
       - name: Setup Pages
         uses: actions/configure-pages@v2
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
           path: 'output'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+        if: ${{ success() }}

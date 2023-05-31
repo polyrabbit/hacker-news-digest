@@ -30,7 +30,7 @@ gh_pages:
 	ln -s feed.xml output/feed
 
 test:
-	python -m unittest discover ./test
+	python -m unittest
 
 dropdb:
 	python -c 'from models import db; db.drop_all()'
