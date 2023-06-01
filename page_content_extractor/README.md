@@ -2,10 +2,10 @@ This internal package provides a unified way to extract main body from `html` an
 
 ### Usage
 
-Feed a url to the `legendary_parser_factory` and you will get a page object
+Feed a url to the `parser_factory` and you will get a page object
 
  ```
- page = legendary_parser_factory('https://github.com/polyrabbit/hacker-news-digest')
+ page = parser_factory('https://github.com/polyrabbit/hacker-news-digest')
  ```
 
 From the page you can get the main body via the `aritcle` attribute, the summary of body via the `get_summary` method, the illustration via the `get_illustration` method, and the favicon url via the `get_favicon_url` method.

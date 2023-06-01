@@ -1,12 +1,12 @@
 # coding: utf-8
-import re
 import logging
-
+import re
 from urllib.parse import urljoin
 from urllib.parse import urlsplit
-import requests
 
 from bs4 import BeautifulSoup as BS
+
+from page_content_extractor.http import session
 from .exceptions import ParseError
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,8 @@ class EmbeddableExtractor(object):
             1)
 
     def slideshare_net_parser(self, url):
-        r = requests.get('http://www.slideshare.net/api/oembed/2', params={'url': url, 'format': 'json'})
+        r = session.get('http://www.slideshare.net/api/oembed/2',
+                        params={'url': url, 'format': 'json'})
         r.raise_for_status()
         return r.json()['html']
 

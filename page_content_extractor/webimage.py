@@ -1,11 +1,10 @@
 # coding: utf-8
 import logging
+from functools import lru_cache
 from urllib.parse import urlparse, urljoin
 
-import requests
-
+from page_content_extractor.http import session
 from . import imgsz
-from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,8 @@ class WebImage(object):
             logger.info('Failed on dimension check(width=%s height=%s) %s', width, height, self.url)
             return False
         if not self.check_image_bytesize():
-            logger.info('Failed on image bytesize check, size is %s, %s', len(self.raw_data), self.url)
+            logger.info('Failed on image bytesize check, size is %s, %s', len(self.raw_data),
+                        self.url)
             return False
         self._is_candidate = True
         return True
@@ -65,35 +65,31 @@ class WebImage(object):
         try:
             return imgsz.frombytes(self.raw_data)[1:]
         except Exception as e:
-            logger.error('Error while determing the size of %s, %s', self.url, e)
+            logger.error('Error while determine the size of %s, %s', self.url, e)
         return 0, 0
 
     @property
     def raw_data(self):
         if hasattr(self, '_raw_data'):
             return self._raw_data
-        try:
-            resp = requests.get(self.url, headers={'Referer': self.referrer}, stream=True)
-            # meta info
-            self.url = resp.url
-            bytes = []
-            read_cnt = 0
-            for content in resp.iter_content(1 << 20):
-                bytes.append(content)
-                read_cnt += 1
-                if read_cnt >= 16:
-                    # To avoid infinite chunk response like - https://hookrace.net/time.gif
-                    raise IOError(
-                        "too much or infinite content - already read %d times, total size %d" % (
-                            read_cnt, sum(len(s) for s in bytes)))
-            self._raw_data = b''.join(bytes)
-            self.content_type = resp.headers['Content-Type']
-            return self._raw_data
-        except (IOError, KeyError) as e:
-            # if anything goes wrong, do not set self._raw_data
-            # so it will try again the next time.
-            logger.info('Failed to fetch img(%s), %s', self.url, e)
-            return b''
+        resp = session.get(self.url, headers={'Referer': self.referrer}, stream=True)
+        # meta info
+        self.url = resp.url
+        resp.raise_for_status()
+        bytes = []
+        read_cnt = 0
+        for content in resp.iter_content(1 << 20):
+            bytes.append(content)
+            read_cnt += 1
+            if read_cnt >= 16:
+                # To avoid infinite chunk response like - https://hookrace.net/time.gif
+                raise IOError(
+                    "too much or infinite content - already read %d times, total size %d" % (
+                        read_cnt, sum(len(s) for s in bytes)))
+        # if anything goes wrong, do not set self._raw_data so it will try again the next time.
+        self._raw_data = b''.join(bytes)
+        self.content_type = resp.headers['Content-Type']
+        return self._raw_data
 
     def to_text_len(self):
         return self.img_area_px / self.scale

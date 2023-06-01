@@ -2,7 +2,7 @@
 import logging
 
 from news_parser import HackerNewsParser
-from page_content_extractor import legendary_parser_factory
+from page_content_extractor import parser_factory
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class HackerNews(HackerNewsParser):
     def insert_news(self, news, stats):
         try:
             logger.info("Fetching %s", news['url'])
-            parser = legendary_parser_factory(news['url'])
+            parser = parser_factory(news['url'])
             news['summary'] = parser.get_summary(summary_length)
             news['favicon'] = parser.get_favicon_url()
             tm = parser.get_illustration()
@@ -67,7 +67,5 @@ class HackerNews(HackerNewsParser):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
-    # unittest.main()
     hn = HackerNews()
     hn.update()

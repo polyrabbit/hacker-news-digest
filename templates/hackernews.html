@@ -6,6 +6,9 @@
 {% block head %}
     <meta name="description" content="Hacker news digest is a responsive interface of hacker news with summaries and illustrations">
     <link rel="canonical" href="http://hackernews.betacat.io/" />
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="{{ title }}"/>
+    <meta name="twitter:description" content="Hacker news digest is a responsive interface of hacker news with summaries and illustrations"/>
     {{ super() }}
 {% endblock %}
 

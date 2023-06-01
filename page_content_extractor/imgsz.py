@@ -13,8 +13,10 @@ New BSD license
 __version__ = '2.1'
 __all__ = ['what', 'size', 'frombytes']
 
-import re, io
+import io
+import re
 from struct import unpack
+
 from PIL import Image
 
 
@@ -386,6 +388,8 @@ def size(filename):
 
 
 def frombytes(data):
+    if not data:
+        return '', 0, 0
     '''size image from string'''
     mime, callback = _type_match(data)
     mime, x, y = callback(io.BytesIO(data))

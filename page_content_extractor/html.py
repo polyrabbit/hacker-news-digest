@@ -1,18 +1,18 @@
 # coding: utf-8
-import re
-
 import logging
-from urllib.parse import urljoin
+import re
 from collections import defaultdict
+from functools import lru_cache
 from itertools import chain
-from math import sqrt
-from bs4 import BeautifulSoup as BS, Tag, NavigableString
+from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup as BS, Tag, NavigableString
+from markupsafe import escape
+from math import sqrt
 from null import Null
+
 from .utils import tokenize, string_inclusion_ratio
 from .webimage import WebImage
-from functools import lru_cache
-from markupsafe import escape
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,8 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
               'body', 'li', 'br', 'map', 'button', 'object', 'canvas', 'ol', 'caption',
               'output', 'col', 'p', 'colgroup', 'pre', 'dd', 'progress', 'div', 'section',
               'dl', 'table', 'dt', 'tbody', 'embed', 'textarea', 'fieldset', 'tfoot', 'figcaption',
-              'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+              'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5',
+              'h6',
               'video', 'td'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
                            'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
@@ -272,7 +273,8 @@ class HtmlContentExtractor(object):
                     partial_summaries.append(' ')  # http://paulgraham.com/know.html
                     # if self.summary_begun:  # http://v2ex.com/t/152930
                     if is_meta_tag(child) and \
-                            1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(
+                            1.0 * self.calc_effective_text_len(
+                        child) / self.calc_effective_text_len(
                         self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
                         continue
@@ -284,7 +286,8 @@ class HtmlContentExtractor(object):
                             continue
                         child_summary = summarize(child, max_length).strip()
                         if len(tokenize(child_summary)) < 15 and \
-                                1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(
+                                1.0 * self.calc_effective_text_len(
+                            child) / self.calc_effective_text_len(
                             self.article) < .3:
                             continue
                         partial_summaries.append(child_summary)
@@ -306,7 +309,6 @@ class HtmlContentExtractor(object):
                             partial_summaries.append(escape(word))
                             max_length -= len(partial_summaries[-1])
                             if max_length < 0:
-                                partial_summaries.append(' ...')
                                 return ''.join(partial_summaries)
                     else:
                         partial_summaries.append(escape(child))
@@ -328,7 +330,7 @@ class HtmlContentExtractor(object):
             if img.is_candidate:
                 logger.info('Found a top image %s', img.url)
                 return img
-        # Only as a fall back, github use user's avatar as their meta_images
+        # Only as a fallback, github use user's avatar as their meta_images
         if self.get_meta_image():
             img = WebImage.from_attrs(src=self.get_meta_image(), referrer=self.url)
             if img.is_candidate:

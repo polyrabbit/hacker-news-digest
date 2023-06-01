@@ -12,14 +12,14 @@ from page_content_extractor import ParseError
 logger = logging.getLogger(__name__)
 
 from config import sites_for_users
-import requests
+from page_content_extractor.http import session
 
 
 class HackerNewsParser(object):
     end_point = 'https://news.ycombinator.com/'
 
     def parse_news_list(self):
-        content = requests.get(self.end_point).text
+        content = session.get(self.end_point).text
         dom = BS(content, features="lxml")
         items = []
         for rank, item_line in enumerate(
@@ -102,5 +102,4 @@ class HackerNewsParser(object):
         if m:
             minute_ago = int(m.group('minute'))
         return datetime.utcnow() - \
-               timedelta(days=day_ago, hours=hour_ago, minutes=minute_ago)
-
+            timedelta(days=day_ago, hours=hour_ago, minutes=minute_ago)

@@ -1,10 +1,11 @@
-#coding: utf-8
+# coding: utf-8
 import os
 from unittest import TestCase
 import mock
 
 from page_content_extractor.imgsz import *
 from page_content_extractor.webimage import WebImage
+
 
 class SvgSizeTestCase(TestCase):
 
@@ -23,7 +24,7 @@ class SvgSizeTestCase(TestCase):
 
 class WebImageTestCase(TestCase):
 
-    @mock.patch('page_content_extractor.webimage.requests')
+    @mock.patch('page_content_extractor.webimage.session')
     def test_fetched_only_once(self, mock_requests):
         mock_requests.get.return_value.content = ''
         node = mock.Mock()
@@ -36,8 +37,6 @@ class WebImageTestCase(TestCase):
 
     @mock.patch('page_content_extractor.webimage.urljoin', autospec=True)
     def test_no_src(self, mock_urljoin):
-        import logging
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - [%(asctime)s] %(message)s')
         img = WebImage.from_attrs(a=1, b=2)
         self.assertFalse(img.is_candidate)
         self.assertFalse(mock_urljoin.called)

@@ -1,15 +1,11 @@
 # coding: utf-8
 import os.path
-import logging
 import unittest
 from unittest import TestCase
 
-from bs4 import BeautifulSoup as BS
-from page_content_extractor import *
 from page_content_extractor.html import *
 
 
-@unittest.skip("Should load from local fixtures")
 class PageContentExtractorTestCase(TestCase):
     maxDiff = None
 
@@ -25,7 +21,7 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = """
         <html>good,，</html>
         """
-        doc = BS(html_doc, from_encoding='utf-8')
+        doc = BS(html_doc, from_encoding='utf-8', features='lxml')
         length = HtmlContentExtractor(html_doc).calc_effective_text_len(doc)
         self.assertEqual(length, 8)
 
@@ -65,41 +61,21 @@ class PageContentExtractorTestCase(TestCase):
     def test_semantic_affect(self):
         # They are static methods
         self.assertTrue(
-            HtmlContentExtractor.has_positive_effect(BS('<article>good</article>').article))
-        self.assertFalse(HtmlContentExtractor.has_negative_effect(BS('<p>good</p>').p))
-        self.assertFalse(HtmlContentExtractor.has_positive_effect(BS('<p>good</p>').p))
+            HtmlContentExtractor.has_positive_effect(
+                BS('<article>good</article>', features='lxml').article))
+        self.assertFalse(
+            HtmlContentExtractor.has_negative_effect(BS('<p>good</p>', features='lxml').p))
+        self.assertFalse(
+            HtmlContentExtractor.has_positive_effect(BS('<p>good</p>', features='lxml').p))
         self.assertTrue(
-            HtmlContentExtractor.has_positive_effect(BS('<p class="conteNt">good</p>').p))
+            HtmlContentExtractor.has_positive_effect(
+                BS('<p class="conteNt">good</p>', features='lxml').p))
         self.assertTrue(
-            HtmlContentExtractor.has_negative_effect(BS('<p class="comment">good</p>').p))
-
-    # def test_calc_best_node(self):
-    #     resp = urllib2.urlopen('http://graydon2.dreamwidth.org/193447.html')
-    #     print HtmlContentExtractor(resp.read()).get_summary()
-
-    def test_check_image(self):
-        html_doc = """
-        <img src="http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg" />
-        """
-        img = WebImage.from_attrs(
-            src='http://www.washingtonpost.com/wp-srv/special/investigations/asset-forfeitures/map/images/map-fallback.jpg',
-            referrer='http://www.washingtonpost.com/')
-        self.assertTrue(img.is_candidate)
+            HtmlContentExtractor.has_negative_effect(
+                BS('<p class="comment">good</p>', features='lxml').p))
 
     def test_non_top_image(self):
         self.assertIsNone(HtmlContentExtractor('').get_illustration())
-
-    def test_image_from_meta(self):
-        html_doc = """
-        <meta property="og:image" content="http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg">
-        <meta property="og:image" content="http://ww3.sinaimg.cn/large/e724cbefgw1exdqgziee9j207306mq2z.jpg">
-        <body>
-        <img src="https://assets-cdn.github.com/images/spinners/octocat-spinner-128.gif" alt="Octocat Spinner Icon" class="m-2" width="28">
-        </body>
-        """
-        # should choose the first meta image
-        self.assertEqual(HtmlContentExtractor(html_doc).get_illustration().url,
-                         'http://ww1.sinaimg.cn/large/e724cbefgw1exdnntkml4j2079044jrd.jpg')
 
     @unittest.skip('Skipped because summary is too short')
     def test_get_summary_from_all_short_paragraph(self):
@@ -117,21 +93,20 @@ class PageContentExtractorTestCase(TestCase):
         <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.</p>
         """
         self.assertEqual(HtmlContentExtractor(html_doc).get_summary(),
-                         'Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999.  It’s been a while, so it’s due. ' \
-                         "While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2. ...")
+                         '''Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999. It’s been a while, so it’s due.
+ While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.''')
 
     def test_get_summary_word_cut(self):
         html_doc = '<p>' + '1 ' * 500 + '</p>' + '<p>' + '2 ' * 500 + '</p>'
         summary = HtmlContentExtractor(html_doc).get_summary()
+        self.assertIn('1', summary)
         self.assertNotIn('2', summary)
-        self.assertTrue(summary.endswith('...'))
 
     @unittest.skip('No preserved tag check for now')
     def test_get_summary_with_preserved_tag(self):
         html_doc = '<pre>' + '11 ' * 400 + '</pre>'
         self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_summary(10))
         html_doc = '<pre><code>' + '11\n' * 400 + '</code>' + 'what you think?' * 200 + '</pre>'
-        # print HtmlContentExtractor(html_doc).get_summary(10)
         self.assertEqual(HtmlContentExtractor(html_doc).get_summary(10),
                          '<pre><code>%s</code></pre>' % '\n'.join(['11'] * 5))
 
@@ -147,18 +122,18 @@ class PageContentExtractorTestCase(TestCase):
         html_doc = '<code>&lt;a href=&quot;&quot; title=&quot;&quot;&gt; &lt;</code>'
         article = HtmlContentExtractor(html_doc)
         # TODO test longer html
-        self.assertEqual(article.decode().get_summary(),
+        self.assertEqual(article.get_summary(),
                          '&lt;a href=&#34;&#34; title=&#34;&#34;&gt; &lt;')
 
     def test_no_extra_spaces_between_tags(self):
         html_doc = '<p><strong><span style="color:red">R</span></strong>ed</p>'
         article = HtmlContentExtractor(html_doc)
-        self.assertEqual(article.decode().get_summary(), 'Red')
+        self.assertEqual(article.get_summary(), 'Red')
 
     def test_get_summary_with_meta_class(self):
         html_doc = '<div><p class="meta">good</p><p>bad</p></div>'
         article = HtmlContentExtractor(html_doc)
-        self.assertEqual(article.decode().get_summary(4), 'bad')
+        self.assertEqual(article.get_summary(4), 'bad')
 
     def test_get_summary_with_nested_div(self):
         html_doc = '<div><div>%s<div>%s</div></div></div>' % ('a ' * 500, 'b ' * 500)
@@ -173,21 +148,25 @@ class PageContentExtractorTestCase(TestCase):
     def test_cut_content_to_length(self):
         # Test not breaking a sentence in the middle
         html_doc = '<pre>good</pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
-                         (html_doc, 4))
+        self.assertEqual(
+            HtmlContentExtractor.cut_content_to_length(BS(html_doc, features='lxml').pre, 1),
+            (html_doc, 4))
 
     def test_cut_content_to_length_break_on_lines(self):
         html_doc = '<pre>good\ngood</pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
-                         ('<pre>good</pre>', 4))
+        self.assertEqual(
+            HtmlContentExtractor.cut_content_to_length(BS(html_doc, features='lxml').pre, 1),
+            ('<pre>good</pre>', 4))
         html_doc = '<pre><code>good\ngood</code></pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 1),
-                         ('<pre><code>good</code></pre>', 4))
+        self.assertEqual(
+            HtmlContentExtractor.cut_content_to_length(BS(html_doc, features='lxml').pre, 1),
+            ('<pre><code>good</code></pre>', 4))
 
     def test_cut_content_to_length_with_self_closing_tag(self):
         html_doc = '<pre>good<br>and<img></pre>'
-        self.assertEqual(HtmlContentExtractor.cut_content_to_length(BS(html_doc).pre, 10),
-                         ('<pre>good<br/>and<img/></pre>', 7))
+        self.assertEqual(
+            HtmlContentExtractor.cut_content_to_length(BS(html_doc, features='lxml').pre, 10),
+            ('<pre>good<br/>and<img/></pre>', 7))
 
     def test_get_summary_without_strip(self):
         html_doc = '<div>%s <span>%s</span></div>' % ('a' * 200, 'b' * 200)
@@ -210,7 +189,7 @@ class PageContentExtractorTestCase(TestCase):
     def test_clean_up_html_not_modify_iter_while_looping(self):
         html_doc = open(os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
-            'fixtures/kim.com.html')).read().decode('utf-8')
+            'fixtures/kim.com.html')).read()
         try:
             HtmlContentExtractor(html_doc)
         except AttributeError as e:
@@ -227,53 +206,6 @@ without a GIL, so it can scale CPU-bound work to several cores.
 PyPy STM is developed by Armin Rigo and Remi Meier,
 and supported by community <em>donations</em>.</p></article>
         """
-        print((HtmlContentExtractor(html_doc).get_summary(1000)))
-        self.assertTrue(
-            HtmlContentExtractor(html_doc).get_summary(1000).endswith('by community donations.'))
-
-    def test_article_with_info_attr(self):
-        ar = legendary_parser_factory(
-            'http://www.infoq.com/cn/news/2014/11/fastsocket-github-opensource')
-        self.assertTrue(ar.get_summary().startswith('2014'))
-        self.assertTrue(ar.get_summary().endswith('...'))
-
-    def test_content_with_meta_in_attr(self):
-        ar = legendary_parser_factory(
-            'http://www.nature.com/nature/journal/v516/n7529/full/nature14005.html')
-        summary = ar.get_summary()
-        self.assertTrue(summary.startswith('The capture of transient scenes'))
-        self.assertTrue(summary.endswith('...'))
-
-    def test_common_sites_forbes(self):
-        ar = legendary_parser_factory(
-            'http://www.forbes.com/sites/groupthink/2014/10/21/we-just-thought-this-is-how-you-start-a-company-in-america/')
-        self.assertTrue(
-            ar.article.decode().startswith('<div class="article_content col-md-10 col-sm-12">'))
-        self.assertTrue(
-            ar.get_summary().startswith('Kind of like every baseball player will try'))
-
-    def test_common_sites_ruanyifeng(self):
-        ar = legendary_parser_factory(
-            'http://www.ruanyifeng.com/blog/2014/10/real-leadership-lessons-of-steve-jobs.html')
-        self.assertTrue(ar.article.decode().startswith('<article class="hentry">'))
-        self.assertTrue(ar.get_summary().startswith('2011年11月出版的'))
-        self.assertTrue(ar.get_summary().endswith('...'))
-
-    # @unittest.skip('local test only')
-    def test_shit(self):
-        html_doc = """
-        <li id="ref1">
-            <span class="vcard author">
-                <span class="fn">Fuller, P. W. W.</span>
-            </span>
-            <span class="title">An introduction to high speed photography and photonics</span>.
-            <span class="source-title">Imaging Sci. J.</span> <span class="volume">57</span>,
-            <span class="start-page">293</span>–
-            <span class="end-page">302</span> (<span class="year">2009</span>)
-            <ul class="cleared">
-                <li><a href="http://dx.doi.org/10.1179/136821909X12490326247524">Article</a></li>
-            </ul>
-        </li>
-        """
-        ar = HtmlContentExtractor(html_doc)
-        print((ar.get_summary()))
+        a = HtmlContentExtractor(html_doc).get_summary(1000)
+        self.assertTrue(a
+                        .endswith('by community  donations.'))

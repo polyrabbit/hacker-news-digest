@@ -1,16 +1,6 @@
 # coding: utf-8
 import re
-import requests.utils
-import requests.adapters
 from functools import lru_cache
-
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
-from urllib3.util import timeout
-
-
-# def word_count(s):
-#     return len(list(jieba.cut(s)))
 
 ascii_patt = re.compile(r'([\u0000-\u00FF]+)', re.U)
 
@@ -30,41 +20,6 @@ def tokenize(s):  # not using yield just for cache
             else:
                 tokens.extend(list(t))
     return tuple(tokens)  # sorry but list is unhashable
-
-
-def my_default_user_agent(name="python-requests"):
-    return 'Twitterbot/1.0'
-    # return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 " \
-    #        "Safari/537.36"
-
-
-origin_build_response = requests.adapters.HTTPAdapter.build_response
-
-
-def my_build_response(self, req, resp):
-    """Get encoding from html content instead of setting it blindly to ISO-8859-1"""
-    r = origin_build_response(self, req, resp)
-    if r.encoding == 'ISO-8859-1':
-        r.encoding = (requests.utils.get_encodings_from_content(str(r.content))
-                      or ['ISO-8859-1'])[-1]  # the last one overwrites the first one
-    return r
-
-
-origin_send = requests.adapters.HTTPAdapter.send
-
-
-def send_with_default_args(*args, **kwargs):
-    kwargs['verify'] = False
-    kwargs['timeout'] = kwargs['timeout'] or timeout.Timeout(connect=2, read=10)
-    return origin_send(*args, **kwargs)
-
-
-def monkey_patch_requests():
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    # A monkey patch to impersonate my chrome
-    requests.utils.default_user_agent = my_default_user_agent
-    requests.adapters.HTTPAdapter.build_response = my_build_response
-    requests.adapters.HTTPAdapter.send = send_with_default_args
 
 
 @lru_cache(maxsize=128)

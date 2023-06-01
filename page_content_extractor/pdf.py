@@ -1,14 +1,14 @@
 # coding: utf-8
 import logging
-
-from urllib.parse import urljoin
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.pdfpage import PDFPage
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
 from io import BytesIO, StringIO
+from urllib.parse import urljoin
 
 from markupsafe import escape
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+
 from .exceptions import ParseError
 from .utils import tokenize
 
@@ -30,7 +30,6 @@ class PdfExtractor(object):
     def load(self, raw_data):
         pdf_fp = BytesIO(raw_data)
         output_fp = StringIO()
-        codec = 'utf-8'
         laparams = LAParams()
         rsrcmgr = PDFResourceManager()
         device = TextConverter(rsrcmgr, output_fp, laparams=laparams)
@@ -57,7 +56,6 @@ class PdfExtractor(object):
                         partial_summaries.append(escape(word))
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
-                            partial_summaries.append(' ...')
                             return ''.join(partial_summaries)
                 else:
                     partial_summaries.append(p)
