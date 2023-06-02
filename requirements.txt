@@ -3,18 +3,13 @@ beautifulsoup4==4.12.2
 cchardet==2.1.7
 chardet==5.1.0
 Flask==2.3.2
-Flask-SQLAlchemy==3.0.3
-gunicorn==20.1.0
 lxml==4.9.2
 null==0.6.1
 pdfminer==20191125
 requests==2.31.0
-SQLAlchemy==2.0.15
 mock==5.0.2
-gevent==22.10.2
 werkzeug==2.3.4
 feedwerk==1.1.0
 Pillow==9.5.0
-psycopg2==2.9.6
 fake-useragent # latest
 openai==0.27.7

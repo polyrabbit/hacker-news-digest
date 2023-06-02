@@ -11,6 +11,7 @@ from markupsafe import escape
 from math import sqrt
 from null import Null
 
+import config
 from .utils import tokenize, string_inclusion_ratio
 from .webimage import WebImage
 
@@ -252,7 +253,7 @@ class HtmlContentExtractor(object):
         ret.append('</%s>' % node.name)
         return ''.join(ret), cur_length
 
-    def get_summary(self, max_length=300):
+    def get_content(self, max_length=config.max_content_size):
         preserved_tags = {'pre'}
 
         def is_meta_tag(node):

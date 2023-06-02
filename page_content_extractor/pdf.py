@@ -9,11 +9,10 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 
-from .exceptions import ParseError
+import config
 from .utils import tokenize
 
 logger = logging.getLogger(__name__)
-max_size = 1 << 12  # 4k
 
 
 class PdfExtractor(object):
@@ -22,10 +21,7 @@ class PdfExtractor(object):
         # TODO sort text according to their layouts
         self.article = ''
         self.url = url
-        try:
-            self.load(raw_data)
-        except Exception as e:
-            raise ParseError(e)
+        self.raw_data = raw_data
 
     def load(self, raw_data):
         pdf_fp = BytesIO(raw_data)
@@ -39,13 +35,13 @@ class PdfExtractor(object):
         # Process each page contained in the document.
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
-            if len(output_fp.getvalue()) > max_size:
+            if len(output_fp.getvalue()) > config.max_content_size:
                 logger.warning("%s too long, truncate to %d", self.url, len(output_fp.getvalue()))
                 break
 
         self.article = output_fp.getvalue()
 
-    def get_summary(self, max_length=300):
+    def get_content(self, max_length=config.max_content_size):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
@@ -65,14 +61,27 @@ class PdfExtractor(object):
     def get_paragraphs(self):
         p = []
         has_began = False
-        for line in self.article.split('\n'):
-            if line.strip():
-                has_began = True
-                p.append(line.strip())
-            elif has_began:  # end one paragraph
-                yield ' '.join(p)
-                has_began = False
-                p = []
+
+        pdf_fp = BytesIO(self.raw_data)
+        output_fp = StringIO()
+        laparams = LAParams()
+        rsrcmgr = PDFResourceManager()
+        device = TextConverter(rsrcmgr, output_fp, laparams=laparams)
+        # Create a PDF interpreter object.
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+
+        # Process each page contained in the document.
+        for page in PDFPage.get_pages(pdf_fp):
+            interpreter.process_page(page)
+            for line in output_fp.getvalue().split('\n'):
+                if line.strip():
+                    has_began = True
+                    p.append(line.strip())
+                elif has_began:  # end one paragraph
+                    yield ' '.join(p)
+                    has_began = False
+                    p = []
+            output_fp.seek(0)
         if p:
             yield ' '.join(p)
 

@@ -1,13 +1,13 @@
 import unittest
 from datetime import datetime, timedelta
 
-from hackernews import HackerNews
+from hacker_news.parser import HackerNewsParser
 
 
 class TestHackerNewsParser(unittest.TestCase):
 
     def setUp(self):
-        self.hn = HackerNews()
+        self.hn = HackerNewsParser()
 
     def test_parsed_score(self):
         """Every score should be a digit"""
@@ -17,11 +17,11 @@ class TestHackerNewsParser(unittest.TestCase):
         has_score = False
         has_submit_time = False
         for news in news_list:
-            self.assertGreater(len(news['title']), 0)
-            self.assertGreater(len(news['url']), 0)
-            if news['score'] is not None and news['score'].isdigit():
+            self.assertGreater(len(news.title), 0)
+            self.assertGreater(len(news.url), 0)
+            if news.score is not None and news.score.isdigit():
                 has_score = True
-            if news['submit_time'] is not None and isinstance(news['submit_time'], datetime):
+            if news.submit_time is not None and isinstance(news.submit_time, datetime):
                 has_submit_time = True
         self.assertEqual(has_score, True)
         self.assertEqual(has_submit_time, True)

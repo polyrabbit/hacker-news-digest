@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 
 from bs4 import BeautifulSoup as BS
 
+import config
 from page_content_extractor.http import session
 from .exceptions import ParseError
 
@@ -23,7 +24,7 @@ class EmbeddableExtractor(object):
         self.url = url
         self.doc = BS(html, features="lxml")
 
-    def get_summary(self, max_length=300):
+    def get_content(self, max_length=config.max_content_size):
         return self.embed_html
 
     @classmethod
@@ -59,7 +60,7 @@ class EmbeddableExtractor(object):
         if not vid_mat:
             raise ParseError('Invalid youtube video url(%s)' % url)
         return """<iframe src="//www.youtube.com/embed/%s" frameborder="0" """ \
-               """allowfullscreen></iframe>""" % vid_mat.group(1)
+               """allowfullscreen loading="lazy"></iframe>""" % vid_mat.group(1)
 
     def vimeo_com_parser(self, url):
         vid_mat = re.search(r'vimeo\.com/(\d+)', url, re.I)

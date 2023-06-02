@@ -17,7 +17,7 @@
             if (window !== top) top.location.href = window.location.href;
         </script>
         <link rel="stylesheet" type="text/css" media="screen"
-              href="/static/css/style.css?r=9">
+              href="/static/css/style.css?r=10">
         <!--[if lt IE 9]>
         <script src="/static/css/respond.min.js" type="text/javascript"></script>
         <script>
@@ -132,60 +132,65 @@
             <div class="post-meta">
                 {% if news.score %}
                     <span class="score" title="Score">
-                <i class="fa fa-heart" style="color: red;"></i>
-                <span>
-                    {{ news.score }}
-                </span>
-            </span>
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            {{ news.score }}
+                        </span>
+                    </span>
                 {% endif %}
                 {% if news.author_link %}
                     <span class="author-link" title="Author">
-                <a href="{{ news.author_link }}" rel="author" target="_blank">
-                    <i class="fa fa-user"></i>
-                    <span>
-                        {{ news.author }}
+                        <a href="{{ news.author_link }}" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                {{ news.author }}
+                            </span>
+                        </a>
                     </span>
-                </a>
-            </span>
                 {% endif %}
                 <span class="summit-time" title="Submit time">
-            <i class="fa fa-clock-o"></i>
-            <span class="last-updated"
-                  data-submitted="{{ news.submit_time.strftime("%Y-%m-%dT%H:%M:%SZ") }}"><span>{{ news.submit_time.replace(microsecond=0) }} UTC</span></span>
-        </span>
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="{{ news.submit_time.strftime("%Y-%m-%dT%H:%M:%SZ") }}"><span>{{ news.submit_time.replace(microsecond=0) }} UTC</span></span>
+                </span>
                 {% if news.comment_url %}
                     <span class="comment" title="Comments">
-                <a href="{{ news.comment_url }}" rel="comment">
-                    <i class="fa fa-comments"></i>
-                    {{ news.comment_cnt }}
-                </a>
-            </span>
+                        <a href="{{ news.comment_url }}" rel="comment">
+                            <i class="fa fa-comments"></i>
+                            {{ news.comment_cnt }}
+                        </a>
+                    </span>
                 {% endif %}
                 {% if news.comhead %}
                     <span class="host" title="Host">
-                {% if news.favicon %}
-                    <img src="{{ news.favicon }}" class="icon img-circle"
-                         onerror="fail_back(this);" alt="{{ news.favicon }}"/>
-                {% else %}
-                    <i class="fa fa-external-link"></i>
-                {% endif %}
+                        {% if news.favicon %}
+                            <img src="{{ news.favicon }}" class="icon img-circle"
+                                 onerror="fail_back(this);" alt="{{ news.favicon }}"/>
+                        {% else %}
+                            <i class="fa fa-external-link"></i>
+                        {% endif %}
                         <span>{{ news.comhead }}</span>
-            </span>
+                    </span>
                 {% endif %}
+                <span class="summarized-by" title="Summarized by">
+                    <i class="fa fa-quote-left"></i>
+                    {{ news.summarized_by.value }}
+                </span>
             </div>
 
             <div class="post-summary">
                 {% if news.img_id %}
                     <a class="feature-image" href="/image/{{ news.img_id }}">
                         {# Thanks to http://loading.io/ for the spinner #}
-                        <img class="img-rounded lazy" src="/static/spinner.gif"
-                             data-original="/image/{{ news.img_id }}" alt="{{ news.image.url }}"
-                             lazyload="on"/>
+                        <img class="img-rounded" src="/image/{{ news.img_id }}"
+                             alt="{{ news.image.url }}"
+                             style="{{ news.image.get_size_style(220) }}"
+                             loading="lazy"/>
                     </a>
                 {% endif %}
                 {% if news.summary %}
                     <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}">
-                        {{ news.summary.short()|safe }}
+                        {{ news.summary|safe }}
                     </div>
                 {% endif %}
                 <div style="clear: both;"></div>
@@ -250,23 +255,6 @@
 </div>
 <!-- End of the modal dialog -->
 
-{# https://github.com/tuupola/jquery_lazyload #}
-<script src="/static/js/jquery.lazyload.min.js"></script>
-<script>
-    $("img.lazy").lazyload({
-        threshold: 600,
-    }).one('error', function () {
-        //XXX jquery.lazyload uses another img tag to load img, so putting error event
-        // here won't work, I hardcoded the lazyload.min.js to handler the onerror event,
-        // here is redundant
-        this.src = this.alt;
-    })
-    // Load them all after 1 second
-    setTimeout(function () {
-        $("img.lazy").trigger("appear");
-    }, 60000);
-</script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js"
         integrity="sha512-RDaBwBkrx27JSZ1vH3cS93Z5uw56uVSb0ODiqL8FYQk+NaMaJUsPUiYj4heJFLCTFAqBjGZ6jivYdLbwG/AGfA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -290,7 +278,7 @@
 </script>
 <script>
     $('.post-item .post-summary .feature-image').click(function (e) {
-        $('#img-preview-modal img').attr('src', $('img', this).attr('data-original'));
+        $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
         $('#img-preview-modal').modal();
         return false;
     });

@@ -72,8 +72,7 @@
 }
 
 .post-item .post-summary .feature-image img {
-    width: 220px;
-    height: auto;
+    max-width: 220px;
     border: 1px solid #F7F7F7;
 }
 

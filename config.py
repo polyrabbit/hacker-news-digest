@@ -4,7 +4,7 @@ import os
 
 DEBUG = 'DEBUG' in os.environ
 
-# SERVER_NAME = 'hackernews.betacat.io'
+site = 'https://hackernews.betacat.io'
 
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d %(funcName)s] - %(message)s')
@@ -14,9 +14,6 @@ try:
 except KeyError:
     # Easier to ask for forgiveness rather than permission
     PORT = int(os.environ.get('PORT', 5000))
-
-# Fail fast
-HN_UPDATE_KEY = os.environ.get('HN_UPDATE_KEY')
 
 # Database
 try:
@@ -30,5 +27,8 @@ SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
 
-summary_length = 250
+max_content_size = 4096 * 3  # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
+summary_size = 400
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
+
+output_dir = os.path.join(os.path.dirname(__file__), "output/")

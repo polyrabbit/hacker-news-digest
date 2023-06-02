@@ -7,6 +7,7 @@ from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup as BS
 from null import Null
 
+from hacker_news.news import News
 from page_content_extractor import ParseError
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class HackerNewsParser(object):
             comment_cnt = re.search(r'\d+', comment_dom.get_text() or '0').group()
             comment_url = self.get_comment_url(comment_dom['href'])
 
-            items.append(dict(
+            items.append(News(
                 rank=rank,
                 title=title,
                 url=url,

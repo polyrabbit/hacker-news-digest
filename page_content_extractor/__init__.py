@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def parser_factory(url):
     """
         Returns the extracted object, which should have at least two
-        methods `get_summary` and `get_illustration`
+        methods `get_content` and `get_illustration`
     """
     if not url.startswith('http'):
         url = 'http://' + url

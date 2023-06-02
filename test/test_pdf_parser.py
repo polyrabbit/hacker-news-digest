@@ -1,9 +1,9 @@
-#coding: utf-8
+# coding: utf-8
 import os
-from urllib.request import urlopen
 from unittest import TestCase
 
 from page_content_extractor.pdf import *
+
 
 class PdfParserTestCase(TestCase):
 
@@ -12,11 +12,11 @@ class PdfParserTestCase(TestCase):
         with open(fpath, 'rb') as fp:
             parser = PdfExtractor(fp.read())
             self.assertIsNone(parser.get_illustration())
-            self.assertTrue(parser.get_summary().startswith(
+            self.assertTrue(parser.get_content().startswith(
                 'Systems code is often written in low-level languages like C/C++, which offer'
             ))  # Should be no errors
 
     # def test_text_order(self):
     #     parser = PdfExtractor(open('/tmp/fm_21-76_us_army_survival_manual_2006.pdf', 'rb').read())
     #     self.assertIsNone(parser.get_illustration())
-    #     print parser.get_summary()
+    #     print parser.get_content()

@@ -3,6 +3,8 @@ import logging
 from functools import lru_cache
 from urllib.parse import urlparse, urljoin
 
+import math
+
 from page_content_extractor.http import session
 from . import imgsz
 
@@ -53,6 +55,7 @@ class WebImage(object):
                         self.url)
             return False
         self._is_candidate = True
+        self.width, self.height = width, height
         return True
 
     def get_size(self):
@@ -65,7 +68,7 @@ class WebImage(object):
         try:
             return imgsz.frombytes(self.raw_data)[1:]
         except Exception as e:
-            logger.error('Error while determine the size of %s, %s', self.url, e)
+            logger.warning('Error while determine the size of %s, %s', self.url, e)
         return 0, 0
 
     @property
@@ -93,6 +96,11 @@ class WebImage(object):
 
     def to_text_len(self):
         return self.img_area_px / self.scale
+
+    def get_size_style(self, width):
+        if self.width == 0:
+            return ''
+        return f'width: {width}px; height: {math.ceil(self.height * (width / self.width))}px;'
 
     # See https://github.com/grangier/python-goose
     def check_dimension(self, width, height):

@@ -60,6 +60,9 @@ jobs:
 
       - name: Generate Pages
         run: make gh_pages
+        env:
+          DISABLE_ADS: ${{ vars.DISABLE_ADS }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
