@@ -32,15 +32,24 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      TOKENIZERS_PARALLELISM: false
+      DISABLE_SUMMARY_CACHE: ${{ vars.DISABLE_SUMMARY_CACHE }}
+      DISABLE_TRANSFORMER: ${{ vars.DISABLE_TRANSFORMER }}
+      TRANSFORMER_MODEL: ${{ vars.TRANSFORMER_MODEL }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       #      - name: Dump GitHub Context
       #        env:
       #          GITHUB_CONTEXT: ${{ toJson(github) }}
       #        run: echo "$GITHUB_CONTEXT"
-      - name: Where Am I
-        run: curl ifconfig.me/all
+      - name: My Host
+        run: |
+          free -h
+          df -h
+          nproc
+          curl -s ifconfig.me/all
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -48,11 +57,26 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.9.16
-          cache: 'pip'
+          python-version: 3.9
+          # cache: 'pip'
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
+      # https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
+      - name: Python Runtime Cache
+        id: python-runtime-cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Huggingface Model Cache
+        id: huggingface-model-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/huggingface/hub/models*
+          key: ${{ runner.os }}-huggingface
+
+      - name: Install Python Dependencies
+        run: pip install --upgrade -r requirements.txt
 
       - name: Unit Test
         run: python -m unittest

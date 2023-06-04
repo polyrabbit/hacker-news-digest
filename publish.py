@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from datetime import datetime
@@ -8,14 +7,15 @@ from feedwerk.atom import AtomFeed
 from jinja2 import Environment, FileSystemLoader
 
 import config
+from hacker_news import summary_cache
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
 
 
-def natural_datetime(dt, precisoin):
+def natural_datetime(dt, precision):
     # We use utc timezone because dt is in utc
-    return human(datetime.utcnow() - dt, precisoin)
+    return human(datetime.utcnow() - dt, precision)
 
 
 def elapsed(dt):
@@ -36,7 +36,7 @@ def gen_page(news_list):
     rendered = template.render(news_list=news_list, last_updated=datetime.utcnow())
     with open(static_page, "w") as fp:
         fp.write(rendered)
-    logger.info('Written %d bytes to %s', len(rendered), static_page)
+    logger.info(f'Written {len(rendered)} bytes to {static_page}')
 
 
 def gen_feed(news_list):
@@ -83,16 +83,7 @@ def gen_feed(news_list):
     output_path = os.path.join(config.output_dir, "feed.xml")
     with open(output_path, "w") as fp:
         fp.write(rendered)
-    logger.info('Written %d bytes to %s', len(rendered), output_path)
-
-
-def gen_json(news_list):
-    summaries = {n.url: {'summary': n.summary, 'by': n.summarized_by.value} for n in news_list}
-    rendered = json.dumps(summaries, indent=2)
-    output_path = os.path.join(config.output_dir, "summary.json")
-    with open(output_path, "w") as fp:
-        fp.write(rendered)
-    logger.info('Written %d bytes to %s', len(rendered), output_path)
+    logger.info(f'Written {len(rendered)} bytes to {output_path}')
 
 
 if __name__ == '__main__':
@@ -100,6 +91,6 @@ if __name__ == '__main__':
     news_list = hn.parse_news_list()
     for news in news_list:
         news.pull_content()
-    gen_json(news_list)
+    summary_cache.save(news_list)
     gen_page(news_list)
     gen_feed(news_list)

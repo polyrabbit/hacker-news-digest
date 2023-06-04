@@ -215,5 +215,6 @@ and supported by community <em>donations</em>.</p></article>
         news = News(
             url='https://arstechnica.com/cars/2023/05/automatic-emergency-braking-should-become-mandatory-feds-say/')
         news.pull_content()
+        print(news.summary)
         self.assertGreater(len(news.summary), 100)
         self.assertLess(len(news.summary), 500)

@@ -27,7 +27,7 @@ SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
 
-max_content_size = 4096 * 3  # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
+max_content_size = 1 << 20
 summary_size = 400
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 

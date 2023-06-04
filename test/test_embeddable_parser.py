@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import requests
 
+from page_content_extractor import parser_factory
 from page_content_extractor.embeddable import *
 
 
@@ -16,7 +17,7 @@ class EmbeddableParserTestCase(TestCase):
                          '<iframe src="http://player.youku.com/embed/XNzkxMTE3MTEy" frameborder="0" allowfullscreen></iframe>')
 
     def test_youtube_com_parser(self):
-        parser = EmbeddableExtractor('Youtube', 'https://www.youtube.com/watch?v=db-7J5OaSag')
+        parser = parser_factory('https://www.youtube.com/watch?v=HlLCtjJzHVI')
         self.assertTrue(parser.get_content().startswith('<iframe'))
 
     def test_vimeo_com_parser(self):
