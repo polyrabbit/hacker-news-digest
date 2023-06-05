@@ -82,6 +82,8 @@ class News:
                 self.img_id = fname
         except Exception as e:
             logger.exception('Failed to fetch %s, %s', self.url, e)
+        if not self.summary:  # last resort, in case remote server is down
+            self.summary = summary_cache.get(self.url)
 
     def get_score(self):
         try:
@@ -127,6 +129,7 @@ class News:
             # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
             content = content[:4096 * 3]
 
+        content = content.replace('```', ' ')  # in case of prompt injection
         start_time = time.time()
         prompt = f'Summarize following article, delimited by ```\n Use at most 2 sentences.\n' \
                  f'```{content}```'
@@ -135,7 +138,7 @@ class News:
                                                 messages=[
                                                     {'role': 'user', 'content': prompt},
                                                 ],
-                                                max_tokens=int(config.summary_size / 4),
+                                                max_tokens=int(config.summary_size / 4),  # one token generally corresponds to ~4 characters
                                                 stream=False,
                                                 temperature=0,
                                                 n=1,  # only one choice
@@ -166,7 +169,7 @@ class News:
                                         max_length=tokenizer.model_max_length,
                                         truncation=True)
         summary_ids = model.generate(tokens_input, min_length=80,
-                                     max_length=int(config.summary_size / 3),  # tokens
+                                     max_length=int(config.summary_size / 4),  # tokens
                                      length_penalty=20,
                                      no_repeat_ngram_size=2,
                                      temperature=0,

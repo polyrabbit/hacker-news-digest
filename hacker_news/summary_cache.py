@@ -20,9 +20,10 @@ else:
     logger.warning("Summary cache is disabled by env DISABLE_SUMMARY_CACHE=1")
 
 
-def get(url, model):
-    if url in summary_cache and summary_cache[url]['model'] == model.value:
-        return summary_cache[url]['summary']
+def get(url, model=None):
+    if url in summary_cache:
+        if model is None or summary_cache[url]['model'] == model.value:
+            return summary_cache[url]['summary']
     return ''
 
 

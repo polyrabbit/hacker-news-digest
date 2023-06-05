@@ -213,7 +213,8 @@ and supported by community <em>donations</em>.</p></article>
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):
         news = News(
-            url='https://arstechnica.com/cars/2023/05/automatic-emergency-braking-should-become-mandatory-feds-say/')
+            url='https://arstechnica.com/cars/2023/05/automatic-emergency-braking-should-become-mandatory-feds-say/',
+            score='15')
         news.pull_content()
         print(news.summary)
         self.assertGreater(len(news.summary), 100)
