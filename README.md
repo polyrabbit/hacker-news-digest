@@ -34,7 +34,7 @@ Emoji explained:
 * ❤️: point - upvotes received from the Hacker News community
 * 👤: user - Hacker News user who submitted this post
 * 🕘: submission time - a human-readable time indicating when the post was submitted
-* 💬: comment count - comments posted by the Hacker News community for this post
+* 💬: comment count - comments posted by the community, click to visit this comment page
 * 🔗: source of the news - where the news originated
 * 📰: summary model - which model is used to generate the summary, options
   are `OpenAI`, `GoogleT5` and `Prefix`

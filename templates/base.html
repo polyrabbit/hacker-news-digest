@@ -17,7 +17,7 @@
             if (window !== top) top.location.href = window.location.href;
         </script>
         <link rel="stylesheet" type="text/css" media="screen"
-              href="/static/css/style.css?r=10">
+              href="/static/css/style.css?r=11">
         <!--[if lt IE 9]>
         <script src="/static/css/respond.min.js" type="text/javascript"></script>
         <script>
@@ -155,7 +155,9 @@
                     <span class="comment" title="Comments">
                         <a href="{{ news.comment_url }}" rel="comment" target="_blank">
                             <i class="fa fa-comments"></i>
-                            {{ news.comment_cnt }}
+                            <span>
+                                {{ news.comment_cnt }}
+                            </span>
                         </a>
                     </span>
                 {% endif %}
@@ -170,9 +172,11 @@
                         <span>{{ news.comhead }}</span>
                     </span>
                 {% endif %}
-                <span class="summarized-by" title="Summarized by">
+                <span class="summary-model" title="Summary Model">
                     <i class="fa fa-quote-left"></i>
-                    {{ news.summarized_by.value }}
+                    <span>
+                        {{ news.summarized_by.value }}
+                    </span>
                 </span>
             </div>
 

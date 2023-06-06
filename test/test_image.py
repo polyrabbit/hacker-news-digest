@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 from unittest import TestCase
+
 import mock
 
 from page_content_extractor.imgsz import *
@@ -40,3 +41,14 @@ class WebImageTestCase(TestCase):
         img = WebImage.from_attrs(a=1, b=2)
         self.assertFalse(img.is_candidate)
         self.assertFalse(mock_urljoin.called)
+
+    @mock.patch('page_content_extractor.webimage.session')
+    def test_guess_suffix_when_none(self, mock_requests):
+        node = mock.Mock()
+        node.attrs = {
+            'src': 'https://camo.githubusercontent.com/75937896097d5a7022f8fafc71251e456a0e8d95b2a0b82e44c35a1b84368dc6/68747470733a2f2f61736369696e656d612e6f72672f612f3538393634302e737667',
+        }
+        mock_requests.get.return_value.url = node.attrs['src']
+        mock_requests.get.return_value.headers = {'Content-Type': 'image/svg+xml;charset=utf-8'}
+        img = WebImage.from_node('', node)
+        self.assertEqual(img.uniq_name(), 'd41d8cd98f00b204e9800998ecf8427e.svg')

@@ -1,6 +1,9 @@
 # coding: utf-8
 import logging
+import mimetypes
+import pathlib
 from functools import lru_cache
+from hashlib import md5
 from urllib.parse import urlparse, urljoin
 
 import math
@@ -16,6 +19,7 @@ class WebImage(object):
     MIN_BYTES_SIZE = 4000
     MAX_BYTES_SIZE = 2.5 * 1024 * 1024
     SCALE_FROM_IMG_TO_TEXT = 22 * 22
+    content_type = ''
 
     def __init__(self, src='', referrer='', **attrs):
         # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
@@ -93,6 +97,19 @@ class WebImage(object):
         self._raw_data = b''.join(bytes)
         self.content_type = resp.headers['Content-Type']
         return self._raw_data
+
+    # 'image/svg+xml;charset=utf-8' -> svg
+    def guess_suffix(self):
+        if not self.content_type:
+            return ''
+        return mimetypes.guess_extension(self.content_type.partition(';')[0].strip())
+
+    def uniq_name(self):
+        fname = md5(self.raw_data).hexdigest()
+        suffix = pathlib.Path(urlparse(self.url).path).suffix
+        if not suffix:
+            suffix = self.guess_suffix()
+        return fname+suffix
 
     def to_text_len(self):
         return self.img_area_px / self.scale

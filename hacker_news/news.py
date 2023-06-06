@@ -1,14 +1,11 @@
 import logging
 import os
-import pathlib
 import re
 import time
 from enum import Enum
-from hashlib import md5
-from urllib.parse import urlparse
 
 import openai
-from jinja2 import filters, Environment
+from jinja2 import Environment, filters
 from summarizer import Summarizer
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
@@ -74,8 +71,7 @@ class News:
                                                end=' ...')
             tm = parser.get_illustration()
             if tm:
-                fname = md5(tm.raw_data).hexdigest()
-                fname += pathlib.Path(urlparse(tm.url).path).suffix
+                fname = tm.uniq_name()
                 tm.save(os.path.join(config.output_dir, "image", fname))
                 self.image = tm
                 self.img_id = fname
@@ -130,8 +126,7 @@ class News:
 
         content = content.replace('```', ' ')  # in case of prompt injection
         start_time = time.time()
-        prompt = f'Summarize following article, delimited by ```.\n' \
-                 f'Use at most 2 sentences.\n' \
+        prompt = f'Summarize the article delimited by triple quotes in 2 sentences.\n' \
                  f'```{content}```'
         kwargs = {'model': config.openai_model,
                   # one token generally corresponds to ~4 characters
