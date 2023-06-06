@@ -87,6 +87,8 @@ jobs:
         env:
           DISABLE_ADS: ${{ vars.DISABLE_ADS }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          OPENAI_SCORE_THRESHOLD: ${{ vars.OPENAI_SCORE_THRESHOLD }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v2

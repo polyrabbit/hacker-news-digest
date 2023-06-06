@@ -187,9 +187,10 @@ class PageContentExtractorTestCase(TestCase):
                          HtmlContentExtractor(html_doc, 'http://local.host').get_favicon_url())
 
     def test_clean_up_html_not_modify_iter_while_looping(self):
-        html_doc = open(os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            'fixtures/kim.com.html')).read()
+        with open(os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                'fixtures/kim.com.html')) as fp:
+            html_doc = fp.read()
         try:
             HtmlContentExtractor(html_doc)
         except AttributeError as e:

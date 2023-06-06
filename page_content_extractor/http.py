@@ -41,7 +41,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Some sites just refuses bot connection
 ua = UserAgent(use_external_data=True, browsers=['chrome'], fallback='Twitterbot/1.0')
 ua_str = ua.data_browsers['chrome'][0]  # Use the latest, in case of "unsupported browser" error
-logger.info('Using user-agent %s', ua_str)
+logger.info(f'Use user-agent {ua_str}')
 
 session = requests.Session()
 

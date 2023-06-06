@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 summary_cache = {}
 
-if os.environ.get('DISABLE_SUMMARY_CACHE') != '1':
+if not config.disable_summary_cache:
     try:
         resp = session.get(f'{config.site}/summary.json')
         resp.raise_for_status()

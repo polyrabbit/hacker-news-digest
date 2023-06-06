@@ -21,11 +21,10 @@ environment = Environment()
 
 # google t5 transformer
 model, tokenizer, bert_model = None, None, None
-if os.environ.get('DISABLE_TRANSFORMER') != '1':
+if not config.disable_transformer:
     MAX_TOKEN = 4096
     # github runner only has 7 GB of RAM, https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-    MODEL_NAME = os.environ.get('TRANSFORMER_MODEL') or 't5-large'
-    logger.info(f'Use transformer model {MODEL_NAME}')
+    MODEL_NAME = config.transformer_model
     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, model_max_length=MAX_TOKEN)
     bert_model = Summarizer()
@@ -121,7 +120,7 @@ class News:
         if not openai.api_key:
             logger.info("OpenAI API key is not set")
             return ''
-        if self.get_score() <= 20:  # Avoid expensive openai
+        if self.get_score() <= config.openai_score_threshold:  # Avoid expensive openai
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
@@ -131,26 +130,38 @@ class News:
 
         content = content.replace('```', ' ')  # in case of prompt injection
         start_time = time.time()
-        prompt = f'Summarize following article, delimited by ```\n Use at most 2 sentences.\n' \
+        prompt = f'Summarize following article, delimited by ```.\n' \
+                 f'Use at most 2 sentences.\n' \
                  f'```{content}```'
+        kwargs = {'model': config.openai_model,
+                  # one token generally corresponds to ~4 characters
+                  'max_tokens': int(config.summary_size / 4),
+                  'stream': False,
+                  'temperature': 0,
+                  'n': 1,  # only one choice
+                  'timeout': 30}
         try:
-            resp = openai.ChatCompletion.create(model='gpt-3.5-turbo',
-                                                messages=[
-                                                    {'role': 'user', 'content': prompt},
-                                                ],
-                                                max_tokens=int(config.summary_size / 4),  # one token generally corresponds to ~4 characters
-                                                stream=False,
-                                                temperature=0,
-                                                n=1,  # only one choice
-                                                timeout=30)
+            if config.openai_model.startswith('text-'):
+                resp = openai.Completion.create(
+                    prompt=prompt,
+                    **kwargs
+                )
+                summary = resp['choices'][0]['text']
+            else:
+                resp = openai.ChatCompletion.create(
+                    messages=[
+                        {'role': 'user', 'content': prompt},
+                    ],
+                    **kwargs)
+                summary = resp['choices'][0]['message']['content']
             logger.info(f'took {time.time() - start_time}s to generate: {resp}')
-            return resp['choices'][0]['message']['content'].strip()
+            return summary.strip()
         except Exception as e:
             logger.warning('Failed to summarize using openai, %s', e)
             return ''
 
     def summarize_by_transformer(self, content):
-        if os.environ.get('DISABLE_TRANSFORMER') == '1':
+        if config.disable_transformer:
             logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
             return ''
         summary = summary_cache.get(self.url, SummaryModel.TRANSFORMER)

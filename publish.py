@@ -26,7 +26,7 @@ environment = Environment(
     loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")), autoescape=True)
 environment.filters["natural_datetime"] = natural_datetime
 environment.filters["elapsed"] = elapsed
-environment.globals["disable_ads"] = os.environ.get('DISABLE_ADS') == '1'
+environment.globals["disable_ads"] = config.disable_ads
 
 
 # Generate github pages
