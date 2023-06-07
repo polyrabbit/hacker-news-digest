@@ -8,7 +8,7 @@
 
 > [中文版](https://blog.betacat.io/post/2023/06/summarize-hacker-news-by-chatgpt/)
 
-[Hacker News Digest](https://hackernews.betacat.io/) leverages AI technology to extract summaries
+[Hacker News Summary](https://hackernews.betacat.io/) leverages AI technology to extract summaries
 and illustrations from [Hacker News](https://news.ycombinator.com/)
 articles, providing users with an enhanced experience by helping them efficiently navigate through
 those articles.
@@ -27,7 +27,7 @@ local [GoogleT5](https://huggingface.co/t5-large) model when ChatGPT is not avai
 
 ## Talk is cheap, show me the screenshot!
 
-![hndigest](https://github.com/polyrabbit/hacker-news-digest/assets/2657334/cc08f770-5154-4c7e-8ba8-13c89f394b1f)
+![hnsummary](https://github.com/polyrabbit/hacker-news-digest/assets/2657334/cc08f770-5154-4c7e-8ba8-13c89f394b1f)
 
 Emoji explained:
 
@@ -41,7 +41,7 @@ Emoji explained:
 
 ## How it works
 
-[Hacker News Digest](https://hackernews.betacat.io/) is a static site hosted on GitHub Pages. It
+[Hacker News Summary](https://hackernews.betacat.io/) is a static site hosted on GitHub Pages. It
 performs the following periodic actions:
 
 1. Parsing the Hacker News page to obtain a list of news articles

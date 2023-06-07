@@ -40,7 +40,7 @@ def gen_page(news_list):
 
 
 def gen_feed(news_list):
-    feed = AtomFeed('Hacker News Digest',
+    feed = AtomFeed('Hacker News Summary',
                     updated=datetime.utcnow(),
                     feed_url=f'{config.site}/feed.xml',
                     url={config.site},
