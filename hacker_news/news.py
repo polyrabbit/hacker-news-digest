@@ -5,16 +5,14 @@ import time
 from enum import Enum
 
 import openai
-from jinja2 import Environment, filters
 from summarizer import Summarizer
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 import config
-from hacker_news import summary_cache
+from hacker_news import summary_cache, translation
 from page_content_extractor import parser_factory
 
 logger = logging.getLogger(__name__)
-environment = Environment()
 
 # google t5 transformer
 model, tokenizer, bert_model = None, None, None
@@ -29,6 +27,8 @@ if not config.disable_transformer:
 
 class SummaryModel(Enum):
     PREFIX = 'Prefix'
+    FULL = 'Full'
+    EMBED = 'Embed'
     OPENAI = 'OpenAI'
     TRANSFORMER = 'GoogleT5'
 
@@ -38,7 +38,7 @@ class News:
     def __init__(self, rank=-1, title='', url='', comhead='', score='', author='',
                  author_link='', submit_time='', comment_cnt='', comment_url=''):
         self.rank = rank
-        self.title = title
+        self.title = title.strip()
         self.url = url
         self.comhead = comhead
         self.score = score
@@ -49,7 +49,7 @@ class News:
         self.comment_url = comment_url
         self.content = ''
         self.summary = ''
-        self.summarized_by = SummaryModel.PREFIX
+        self.summarized_by = SummaryModel.FULL
         self.favicon = ''
         self.image = None
         self.img_id = None
@@ -66,9 +66,7 @@ class News:
             self.favicon = parser.get_favicon_url()
             # Replace consecutive spaces with a single space
             self.content = re.sub(r'\s+', ' ', parser.get_content(config.max_content_size))
-            self.summary = filters.do_truncate(environment, self.summarize(),
-                                               length=config.summary_size,
-                                               end=' ...')
+            self.summary = self.summarize()
             tm = parser.get_illustration()
             if tm:
                 fname = tm.uniq_name()
@@ -90,6 +88,7 @@ class News:
         if not self.content:
             return ''
         if self.content.startswith('<iframe '):
+            self.summarized_by = SummaryModel.EMBED
             return self.content
         if len(self.content) <= config.summary_size:
             logger.info(
@@ -120,37 +119,57 @@ class News:
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
-        if len(content) > 4096 * 3:
+        if len(content) > 4096 * 2:
             # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
-            content = content[:4096 * 3]
+            content = content[:4096 * 2]
 
-        content = content.replace('```', ' ')  # in case of prompt injection
+        content = content.replace('```', ' ').strip()  # in case of prompt injection
+        title = self.title.replace('"', "'").strip() or 'no title'
         start_time = time.time()
-        prompt = f'Summarize the article delimited by triple quotes in 2 sentences.\n' \
+        prompt = f'Output only answers to following steps, prefix each answer with step number.\n' \
+                 f'1 - Summarize the article delimited by triple backticks in 2 sentences.\n' \
+                 f'2 - Translate the summary into Chinese.\n' \
+                 f'3 - Output only Chinese translation of text: "{title}".\n' \
                  f'```{content}```'
         kwargs = {'model': config.openai_model,
                   # one token generally corresponds to ~4 characters
-                  'max_tokens': int(config.summary_size / 4),
+                  # 'max_tokens': int(config.summary_size / 4),
                   'stream': False,
                   'temperature': 0,
                   'n': 1,  # only one choice
                   'timeout': 30}
         try:
-            if config.openai_model.startswith('text-'):
-                resp = openai.Completion.create(
-                    prompt=prompt,
-                    **kwargs
-                )
-                summary = resp['choices'][0]['text']
-            else:
-                resp = openai.ChatCompletion.create(
-                    messages=[
-                        {'role': 'user', 'content': prompt},
-                    ],
-                    **kwargs)
-                summary = resp['choices'][0]['message']['content']
+            resp = openai.ChatCompletion.create(
+                messages=[
+                    {'role': 'user', 'content': prompt},
+                ],
+                **kwargs)
+            answer = resp['choices'][0]['message']['content'].strip()
             logger.info(f'took {time.time() - start_time}s to generate: {resp}')
-            return summary.strip()
+            lines = re.split(r'\n+', answer)
+            # Hard to tolerate all kinds of formats, so just handle one
+            pattern = r'^(\d+)\s*-\s*'
+            for i, line in enumerate(lines):
+                match = re.match(pattern, line)
+                if not match:
+                    logger.warning(f'Answer line: {line} has no step number')
+                    return ''
+                if str(i + 1) != match.group(1):
+                    logger.warning(f'Answer line {line} does not match step: {i + 1}')
+                    return ''
+                lines[i] = re.sub(pattern, '', line)
+            if len(lines) < 3:
+                return lines[0]  # only get the summary
+            translation.add(lines[0], lines[1], 'zh')
+            # Somehow, openai always return the original title
+            title_cn = lines[2].removesuffix('。').removesuffix('.')
+            parts = re.split(r'的中文翻译(?:为)?', title_cn, maxsplit=1)
+            if len(parts) > 1 and parts[1].strip():
+                title_cn = parts[1].strip().strip(':').strip('：')
+            else:
+                title_cn = parts[0].strip()
+            translation.add(self.title, title_cn.strip('"').strip('“'), 'zh')
+            return lines[0]
         except Exception as e:
             logger.warning('Failed to summarize using openai, %s', e)
             return ''

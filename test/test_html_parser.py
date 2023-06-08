@@ -103,13 +103,13 @@ class PageContentExtractorTestCase(TestCase):
         self.assertIn('1', summary)
         self.assertNotIn('2', summary)
 
-    @unittest.skip('No preserved tag check for now')
-    def test_get_content_with_preserved_tag(self):
-        html_doc = '<pre>' + '11 ' * 400 + '</pre>'
-        self.assertEqual(html_doc, HtmlContentExtractor(html_doc).get_content(10))
-        html_doc = '<pre><code>' + '11\n' * 400 + '</code>' + 'what you think?' * 200 + '</pre>'
-        self.assertEqual(HtmlContentExtractor(html_doc).get_content(10),
-                         '<pre><code>%s</code></pre>' % '\n'.join(['11'] * 5))
+    def test_donot_summarize_code_block(self):
+        html_doc = '''<p>What am I talking about here? Consider the <code>std::fmt::Display</code> trait.</p>
+<pre data-lang="Rust" style="background-color:#282828;color:#fdf4c1aa;" class="language-Rust "><code class="language-Rust" data-lang="Rust"><span style="color:#fa5c4b;">pub trait </span><span style="color:#8ec07c;">Display </span><span>{
+</span><span>    </span><span style="font-style:italic;color:#928374;">// Required method
+</span><span>}'''
+        page = HtmlContentExtractor(html_doc)
+        self.assertEqual(page.get_content(), 'What am I talking about here? Consider the std::fmt::Display trait.')
 
     def test_get_content_with_link_intensive(self):
         html_doc = '<div><p><a href="whatever">' + '1 ' * 500 + '</a></p>' + \
@@ -207,9 +207,8 @@ without a GIL, so it can scale CPU-bound work to several cores.
 PyPy STM is developed by Armin Rigo and Remi Meier,
 and supported by community <em>donations</em>.</p></article>
         """
-        a = HtmlContentExtractor(html_doc).get_content(1000)
-        self.assertTrue(a
-                        .endswith('by community  donations.'))
+        a = HtmlContentExtractor(html_doc).get_content()
+        self.assertTrue(a.endswith('by community donations.'))
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):

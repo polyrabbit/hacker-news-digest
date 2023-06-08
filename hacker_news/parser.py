@@ -75,7 +75,7 @@ class HackerNewsParser(object):
         hs = comhead.split('.')
         if len(hs) > 2 and hs[0] == 'www':
             comhead = comhead[4:]
-        if comhead.endswith(sites_for_users):
+        if comhead in sites_for_users:
             ps = us.path.split('/')
             if len(ps) > 1 and ps[1]:
                 comhead = '%s/%s' % (comhead, ps[1])

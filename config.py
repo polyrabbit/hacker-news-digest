@@ -39,6 +39,7 @@ sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 
 disable_ads = os.getenv('DISABLE_ADS') == '1'
 disable_summary_cache = os.getenv('DISABLE_SUMMARY_CACHE') == '1'
+disable_translation_cache = os.getenv('DISABLE_TRANSLATION_CACHE') == '1'
 
 disable_transformer = os.getenv('DISABLE_TRANSFORMER') == '1'
 transformer_model = os.getenv('TRANSFORMER_MODEL') or 't5-large'

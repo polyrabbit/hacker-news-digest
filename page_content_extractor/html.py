@@ -254,7 +254,6 @@ class HtmlContentExtractor(object):
         return ''.join(ret), cur_length
 
     def get_content(self, max_length=config.max_content_size):
-        preserved_tags = {'pre'}
 
         def is_meta_tag(node):
             for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
@@ -270,14 +269,15 @@ class HtmlContentExtractor(object):
 
             for child in node.children:
                 if isinstance(child, Tag):
-                    # Put a space between two blocks
-                    partial_summaries.append(' ')  # http://paulgraham.com/know.html
                     # if self.summary_begun:  # http://v2ex.com/t/152930
                     if is_meta_tag(child) and \
                             1.0 * self.calc_effective_text_len(
                         child) / self.calc_effective_text_len(
                         self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
+                        continue
+                    if child.name in ('pre', 'code') and '\n' in child.text:
+                        #  High possibility this is a code block, no need to summarize code to save OpenAI tokens
                         continue
                     if child.name in block_tags:
                         # Ignore too many links and too short paragraphs
@@ -291,6 +291,8 @@ class HtmlContentExtractor(object):
                             child) / self.calc_effective_text_len(
                             self.article) < .3:
                             continue
+                        # Put a space between two blocks
+                        partial_summaries.append(' ')  # http://paulgraham.com/know.html
                         partial_summaries.append(child_summary)
                     else:
                         partial_summaries.append(summarize(child, max_length))

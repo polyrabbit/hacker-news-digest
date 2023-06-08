@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 
-{% set title = 'Hacker News Summary - by ChatGPT' %}
+{% set title = 'Hacker News Summary - by ChatGPT'|translate(lang) %}
 {% set site = 'hackernews' %}
+{% set description = 'Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing a seamless news scanning experience.' %}
 
 {% block head %}
-    <meta name="description"
-          content="Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing users with an enhanced experience by helping them efficiently navigate through those articles">
+    <meta name="description" content="{{ description }}">
     <link rel="canonical" href="https://hackernews.betacat.io/"/>
     <meta name="twitter:card" content="summary"/>
     <meta name="twitter:title" content="{{ title }}"/>
-    <meta name="twitter:description"
-          content="Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing users with an enhanced experience by helping them efficiently navigate through those articles"/>
+    <meta name="twitter:description" content="{{ description }}"/>
     {{ super() }}
 {% endblock %}
 

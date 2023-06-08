@@ -2,41 +2,43 @@ import logging
 import os
 from datetime import datetime
 
-from ago import human
 from feedwerk.atom import AtomFeed
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, filters
 
 import config
-from hacker_news import summary_cache
+from hacker_news import summary_cache, translation
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
 
 
-def natural_datetime(dt, precision):
-    # We use utc timezone because dt is in utc
-    return human(datetime.utcnow() - dt, precision)
+def translate(text, lang):
+    return translation.get(text, lang)
 
 
-def elapsed(dt):
-    return (datetime.utcnow() - dt).total_seconds() * 1000
+def truncate(text):
+    return filters.do_truncate(environment, text,
+                               length=config.summary_size,
+                               end=' ...')
 
 
 environment = Environment(
     loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")), autoescape=True)
-environment.filters["natural_datetime"] = natural_datetime
-environment.filters["elapsed"] = elapsed
-environment.globals["disable_ads"] = config.disable_ads
+environment.filters["translate"] = translate
+environment.filters["truncate"] = truncate
+environment.globals["config"] = config
 
 
 # Generate github pages
 def gen_page(news_list):
     template = environment.get_template("hackernews.html")
-    static_page = os.path.join(config.output_dir, "index.html")
-    rendered = template.render(news_list=news_list, last_updated=datetime.utcnow())
-    with open(static_page, "w") as fp:
-        fp.write(rendered)
-    logger.info(f'Written {len(rendered)} bytes to {static_page}')
+    lang_output = {'en': 'index.html', 'zh': 'zh.html'}
+    for lang, fname in lang_output.items():
+        static_page = os.path.join(config.output_dir, fname)
+        rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang)
+        with open(static_page, "w") as fp:
+            fp.write(rendered)
+        logger.info(f'Written {len(rendered)} bytes to {static_page}')
 
 
 def gen_feed(news_list):
@@ -56,7 +58,7 @@ def gen_feed(news_list):
                  content='%s%s%s' % (
                      img_tag,
                      # not None
-                     news.summary, (
+                     truncate(news.summary), (
                          ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
                  author={
                      'name': news.author,
@@ -94,3 +96,4 @@ if __name__ == '__main__':
     summary_cache.save(news_list)
     gen_page(news_list)
     gen_feed(news_list)
+    translation.save()  # only save touched
