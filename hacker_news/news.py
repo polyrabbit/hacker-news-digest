@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -5,6 +6,7 @@ import time
 from enum import Enum
 
 import openai
+from slugify import slugify
 from summarizer import Summarizer
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
@@ -63,6 +65,8 @@ class News:
         try:
             logger.info("#%d, fetching %s", self.rank, self.url)
             parser = parser_factory(self.url)
+            if not self.title:
+                self.title = parser.title.strip()
             self.favicon = parser.get_favicon_url()
             # Replace consecutive spaces with a single space
             self.content = re.sub(r'\s+', ' ', parser.get_content(config.max_content_size))
@@ -79,10 +83,15 @@ class News:
             self.summary = summary_cache.get(self.url)
 
     def get_score(self):
+        if isinstance(self.score, int):
+            return self.score
         try:
             return int(self.score.strip())
         except:
             return 0
+
+    def slug(self):
+        return slugify(self.title or 'no title')
 
     def summarize(self):
         if not self.content:
@@ -126,11 +135,13 @@ class News:
         content = content.replace('```', ' ').strip()  # in case of prompt injection
         title = self.title.replace('"', "'").strip() or 'no title'
         start_time = time.time()
-        prompt = f'Output only answers to following steps, prefix each answer with step number.\n' \
+        # Hope one day this model will be clever enough to output correct json
+        # Note: sentence should end with "."
+        prompt = f'Output only answers to following 3 steps, prefix each answer with step number.\n' \
                  f'1 - Summarize the article delimited by triple backticks in 2 sentences.\n' \
                  f'2 - Translate the summary into Chinese.\n' \
-                 f'3 - Output only Chinese translation of text: "{title}".\n' \
-                 f'```{content}```'
+                 f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
+                 f'```{content.strip(".")}.```'
         kwargs = {'model': config.openai_model,
                   # one token generally corresponds to ~4 characters
                   # 'max_tokens': int(config.summary_size / 4),
@@ -139,37 +150,23 @@ class News:
                   'n': 1,  # only one choice
                   'timeout': 30}
         try:
-            resp = openai.ChatCompletion.create(
-                messages=[
-                    {'role': 'user', 'content': prompt},
-                ],
-                **kwargs)
-            answer = resp['choices'][0]['message']['content'].strip()
-            logger.info(f'took {time.time() - start_time}s to generate: {resp}')
-            lines = re.split(r'\n+', answer)
-            # Hard to tolerate all kinds of formats, so just handle one
-            pattern = r'^(\d+)\s*-\s*'
-            for i, line in enumerate(lines):
-                match = re.match(pattern, line)
-                if not match:
-                    logger.warning(f'Answer line: {line} has no step number')
-                    return ''
-                if str(i + 1) != match.group(1):
-                    logger.warning(f'Answer line {line} does not match step: {i + 1}')
-                    return ''
-                lines[i] = re.sub(pattern, '', line)
-            if len(lines) < 3:
-                return lines[0]  # only get the summary
-            translation.add(lines[0], lines[1], 'zh')
-            # Somehow, openai always return the original title
-            title_cn = lines[2].removesuffix('。').removesuffix('.')
-            parts = re.split(r'的中文翻译(?:为)?', title_cn, maxsplit=1)
-            if len(parts) > 1 and parts[1].strip():
-                title_cn = parts[1].strip().strip(':').strip('：')
+            if config.openai_model.startswith('text-'):
+                resp = openai.Completion.create(
+                    prompt=prompt,
+                    **kwargs
+                )
+                answer = resp['choices'][0]['text'].strip()
             else:
-                title_cn = parts[0].strip()
-            translation.add(self.title, title_cn.strip('"').strip('“'), 'zh')
-            return lines[0]
+                resp = openai.ChatCompletion.create(
+                    messages=[
+                        {'role': 'user', 'content': prompt},
+                    ],
+                    **kwargs)
+                answer = resp['choices'][0]['message']['content'].strip()
+            logger.info(f'took {time.time() - start_time}s to generate: '
+                        # Default str(resp) prints \u516c
+                        f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
+            return self.parse_step_answer(answer).strip()
         except Exception as e:
             logger.warning('Failed to summarize using openai, %s', e)
             return ''
@@ -203,3 +200,35 @@ class News:
                                    clean_up_tokenization_spaces=True).capitalize()
         logger.info(f'took {time.time() - start_time}s to generate: {summary}')
         return summary
+
+    def parse_step_answer(self, answer):
+        lines = re.split(r'\n+', answer)
+        # Hard to tolerate all kinds of formats, so just handle one
+        pattern = r'^(\d+)\s*-\s*'
+        for i, line in enumerate(lines):
+            match = re.match(pattern, line)
+            if not match:
+                logger.warning(f'Answer line: {line} has no step number')
+                return ''
+            if str(i + 1) != match.group(1):
+                logger.warning(f'Answer line {line} does not match step: {i + 1}')
+                return ''
+            lines[i] = re.sub(pattern, '', line)
+        if len(lines) < 3:
+            return lines[0]  # only get the summary
+        translation.add(lines[0], lines[1], 'zh')
+        translation.add(self.title, self.parse_title_translation(lines[2]), 'zh')
+        return lines[0]
+
+    def parse_title_translation(self, title):
+        # Somehow, openai always return the original title
+        title_cn = title.removesuffix('。').removesuffix('.')
+        parts = re.split(r'的中文翻译(?:为)?(?:：)?', title_cn, maxsplit=1)
+        if len(parts) > 1 and parts[1].strip():
+            title_cn = parts[1].strip().strip(':').strip('：').strip()
+        else:
+            title_cn = parts[0].strip()
+        quote = ('"', '“', '”', '《', '》') # they are used interchangeably
+        while title_cn and title_cn[0] in quote and title_cn[-1] in quote:
+            title_cn = title_cn[1:-1].strip()
+        return title_cn.removesuffix('。').removesuffix('.')

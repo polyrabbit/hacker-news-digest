@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, filters
 
 import config
 from hacker_news import summary_cache, translation
+from hacker_news.news import SummaryModel
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
@@ -53,34 +54,20 @@ def gen_feed(news_list):
     for i, news in enumerate(news_list):
         img_tag = ''
         if news.image:
-            img_tag = f'<img src="{news.image.url}" style="{news.image.get_size_style(220)} float: left" />'
+            img_tag = f'<img src="{news.image.url}" style="{news.image.get_size_style(220)}" /><br />'
         feed.add(news.title,
-                 content='%s%s%s' % (
+                 content='%s%s%s%s' % (
                      img_tag,
                      # not None
-                     truncate(news.summary), (
-                         ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
+                     truncate(news.summary) if news.summarized_by == SummaryModel.FULL else news.summary,
+                     (' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
+                     (' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
                  author={
                      'name': news.author,
                      'uri': news.author_link
                  } if news.author_link else (),
                  url=news.url,
                  updated=news.submit_time, )
-        if i == 1 or i == 27:
-            feed.add('placeholder',
-                     content='''<article class="post-item" data-rank="{{ loop.index0 }}">
-                            <ins class="adsbygoogle"
-                                 style="display:block"
-                                 data-ad-format="fluid"
-                                 data-ad-layout-key="-et-7-f-rh+149"
-                                 data-ad-client="ca-pub-9393129008813908"
-                                 data-ad-slot="4020487288"></ins>
-                            <script>
-                                (adsbygoogle = window.adsbygoogle || []).push({});
-                            </script>
-                        </article>''',
-                     url=f'{config.site}/?item={i}',
-                     updated=datetime.utcnow())
     rendered = feed.to_string()
     output_path = os.path.join(config.output_dir, "feed.xml")
     with open(output_path, "w") as fp:

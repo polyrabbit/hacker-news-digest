@@ -30,3 +30,13 @@ class NewsSummaryTestCase(TestCase):
         summary = news.summarize_by_transformer(news.content)
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
+
+    def test_parse_step_answer(self):
+        news = News('The guide to software development with Guix')
+        self.assertEqual(news.parse_title_translation('"Guix软件开发指南"的中文翻译。'), 'Guix软件开发指南')
+        self.assertEqual(news.parse_title_translation("《使用Guix进行软件开发的指南》的中文翻译。"), '使用Guix进行软件开发的指南')
+        self.assertEqual(news.parse_title_translation('"The guide to software development with Guix"的中文翻译为:"使用Guix进行软件开发的指南"。'), '使用Guix进行软件开发的指南')
+
+        self.assertEqual(news.parse_title_translation('Weird GPT-4 behavior for the specific string “ davidjl”'), 'Weird GPT-4 behavior for the specific string “ davidjl”')
+        self.assertEqual(news.parse_title_translation('“Infinite Mac：在Web浏览器上发布经典的Macintosh系统和软件。”'), 'Infinite Mac：在Web浏览器上发布经典的Macintosh系统和软件')
+        self.assertEqual(news.parse_title_translation('“马克·扎克伯格谈论苹果的Vision Pro头戴式耳机”'), '马克·扎克伯格谈论苹果的Vision Pro头戴式耳机')

@@ -17,3 +17,4 @@ torch==2.0.1
 bert-extractive-summarizer==0.10.1
 transformers==4.29.2
 python-dotenv==1.0.0
+python_slugify==8.0.1

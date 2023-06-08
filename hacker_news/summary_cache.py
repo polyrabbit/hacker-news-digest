@@ -21,6 +21,8 @@ else:
 
 
 def get(url, model=None):
+    if config.disable_summary_cache:
+        return ''
     if url in summary_cache:
         if model is None or summary_cache[url]['model'] == model.value:
             return summary_cache[url]['summary']

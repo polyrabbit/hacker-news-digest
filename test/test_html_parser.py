@@ -212,9 +212,10 @@ and supported by community <em>donations</em>.</p></article>
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):
+        config.disable_summary_cache = True
         news = News(
-            url='https://arstechnica.com/cars/2023/05/automatic-emergency-braking-should-become-mandatory-feds-say/',
-            score='15')
+            url='https://infinitemac.org/',
+            score=config.openai_score_threshold + 1)
         news.pull_content()
         print(news.summary)
         self.assertGreater(len(news.summary), 100)

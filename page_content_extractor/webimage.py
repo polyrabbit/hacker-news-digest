@@ -128,7 +128,8 @@ class WebImage(object):
         if width < self.MIN_PX or height < self.MIN_PX:
             return False
         dimension = 1.0 * width / height
-        return .2 < dimension < 5
+        # To ignore high images like https://reddit-image.s3.amazonaws.com/W3ichcYAUappVkzQXWLNbvriCZepRXi90OmGPD75tho.jpg
+        return 0.67 < dimension < 3
 
     def check_image_bytesize(self):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE

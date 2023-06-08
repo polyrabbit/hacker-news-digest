@@ -117,3 +117,11 @@ footer li, footer li a {
     opacity: 1;
     filter: alpha(opacity=100);
 }
+
+.hover-to-show {
+    visibility: hidden;
+}
+
+.post-title:hover .hover-to-show {
+    visibility: visible;
+}

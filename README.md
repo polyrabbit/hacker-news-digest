@@ -22,7 +22,7 @@ local [GoogleT5](https://huggingface.co/t5-large) model when ChatGPT is not avai
 * Relevant illustrations make articles easily scannable and visually engaging
 * Common video sites, PDFs, and GitHub gists are seamlessly embedded
 * Flexibility to sort articles based on their score, comment count, or publication time
-* RSS feeds fully supported
+* RSS feeds fully supported ([#14](https://github.com/polyrabbit/hacker-news-digest/issues/14), [#19](https://github.com/polyrabbit/hacker-news-digest/issues/19))
 * Local translation (Chinese)
 
 ## Talk is cheap, show me the screenshot!
@@ -55,13 +55,16 @@ performs the following periodic actions:
 
 ## Localization
 
-Currently supported translations:
+Translation is also performed by ChatGPT, with a single extra step in the prompt. Currently supported languages:
+
 * [中文翻译](https://hackernews.betacat.io/zh.html)
 
 ## TODO
 
-- [ ] A better way to scrap websites(maybe PhantomJS & Selenium)
-- [ ] A more beautiful home page(maybe in HTML9)
+- [ ] A better way to scrap websites (maybe PhantomJS & Selenium)
+- [ ] Also summarize comments ([see discussions on Hacker News](https://news.ycombinator.com/item?id=36260140))
+- [ ] Switch to [Hacker News API](https://github.com/HackerNews/API)
+- [ ] A more beautiful home page (maybe in HTML9)
 - [ ] Discover an alternative local models for generating summaries
 - [X] Sort articles by score/comment/time
 - [X] RSS

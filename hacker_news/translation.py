@@ -16,7 +16,7 @@ if not config.disable_translation_cache:
     try:
         resp = session.get(f'{config.site}/translation.json')
         resp.raise_for_status()
-        translation_cache = resp.json()
+        translation_cache = dict(resp.json(), **translation_cache)
     except Exception as e:
         logger.warning("Failed to load translation cache, %s", e)
 else:
@@ -28,7 +28,7 @@ touched = []
 # TODO: enable other translation api
 def get(text, to_lang):
     if text in translation_cache:
-        if to_lang in translation_cache[text]:
+        if to_lang in translation_cache[text] and translation_cache[text][to_lang]:
             touched.append(text)
             return translation_cache[text][to_lang]
     return text
