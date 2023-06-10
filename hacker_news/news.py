@@ -133,12 +133,12 @@ class News:
             content = content[:4096 * 2]
 
         content = content.replace('```', ' ').strip()  # in case of prompt injection
-        title = self.title.replace('"', "'").strip() or 'no title'
+        title = self.title.replace('"', "'").replace('\n', ' ').strip() or 'no title'
         start_time = time.time()
         # Hope one day this model will be clever enough to output correct json
-        # Note: sentence should end with "."
+        # Note: sentence should end with ".", "third person" - https://news.ycombinator.com/item?id=36262670
         prompt = f'Output only answers to following 3 steps, prefix each answer with step number.\n' \
-                 f'1 - Summarize the article delimited by triple backticks in 2 sentences.\n' \
+                 f'1 - Summarize the article delimited by triple backticks in 2 sentences and in the third person.\n' \
                  f'2 - Translate the summary into Chinese.\n' \
                  f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
                  f'```{content.strip(".")}.```'
@@ -163,6 +163,7 @@ class News:
                     ],
                     **kwargs)
                 answer = resp['choices'][0]['message']['content'].strip()
+            logger.info(f'prompt: {prompt}')
             logger.info(f'took {time.time() - start_time}s to generate: '
                         # Default str(resp) prints \u516c
                         f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
@@ -223,6 +224,12 @@ class News:
     def parse_title_translation(self, title):
         # Somehow, openai always return the original title
         title_cn = title.removesuffix('。').removesuffix('.')
+        pattern = r'^"[^"]+"[^"]+“([^”]+)”'
+        match = re.search(pattern, title_cn)
+        if match:
+            title_cn = match.group(1).strip()
+            return title_cn.strip() # clean path
+
         parts = re.split(r'的中文翻译(?:为)?(?:：)?', title_cn, maxsplit=1)
         if len(parts) > 1 and parts[1].strip():
             title_cn = parts[1].strip().strip(':').strip('：').strip()
