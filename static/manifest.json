@@ -1,0 +1,17 @@
+{
+  "name": "Hacker News",
+  "short_name": "HackerNews",
+  "descriptions": "Hacker News Summarized by ChatGPT",
+  "start_url": "/?utm_source=pwa",
+  "background_color": "#fff",
+  "display": "minimal-ui",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/static/icon-200.png",
+      "type": "image/png",
+      "sizes": "200x200",
+      "purpose": "any maskable"
+    }
+  ]
+}

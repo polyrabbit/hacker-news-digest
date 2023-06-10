@@ -28,6 +28,7 @@ gh_pages:
 	cp static/ads.txt output/ads.txt
 	ln -s index.html output/hackernews  # backward compatibility
 	ln -s feed.xml output/feed
+	ln -s static/favicon.ico output/favicon.ico
 
 test:
 	python -m unittest
