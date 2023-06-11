@@ -46,7 +46,7 @@ class PdfExtractor(object):
         len_of_summary = 0
         for p in self.get_paragraphs():
             # if is_paragraph(p):  # eligible to be a paragraph
-            if len(tokenize(p)) > 20 and '.' * 10 not in p:  # table of contents has many '...'
+            if len(tokenize(p)) > 20 and p.count('.') < 10:  # table of contents has many '...' or '. . .'
                 if len_of_summary + len(p) >= max_length:
                     for word in tokenize(p):
                         partial_summaries.append(escape(word))

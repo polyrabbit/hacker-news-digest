@@ -19,19 +19,16 @@
             // handle Ads inserted by ISP
             if (window !== top) top.location.href = window.location.href;
         </script>
-        <link rel="stylesheet" type="text/css" media="screen"
-              href="/static/css/style.css?r=12">
-        <!--[if lt IE 9]>
-        <script src="/static/css/respond.min.js" type="text/javascript"></script>
-        <script>
-            alert('IE is not fully supported!');
-        </script>
-        <![endif]-->
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css?r=12">
         <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
         {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
         <script>
-            function fail_back(img) { // If the favicon cannot be loaded, fail back to the default on.
+            function favicon_fall_back(img) { // If the favicon cannot be loaded, fall back to the default one
                 $(img).replaceWith('<i class="fa fa-external-link"></i>');
+            }
+            function illustration_fall_back(img) { // If fetched images broken, fall back to origins
+                img.onerror = '';
+                img.src = $(img).attr('alt');
             }
         </script>
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-D9ZBQ6B4QQ"></script>
@@ -188,7 +185,7 @@
                     <span class="host" title="Host">
                         {% if news.favicon %}
                             <img src="{{ news.favicon }}" class="icon img-circle"
-                                 onerror="fail_back(this);" alt="{{ news.favicon }}"/>
+                                 onerror="favicon_fall_back(this);" alt="{{ news.favicon }}"/>
                         {% else %}
                             <i class="fa fa-external-link"></i>
                         {% endif %}
@@ -208,15 +205,16 @@
                     <a class="feature-image" href="/image/{{ news.img_id }}">
                         {# Thanks to http://loading.io/ for the spinner #}
                         <img class="img-rounded" src="/image/{{ news.img_id }}"
-                             alt="{{ news.image.url }}"
+                             alt="{{ news.image.url }}" onerror="illustration_fall_back(this);"
                              style="{{ news.image.get_size_style(220) }}"
                              loading="lazy"/>
                     </a>
                 {% endif %}
                 {% if news.summary %}
                     <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
-                         {% if news.summarized_by.value != 'Prefix' and news.summary|translate(lang)|length > config.summary_size %}
-                             title="{{ news.summary|translate(lang)|trim }} {% endif %}">
+                         {% if news.summarized_by.value == 'OpenAI' and news.summary|translate(lang)|length > config.summary_size %}
+                             title="{{ news.summary|translate(lang)|trim }}"
+                         {% endif %}>
                         {{ news.summary|translate(lang)|truncate|safe }}
                     </div>
                 {% endif %}

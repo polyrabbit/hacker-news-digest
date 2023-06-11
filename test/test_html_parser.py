@@ -212,7 +212,6 @@ and supported by community <em>donations</em>.</p></article>
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):
-        config.disable_summary_cache = True
         news = News(
             url='https://infinitemac.org/',
             score=config.openai_score_threshold + 1)

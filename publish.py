@@ -7,8 +7,8 @@ from jinja2 import Environment, FileSystemLoader, filters
 
 import config
 from hacker_news import summary_cache, translation
-from hacker_news.news import SummaryModel
 from hacker_news.parser import HackerNewsParser
+from hacker_news.summary_cache import Model
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +59,11 @@ def gen_feed(news_list):
                  content='%s%s%s%s' % (
                      img_tag,
                      # not None
-                     truncate(news.summary) if news.summarized_by == SummaryModel.FULL else news.summary,
-                     (' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
-                     (' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
+                     truncate(news.summary) if news.summarized_by == Model.FULL else news.summary,
+                     (
+                             ' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
+                     (
+                         ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
                  author={
                      'name': news.author,
                      'uri': news.author_link
@@ -80,7 +82,7 @@ if __name__ == '__main__':
     news_list = hn.parse_news_list()
     for news in news_list:
         news.pull_content()
-    summary_cache.save(news_list)
     gen_page(news_list)
     gen_feed(news_list)
-    translation.save()  # only save touched
+    summary_cache.save()
+    translation.save()  # only save accessed
