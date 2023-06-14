@@ -4,6 +4,7 @@ import unittest
 from unittest import TestCase
 
 from hacker_news.news import News
+from page_content_extractor import parser_factory
 from page_content_extractor.html import *
 
 
@@ -209,6 +210,11 @@ and supported by community <em>donations</em>.</p></article>
         """
         a = HtmlContentExtractor(html_doc).get_content()
         self.assertTrue(a.endswith('by community donations.'))
+
+    def test_ask_hn_content(self):
+        parser = parser_factory('https://news.ycombinator.com/item?id=36317509')
+        content = parser.get_content()
+        self.assertTrue(content.startswith('I have expertise in web backend and infrastructure development, '))
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):

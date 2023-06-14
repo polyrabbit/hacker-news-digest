@@ -28,7 +28,7 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
               'video', 'td'}
 negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
                            'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
-positive_patt = re.compile(r'article|entry|post|column|main|content|'
+positive_patt = re.compile(r'article|entry|post|column|main|content|toptext|'
                            'section|text|preview|view|story-body', re.IGNORECASE)
 
 
@@ -146,36 +146,39 @@ class HtmlContentExtractor(object):
     @staticmethod
     def has_positive_effect(node):
         for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
-            if positive_patt.search(attr):
+            if attr and positive_patt.search(attr):
                 return True
         return False
 
     @staticmethod
     def has_negative_effect(node):
         for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
-            if negative_patt.search(attr):
+            if attr and negative_patt.search(attr):
                 return True
         return False
 
-    def calc_effective_text_len(self, node):
+    def calc_effective_text_len(self, node, negative_parent=False):
         """
         Calc the total the length of text in a child, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
         if node.text_len is not None:
             return node.text_len
+        if not negative_parent and self.has_negative_effect(node):
+            negative_parent = True
+        negative_factor = .2 if negative_parent else 1
         text_len = 0
         for child in node.children:
             if isinstance(child, Tag):
                 if child.name == 'a':
                     continue
-                text_len += self.calc_effective_text_len(child)
+                text_len += self.calc_effective_text_len(child, negative_parent)
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(child, NavigableString)
             elif type(child) is NavigableString:
                 text_len += len(child.string.strip()) + child.string.count(',') + \
                             child.string.count('，')  # Chinese comma
-        node.text_len = text_len * .2 if self.has_negative_effect(node) else text_len
+        node.text_len = text_len * negative_factor
         return node.text_len
 
     def calc_img_area_len(self, cur_node):

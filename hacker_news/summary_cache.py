@@ -31,6 +31,9 @@ class Model(Enum):
     OPENAI = 'OpenAI'
     TRANSFORMER = 'GoogleT5'
 
+    def can_truncate(self):
+        return self not in (Model.OPENAI, Model.EMBED)
+
 
 def get(url, model=None):
     if config.disable_summary_cache:

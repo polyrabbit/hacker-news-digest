@@ -8,7 +8,6 @@ from jinja2 import Environment, FileSystemLoader, filters
 import config
 from hacker_news import summary_cache, translation
 from hacker_news.parser import HackerNewsParser
-from hacker_news.summary_cache import Model
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +51,9 @@ def gen_feed(news_list):
                         'uri': 'https://github.com/polyrabbit/'}
                     )
     for i, news in enumerate(news_list):
+        if news.get_score() <= config.openai_score_threshold:
+            # RSS readers doesnot update their content, so wait until we have a better summary, to provide a consistent view to users
+            continue
         img_tag = ''
         if news.image:
             img_tag = f'<img src="{news.image.url}" style="{news.image.get_size_style(220)}" /><br />'
@@ -59,7 +61,7 @@ def gen_feed(news_list):
                  content='%s%s%s%s' % (
                      img_tag,
                      # not None
-                     truncate(news.summary) if news.summarized_by == Model.FULL else news.summary,
+                     truncate(news.summary) if news.summarized_by.can_truncate() else news.summary,
                      (
                              ' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
                      (

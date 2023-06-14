@@ -166,7 +166,7 @@
                         </a>
                     </span>
                 {% endif %}
-                <span class="summit-time" title="Submit time">
+                <span class="summit-time" title="Submit time {{ news.submit_time.replace(microsecond=0) }} UTC">
                     <i class="fa fa-clock-o"></i>
                     <span class="last-updated"
                           data-submitted="{{ news.submit_time.strftime("%Y-%m-%dT%H:%M:%SZ") }}"><span>{{ news.submit_time.replace(microsecond=0) }} UTC</span></span>
