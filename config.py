@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DEBUG = 'DEBUG' in os.environ
+DEBUG = os.getenv('DEBUG') == '1'
 
 site = 'https://hackernews.betacat.io'
 

@@ -129,23 +129,23 @@ class News:
         title = self.title.replace('"', "'").replace('\n', ' ').strip() or 'no title'
         # Hope one day this model will be clever enough to output correct json
         # Note: sentence should end with ".", "third person" - https://news.ycombinator.com/item?id=36262670
-        prompt = f'Output only answers to following 3 steps, prefix each answer with step number.\n' \
+        prompt = f'Output only answers to following 3 steps.\n' \
                  f'1 - Summarize the article delimited by triple backticks in 2 sentences.\n' \
                  f'2 - Translate the summary into Chinese.\n' \
                  f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
                  f'```{content.strip(".")}.```'
         try:
-            answer = self.openai_complete(prompt)
+            answer = self.openai_complete(prompt, True)
             summary = self.parse_step_answer(answer).strip()
             if not summary: # If step parse failed, ignore the translation
                 summary = self.openai_complete(f'Summarize the article delimited by triple backticks in 2 sentences.\n'
-                                               f'```{content.strip(".")}.```')
+                                               f'```{content.strip(".")}.```', False)
             return summary
         except Exception as e:
             logger.warning('Failed to summarize using openai, %s', e)
             return ''
 
-    def openai_complete(self, prompt):
+    def openai_complete(self, prompt, need_json):
         start_time = time.time()
         kwargs = {'model': config.openai_model,
                   # one token generally corresponds to ~4 characters
@@ -154,6 +154,22 @@ class News:
                   'temperature': 0,
                   'n': 1,  # only one choice
                   'timeout': 30}
+        if need_json:
+            kwargs['functions'] = [{"name": "render", "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "string"
+                    },
+                    "summary_zh": {
+                        "type": "string"
+                    },
+                    "translation": {
+                        "type": "string"
+                    },
+                },
+            }}]
+            kwargs['function_call'] = {"name": "render"}
         if config.openai_model.startswith('text-'):
             resp = openai.Completion.create(
                 prompt=prompt,
@@ -166,12 +182,16 @@ class News:
                     {'role': 'user', 'content': prompt},
                 ],
                 **kwargs)
-            answer = resp['choices'][0]['message']['content'].strip()
+            message = resp["choices"][0]["message"]
+            if message.get('function_call'):
+                answer = json.loads(message['function_call']['arguments'])
+            else:
+                answer = message['content'].strip()
         logger.info(f'prompt: {prompt}')
         logger.info(f'took {time.time() - start_time}s to generate: '
                     # Default str(resp) prints \u516c
                     f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
-        return answer.strip()
+        return answer
 
     def summarize_by_transformer(self, content):
         if config.disable_transformer:
@@ -204,23 +224,16 @@ class News:
         return summary
 
     def parse_step_answer(self, answer):
-        lines = re.split(r'\n+', answer)
-        # Hard to tolerate all kinds of formats, so just handle one
-        pattern = r'^(\d+)\s*-\s*'
-        for i, line in enumerate(lines):
-            match = re.search(pattern, line)
-            if not match:
-                logger.warning(f'Answer line: {line} has no step number')
-                return ''
-            if str(i + 1) != match.group(1):
-                logger.warning(f'Answer line {line} does not match step: {i + 1}')
-                return ''
-            lines[i] = re.sub(pattern, '', line)
-        if len(lines) < 3:
-            return lines[0]  # only get the summary
-        translation.add(lines[0], lines[1], 'zh')
-        translation.add(self.title, self.parse_title_translation(lines[2]), 'zh')
-        return lines[0]
+        if len(answer) != 3:
+            logger.warning(f'Answer length is not 3, got {len(answer)}')
+            if answer.get('summary'):
+                logger.warning(f'Only pick the summary part')
+                return answer.get('summary')
+            # Hard to tolerate all kinds of formats, so just handle one
+            return ''
+        translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
+        translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
+        return answer.get('summary', '')
 
     def parse_title_translation(self, title):
         # Somehow, openai always return the original title

@@ -211,10 +211,16 @@ and supported by community <em>donations</em>.</p></article>
         a = HtmlContentExtractor(html_doc).get_content()
         self.assertTrue(a.endswith('by community donations.'))
 
-    def test_ask_hn_content(self):
+    def test_ask_hn_include_content(self):
         parser = parser_factory('https://news.ycombinator.com/item?id=36317509')
         content = parser.get_content()
         self.assertTrue(content.startswith('I have expertise in web backend and infrastructure development, '))
+        self.assertTrue(content.endswith('I would love to hear it.'))
+
+    def test_arxiv_content(self):
+        parser = parser_factory('https://arxiv.org/abs/2306.07695')
+        content = parser.get_content()
+        self.assertTrue(content.startswith('Abstract: Short Message Service'))
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):

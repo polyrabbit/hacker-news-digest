@@ -12,9 +12,11 @@ class PdfParserTestCase(TestCase):
         with open(fpath, 'rb') as fp:
             parser = PdfExtractor(fp.read())
             self.assertIsNone(parser.get_illustration())
-            self.assertTrue(parser.get_content().startswith(
+            content = parser.get_content()
+            self.assertTrue(content.startswith(
                 'Systems code is often written in low-level languages like C/C++, which offer'
             ))  # Should be no errors
+            self.assertTrue(' We introduce code-pointer' in content)  # space between paragraphs
 
     # def test_text_order(self):
     #     parser = PdfExtractor(open('/tmp/fm_21-76_us_army_survival_manual_2006.pdf', 'rb').read())

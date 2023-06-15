@@ -35,7 +35,7 @@ def get(text, to_lang):
 
 
 def add(source, target, lang):
-    if target:
+    if source and target:
         cache[source] = DictCache({lang: target})
         cache[source].mark_accessed()
 

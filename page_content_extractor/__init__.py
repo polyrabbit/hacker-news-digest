@@ -32,14 +32,14 @@ def parser_factory(url):
 
     # if no content-type is provided, Chrome set as a html
     ct = resp.headers.get('content-type', 'text').lower()
-    if ct.startswith('text') or 'html' in ct or 'xml' in ct or 'charset' in ct:
-        logger.info('Get an %s to parse', ct)
-        return HtmlContentExtractor(resp.text, resp.url)
-    elif ct.startswith('application/pdf'):
+    if ct.startswith('application/pdf'):  # Some pdfs even have charset indicator, eg. "application/pdf; charset=utf-8"
         logger.info('Get a pdf to parse, %s', resp.url)
         try:
             return PdfExtractor(resp.content, resp.url)
         except ParseError:
             logger.exception('Failed to parse this pdf file, %s', resp.url)
+    elif ct.startswith('text') or 'html' in ct or 'xml' in ct or 'charset' in ct:
+        logger.info('Get an %s to parse', ct)
+        return HtmlContentExtractor(resp.text, resp.url)
 
     raise TypeError('I have no idea how the %s is formatted' % ct)

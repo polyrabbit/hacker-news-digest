@@ -8,7 +8,6 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 from markupsafe import escape
-from math import sqrt
 from null import Null
 
 import config
@@ -93,8 +92,7 @@ class HtmlContentExtractor(object):
             for parent in node.parents:
                 if not parent or parent is doc:
                     break
-                parent.score = parent.score or 0 + \
-                               self.calc_effective_text_len(parent) * sqrt(len(node.text))
+                parent.score = (parent.score or 0) + self.calc_effective_text_len(parent) * 2
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
@@ -114,6 +112,9 @@ class HtmlContentExtractor(object):
         if node.score > self.max_score:
             self.max_score = node.score
             self.article = node
+
+        if logger.isEnabledFor(logging.DEBUG):
+            print(f"{' '*int(depth*10)}{' '.join([node.name] + node.get('class', []))}, text: {node.text_len}, score: {node.score}")
 
         for child in node.children:  # the direct children, not descendants
             if isinstance(child, Tag):

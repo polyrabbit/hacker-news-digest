@@ -56,7 +56,7 @@ class PdfExtractor(object):
                 else:
                     partial_summaries.append(p)
                     len_of_summary += len(p)
-        return ''.join(partial_summaries)
+        return ' '.join(partial_summaries)
 
     def get_paragraphs(self):
         p = []
