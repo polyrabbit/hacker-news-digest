@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime
+from urllib.parse import urljoin
 
 from feedwerk.atom import AtomFeed
 from jinja2 import Environment, FileSystemLoader, filters
@@ -32,10 +33,10 @@ environment.globals["config"] = config
 # Generate github pages
 def gen_page(news_list):
     template = environment.get_template("hackernews.html")
-    lang_output = {'en': 'index.html', 'zh': 'zh.html'}
-    for lang, fname in lang_output.items():
-        static_page = os.path.join(config.output_dir, fname)
-        rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang)
+    lang_output = {'en': {'fname':'index.html', 'path':'/'}, 'zh': {'fname':'zh.html', 'path':'/zh.html'}}
+    for lang, output in lang_output.items():
+        static_page = os.path.join(config.output_dir, output['fname'])
+        rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang, path=urljoin(config.site, output['path']))
         with open(static_page, "w") as fp:
             fp.write(rendered)
         logger.info(f'Written {len(rendered)} bytes to {static_page}')

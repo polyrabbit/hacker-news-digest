@@ -90,6 +90,12 @@
     border: none;
 }
 
+.post-item .qrcode {
+    float: right;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
 .modal-dialog {
     max-width: 600px;
 }
@@ -116,12 +122,4 @@ footer li, footer li a {
 #scrollUp:hover {
     opacity: 1;
     filter: alpha(opacity=100);
-}
-
-.hover-to-show {
-    visibility: hidden;
-}
-
-.post-title:hover .hover-to-show {
-    visibility: visible;
 }

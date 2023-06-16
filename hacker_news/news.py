@@ -168,6 +168,7 @@ class News:
                         "type": "string"
                     },
                 },
+                "required": ["summary"]
             }}]
             kwargs['function_call'] = {"name": "render"}
         if config.openai_model.startswith('text-'):
@@ -224,13 +225,6 @@ class News:
         return summary
 
     def parse_step_answer(self, answer):
-        if len(answer) != 3:
-            logger.warning(f'Answer length is not 3, got {len(answer)}')
-            if answer.get('summary'):
-                logger.warning(f'Only pick the summary part')
-                return answer.get('summary')
-            # Hard to tolerate all kinds of formats, so just handle one
-            return ''
         translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
         translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
         return answer.get('summary', '')

@@ -19,11 +19,12 @@
             // handle Ads inserted by ISP
             if (window !== top) top.location.href = window.location.href;
         </script>
-        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css?r=12">
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css?r=13">
         <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
         {#try <script>window.jQuery || document.write('<script src="/jquery.min.js"><\/script>')</script>#}
         <script>
             function favicon_fall_back(img) { // If the favicon cannot be loaded, fall back to the default one
+                img.onerror = '';
                 $(img).replaceWith('<i class="fa fa-external-link"></i>');
             }
             function illustration_fall_back(img) { // If fetched images broken, fall back to origins
@@ -137,12 +138,11 @@
     </nav>
     {% for news in news_list %}
         <article class="post-item" data-rank="{{ news.rank }}">
+            <div class="qrcode"></div>
             <div class="post-title">
                 <h3 id="{{ news.slug() }}">
                     <a target="_blank" class="post-url"
-                       href="{{ news.url }}">{{ news.title|translate(lang) }}</a>
-                    <a aria-hidden="true" class="hover-to-show" href="#{{ news.slug() }}">
-                        <i class="fa fa-link small"></i>
+                       href="{{ news.url }}">{{ news.title|translate(lang) }}
                     </a>
                 </h3>
             </div>
@@ -184,7 +184,7 @@
                 {% if news.comhead %}
                     <span class="host" title="Host">
                         {% if news.favicon %}
-                            <img src="{{ news.favicon }}" class="icon img-circle"
+                            <img src="{{ news.favicon }}" class="favicon img-circle"
                                  onerror="favicon_fall_back(this);" alt="{{ news.favicon }}"/>
                         {% else %}
                             <i class="fa fa-external-link"></i>
@@ -198,6 +198,12 @@
                         {{ news.summarized_by.value }}
                     </span>
                 </span>
+                <a class="share-icon" href="{{ path }}#{{ news.slug() }}">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
             </div>
 
             <div class="post-summary">
@@ -211,11 +217,12 @@
                     </a>
                 {% endif %}
                 {% if news.summary %}
-                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
-                         {% if news.summarized_by.value == 'OpenAI' and news.summary|translate(lang)|length > config.summary_size %}
-                             title="{{ news.summary|translate(lang)|trim }}"
-                         {% endif %}>
-                        {{ news.summary|translate(lang)|truncate|safe }}
+                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}">
+                        {% if news.summarized_by.can_truncate() %}
+                            {{ news.summary|translate(lang)|truncate|safe }}
+                        {% else %}
+                            {{ news.summary|translate(lang)|safe }}
+                        {% endif %}
                     </div>
                 {% endif %}
                 <div style="clear: both;"></div>
@@ -293,42 +300,13 @@
 </div>
 <!-- End of the modal dialog -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js"
-        integrity="sha512-RDaBwBkrx27JSZ1vH3cS93Z5uw56uVSb0ODiqL8FYQk+NaMaJUsPUiYj4heJFLCTFAqBjGZ6jivYdLbwG/AGfA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-    $('.last-updated').each((index, item) => {
-        $(item).find('span').text(humanizeDuration(new Date() - new Date($(item).data('submitted')), {
-            largest: 1,
-            round: true
-        }) + ' ago')
-    })
-</script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js" referrerpolicy="no-referrer"></script>
 {# https://github.com/markgoodyear/scrollup #}
 <script src="https://cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
-<script>
-    // We don't need to wait for the document.ready event, that costs a lot of time.
-    $.scrollUp({
-        scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
-        scrollTitle: 'Scroll to top'
-    });
-</script>
-<script>
-    $('.post-item .post-summary .feature-image').click(function (e) {
-        $('#img-preview-modal img').attr('src', $('img', this).attr('src'));
-        $('#img-preview-modal').modal();
-        return false;
-    });
-</script>
-<script src="/static/js/sort.js?r=3" async></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script>
-    $(function () {
-        let lastUpdate = $('li.last-updated[data-toggle="tooltip"]');
-        lastUpdate.prop('title', new Date(lastUpdate.data('submitted')).toLocaleString());
-        $('[data-toggle="tooltip"]').tooltip({html: true});
-    })
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+<script src="/static/js/hn.js?r=0"></script>
 </body>
 </html>

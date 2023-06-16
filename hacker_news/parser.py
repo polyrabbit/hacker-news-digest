@@ -20,7 +20,9 @@ class HackerNewsParser(object):
     end_point = 'https://news.ycombinator.com/'
 
     def parse_news_list(self):
-        content = session.get(self.end_point).text
+        resp = session.get(self.end_point)
+        resp.raise_for_status()
+        content = resp.text
         dom = BS(content, features="lxml")
         items = []
         for rank, item_line in enumerate(

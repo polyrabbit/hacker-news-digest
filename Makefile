@@ -24,7 +24,7 @@ gh_pages:
 	rm -rf output
 	mkdir -p output/image
 	python publish.py
-	cp -r static output/static
+	cp -vr static output/static
 	cp static/ads.txt output/ads.txt
 	ln -s index.html output/hackernews  # backward compatibility
 	ln -s feed.xml output/feed
