@@ -115,42 +115,43 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     return false;
 });
 // screenshot
+//   prepare qrcode as it's rendered asynchronously, or wait until https://github.com/davidshimjs/qrcodejs/pull/136 is merged
+$(function () {
+    $('.post-item').each((i, ele) => {
+        let shareIcon = ele.querySelector('.share-icon');
+        if (!shareIcon) {
+            return;  // google ads
+        }
+        const permalink = shareIcon.getAttribute('href');
+        if (permalink) {
+            let qrcode = new QRCode(ele.querySelector('.qrcode'), {
+                text: permalink,
+                width: 70,
+                height: 70,  // cannot be too small, too blurry to scan
+                correctLevel: QRCode.CorrectLevel.L  // cleaner and easier to scan
+            });
+        } else {
+            console.warn("no href for", shareIcon);
+        }
+    });
+});
 $('.post-item .share-icon').click(function (e) {
     const node = $(this).closest('.post-item').get(0);
-    const opt = {
-        logging: true, useCORS: true, onclone: (doc, ele) => {
-            const permalink = ele.querySelector('.share-icon').getAttribute('href');
-            if (permalink) {
-                let qrcode = new QRCode(ele.querySelector('.qrcode'), {
-                    text: permalink,
-                    width: 70,
-                    height: 70,  // cannot be too small, too blurry to scan
-                    correctLevel: QRCode.CorrectLevel.L  // cleaner and easier to scan
-                });
-            }
-            ele.style.paddingTop = '5px';
-            ele.style.paddingLeft = '10px';
-            ele.style.paddingRight = '10px';
+    modernScreenshot.domToPng(node, {
+        timeout: 3000,
+        fetch: {
+            placeholderImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY7h79y4ABTICmGnXPbMAAAAASUVORK5CYII=",
+        },
+        style: {
+            paddingTop: '5px',
+            paddingLeft: '10px',
+            paddingRight: '10px',
+        },
+        onCloneNode: (cloned) => {
+            cloned.querySelector(".qrcode").style.display = "block";
         }
-    };
-    if (node.domCanvas) {
-        PreviewImage(node.domCanvas);
-    } else {
-        html2canvas(node, opt).then(function (canvas) {
-            let dataUrl = canvas.toDataURL("image/jpeg");
-            node.domCanvas = dataUrl;
-            PreviewImage(dataUrl);
-        });
-    }
+    }).then((dataUrl) => {
+        PreviewImage(dataUrl);
+    });
     return false;
 });
-
-//
-// $('.post-item .qrcode').each((index, item) => {
-//     var qrcode = new QRCode(item, {
-//         text: "http://jindo.dev.naver.com/collie",
-//         width: 60,
-//         height: 60,
-//         correctLevel : QRCode.CorrectLevel.L
-//     });
-// })

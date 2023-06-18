@@ -52,7 +52,7 @@ class PdfExtractor(object):
                         partial_summaries.append(escape(word))
                         len_of_summary += len(word)
                         if len_of_summary > max_length:
-                            return ''.join(partial_summaries)
+                            return ' '.join(partial_summaries)
                 else:
                     partial_summaries.append(p)
                     len_of_summary += len(p)

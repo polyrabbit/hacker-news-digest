@@ -131,9 +131,14 @@ class HtmlContentExtractor(object):
     def get_meta_description(self):
         if not hasattr(self, '_meta_desc'):
             self._meta_desc = ''
+            # <meta name="twitter:description" content="..."/>
             descs = self.doc.find_all('meta', attrs={'name': re.compile('description', re.I)})
-            if descs:
-                self._meta_desc = descs[-1].get('content', '')
+            # <meta property="og:description" content="..."/>
+            descs.extend(self.doc.find_all('meta', attrs={'property': re.compile('description', re.I)}))
+            for desc in descs:
+                content = desc.get('content', '')
+                if len(content) > len(self._meta_desc):
+                    self._meta_desc = content
         return self._meta_desc
 
     def get_meta_image(self):

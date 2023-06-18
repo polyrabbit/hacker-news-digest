@@ -62,6 +62,8 @@ class News:
             self.favicon = parser.get_favicon_url()
             # Replace consecutive spaces with a single space
             self.content = re.sub(r'\s+', ' ', parser.get_content(config.max_content_size))
+            # From arxiv or pdf
+            self.content = re.sub(r'^(abstract|summary):\s*', '', self.content, flags=re.IGNORECASE)
             self.summary = self.summarize()
             summary_cache.add(self.url, self.summary, self.summarized_by)
             tm = parser.get_illustration()

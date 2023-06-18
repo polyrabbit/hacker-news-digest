@@ -4,7 +4,7 @@
     }
 }
 
-.nav>li>a:hover, .nav>li>a:focus {
+.nav > li > a:hover, .nav > li > a:focus {
     text-decoration: none;
     background-color: transparent;
 }
@@ -19,7 +19,7 @@
 
 .post-item {
     border-bottom: 1px solid #dddddd;
-    height: 100%!important;
+    height: 100% !important;
     margin: 5px;
 }
 
@@ -39,8 +39,9 @@
     color: #777777;
 }
 
-.post-item .post-meta a:hover {
+.post-item .post-meta a:hover, .post-item .post-meta a:focus {
     text-decoration: none;
+    outline: none;
 }
 
 .post-item .post-meta > span {
@@ -86,14 +87,14 @@
     background-color: #f5f5d5;
     line-height: 1.42857143;
     color: #333;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     border: none;
 }
 
 .post-item .qrcode {
     float: right;
-    margin-top: 10px;
-    margin-left: 10px;
+    display: none;
+    margin-top: 5px;
 }
 
 .modal-dialog {

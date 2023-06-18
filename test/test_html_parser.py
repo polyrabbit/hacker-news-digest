@@ -222,6 +222,14 @@ and supported by community <em>donations</em>.</p></article>
         content = parser.get_content()
         self.assertTrue(content.startswith('Abstract: Short Message Service'))
 
+    def test_longer_meta_description(self):
+        html_doc = """
+        <meta property="og:description" content="aaaa" />
+        <meta name="twitter:description" content="bbb" />
+        """
+        parser = HtmlContentExtractor(html_doc)
+        self.assertEqual(parser.get_meta_description(), "aaaa")
+
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):
         news = News(

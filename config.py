@@ -33,7 +33,7 @@ SQLALCHEMY_POOL_SIZE = 5
 SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_ECHO = DEBUG
 
-max_content_size = 1 << 20
+max_content_size = 64 << 10  # cost 2.5 min when parsing large pdf
 summary_size = 400
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 
