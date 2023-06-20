@@ -126,8 +126,8 @@ $(function () {
         if (permalink) {
             let qrcode = new QRCode(ele.querySelector('.qrcode'), {
                 text: permalink,
-                width: 70,
-                height: 70,  // cannot be too small, too blurry to scan
+                width: 60,
+                height: 60,  // cannot be too small - too blurry to scan, cannot be too big - avoid wrap of summary text
                 correctLevel: QRCode.CorrectLevel.L  // cleaner and easier to scan
             });
         } else {

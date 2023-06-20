@@ -218,11 +218,14 @@
                 {% endif %}
                 {% if news.summary %}
                     <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}">
+                        {% set summary = news.summary|translate(lang) -%}
                         {% if news.summarized_by.can_truncate() %}
-                            {{ news.summary|translate(lang)|truncate|safe }}
-                        {% else %}
-                            {{ news.summary|translate(lang)|safe }}
+                            {% set summary = summary|truncate -%}
                         {% endif %}
+                        {% if news.summarized_by.value != 'OpenAI' %}
+                            {% set summary = summary|safe -%}
+                        {% endif %}
+                        {{ summary }}
                     </div>
                 {% endif %}
                 <div style="clear: both;"></div>
@@ -303,7 +306,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
-<script src="/static/js/hn-1.js"></script>
+<script src="/static/js/hn-2.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.4.26/dist/index.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
