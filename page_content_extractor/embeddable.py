@@ -67,14 +67,14 @@ class EmbeddableExtractor(object):
         if not vid_mat:
             raise ParseError('Invalid vimeo video url(%s)' % url)
         return """<iframe src="//player.vimeo.com/video/%s" frameborder="0" """ \
-               """allowfullscreen></iframe>""" % vid_mat.group(1)
+               """allowfullscreen loading="lazy"></iframe>""" % vid_mat.group(1)
 
     def dailymotion_com_parser(self, url):
         vid_mat = re.search(r'www\.dailymotion\.com/video/([a-zA-Z0-9]+)_[-\w]+', url, re.I)
         if not vid_mat:
             raise ParseError('Invalid dailymotion video url(%s)' % url)
         return """<iframe src="//www.dailymotion.com/embed/video/%s" frameborder="0" """ \
-               """allowfullscreen></iframe>""" % vid_mat.group(1)
+               """allowfullscreen loading="lazy"></iframe>""" % vid_mat.group(1)
 
     def tudou_com_parser(self, url):
         vid_mat = re.search(r'www\.tudou\.com/albumplay/(\w+?)/(\w+?)\.html', url, re.I)
@@ -92,7 +92,7 @@ class EmbeddableExtractor(object):
         if not vid_mat:
             raise ParseError('Invalid ustream video url(%s)' % url)
         return """<iframe src="http://www.ustream.tv/embed/recorded/%s?v=3&amp;wmode=direct" frameborder="0" """ \
-               """allowfullscreen></iframe>""" % vid_mat.group(1)
+               """allowfullscreen loading="lazy"></iframe>""" % vid_mat.group(1)
 
     def bloomberg_com_parser(self, url):
         vid_mat = re.search(r'www\.bloomberg\.com/video/[-\w]+?-(\w+)\.', url, re.I)

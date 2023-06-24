@@ -3,8 +3,8 @@ import os
 from unittest import TestCase
 
 import config
+from db.summary import Model
 from hacker_news.news import News
-from hacker_news.summary_cache import Model
 
 
 class NewsSummaryTestCase(TestCase):

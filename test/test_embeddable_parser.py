@@ -23,13 +23,13 @@ class EmbeddableParserTestCase(TestCase):
     def test_vimeo_com_parser(self):
         parser = EmbeddableExtractor('Vimeo', 'https://vimeo.com/105196878')
         self.assertEqual(parser.get_content(),
-                         '<iframe src="//player.vimeo.com/video/105196878" frameborder="0" allowfullscreen></iframe>')
+                         '<iframe src="//player.vimeo.com/video/105196878" frameborder="0" allowfullscreen loading="lazy"></iframe>')
 
     def test_dailymotion_com_parser(self):
         parser = EmbeddableExtractor('dailYmotion',
                                      'http://www.dailymotion.com/video/x26imxp_au-calme-english-subtitles_webcam')
         self.assertEqual(parser.get_content(),
-                         '<iframe src="//www.dailymotion.com/embed/video/x26imxp" frameborder="0" allowfullscreen></iframe>')
+                         '<iframe src="//www.dailymotion.com/embed/video/x26imxp" frameborder="0" allowfullscreen loading="lazy"></iframe>')
 
     def test_tudou_com_parser(self):
         parser = EmbeddableExtractor('Tudou',
@@ -44,7 +44,7 @@ class EmbeddableParserTestCase(TestCase):
         parser = EmbeddableExtractor('ustream',
                                      'http://www.ustream.tv/recorded/9900109?utm_campaign=JPER&utm_medium=FlashPlayer&utm_source=embed')
         self.assertEqual(parser.get_content(),
-                         '<iframe src="http://www.ustream.tv/embed/recorded/9900109?v=3&amp;wmode=direct" frameborder="0" allowfullscreen></iframe>')
+                         '<iframe src="http://www.ustream.tv/embed/recorded/9900109?v=3&amp;wmode=direct" frameborder="0" allowfullscreen loading="lazy"></iframe>')
 
     def test_bloomberg_com_parser(self):
         parser = EmbeddableExtractor('bloomberg',

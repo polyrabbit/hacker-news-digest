@@ -3,7 +3,6 @@ import logging
 import re
 from collections import defaultdict
 from functools import lru_cache
-from itertools import chain
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
@@ -25,9 +24,10 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
               'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5',
               'h6',
               'video', 'td'}
-negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|'
+negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|button|hidden|'
+                           'toggle|'  # for arxiv.org
                            'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
-positive_patt = re.compile(r'article|entry|post|column|main|content|toptext|'
+positive_patt = re.compile(r'article|entry|post|abstract|main|content|toptext|'
                            'section|text|preview|view|story-body', re.IGNORECASE)
 
 
@@ -93,11 +93,13 @@ class HtmlContentExtractor(object):
                 if not parent or parent is doc:
                     break
                 parent.score = (parent.score or 0) + self.calc_effective_text_len(parent) * 2
+                self.set_node_factor(parent, 'title', 2)
 
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
             # Should be less than most titles but better than short ones
             node.score = node.score or 0 + self.calc_effective_text_len(node) * 2
+            self.set_node_factor(node, 'article', 2)
 
     def calc_node_score(self, node, depth=.1):
         """
@@ -107,14 +109,17 @@ class HtmlContentExtractor(object):
         # img_len = self.calc_img_area_len(cur_node)
         # TODO take image as a factor
         img_len = 0
-        impact_factor = 2 if self.has_positive_effect(node) else 1
-        node.score = (node.score or 0 + text_len + img_len) * impact_factor * (depth ** 1.5)
+        impact_factor = 1
+        if self.has_positive_effect(node):
+            impact_factor = 2
+            self.set_node_factor(node, 'positive', impact_factor)
+        node.score = (node.score or (0 + text_len + img_len)) * impact_factor * (depth ** 1.5)
         if node.score > self.max_score:
             self.max_score = node.score
             self.article = node
 
         if logger.isEnabledFor(logging.DEBUG):
-            print(f"{' '*int(depth*10)}{' '.join([node.name] + node.get('class', []))}, text: {node.text_len}, score: {node.score}")
+            print(f"{' '*round(depth*10)}{' '.join(self.node_identify(node))}, text: {node.real_text_len:.2f}, eff_text: {node.text_len:.2f}, depth: {depth:.2f}, {self.describe_node_factor(node)}score: {node.score:.2f}")
 
         for child in node.children:  # the direct children, not descendants
             if isinstance(child, Tag):
@@ -126,7 +131,7 @@ class HtmlContentExtractor(object):
         self.set_article_tag_point(self.doc)
 
         self.calc_node_score(self.doc)
-        logger.info('Score of the main content is %s', self.article.score or 0)
+        logger.info(f'Max score: {self.article.score or 0}, node: {" ".join(self.node_identify(self.article))}')
 
     def get_meta_description(self):
         if not hasattr(self, '_meta_desc'):
@@ -142,48 +147,70 @@ class HtmlContentExtractor(object):
         return self._meta_desc
 
     def get_meta_image(self):
-        if not hasattr(self, '_meta_image'):
-            self._meta_image = None
-            og_images = self.doc.find_all('meta', property=re.compile('og:image', re.I))
-            if og_images:
-                self._meta_image = og_images[0].get('content', None)
-        return self._meta_image
+        if not hasattr(self, '_meta_images'):
+            # <meta property="og:image" content="..."/>
+            meta_images = self.doc.find_all('meta', property=re.compile('og:image$', re.I))
+            # <meta name="twitter:image:src" content="..."/>
+            meta_images.extend(self.doc.find_all('meta', attrs={'name': re.compile('twitter:image', re.I)}))
+            image_src = []
+            for img in meta_images:
+                if img.get('content', None):
+                    image_src.append(img.get('content'))
+            self._meta_images = image_src
+        return self._meta_images
 
-    @staticmethod
-    def has_positive_effect(node):
-        for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
+    # debugging purpose
+    def set_node_factor(self, node, factor, value):
+        if not node.impact_factor:
+            node.impact_factor = {}
+        node.impact_factor[factor] = value
+
+    def describe_node_factor(self, node):
+        if not node.impact_factor:
+            return ''
+        return ', '.join(f"{k}: {v:.2f}" for k, v in node.impact_factor.items()) + ' '
+
+    def node_identify(self, node):
+        identifiers = [node.name] + node.get('class', [])
+        if node.get('id', ''):
+            identifiers.append(node.get('id'))
+        return identifiers
+
+    def has_positive_effect(self, node):
+        for attr in self.node_identify(node):
             if attr and positive_patt.search(attr):
                 return True
         return False
 
-    @staticmethod
-    def has_negative_effect(node):
-        for attr in node.get('id', ''), node.name, ' '.join(node.get('class', [])):
+    def has_negative_effect(self, node):
+        for attr in self.node_identify(node):
             if attr and negative_patt.search(attr):
                 return True
         return False
 
-    def calc_effective_text_len(self, node, negative_parent=False):
+    def calc_effective_text_len(self, node, negative_factor=1):
         """
         Calc the total the length of text in a child, same as
         sum(len(s) for s in cur_node.stripped_strings)
         """
         if node.text_len is not None:
             return node.text_len
-        if not negative_parent and self.has_negative_effect(node):
-            negative_parent = True
-        negative_factor = .2 if negative_parent else 1
+        if self.has_negative_effect(node) or node.name == 'a':
+            negative_factor *= 0.2
+        if negative_factor != 1:
+            self.set_node_factor(node, 'negative', negative_factor)
         text_len = 0
         for child in node.children:
             if isinstance(child, Tag):
-                if child.name == 'a':
-                    continue
-                text_len += self.calc_effective_text_len(child, negative_parent)
+                child_len = self.calc_effective_text_len(child, negative_factor)
+                # Restore original child_len, to avoid double punishment
+                text_len += child_len / negative_factor
             # Comment is also an instance of NavigableString,
             # so we should not use isinstance(child, NavigableString)
             elif type(child) is NavigableString:
                 text_len += len(child.string.strip()) + child.string.count(',') + \
                             child.string.count('，')  # Chinese comma
+        node.real_text_len = text_len
         node.text_len = text_len * negative_factor
         return node.text_len
 
@@ -265,9 +292,10 @@ class HtmlContentExtractor(object):
     def get_content(self, max_length=config.max_content_size):
 
         def is_meta_tag(node):
-            for attr in chain(node.get('class', []), [node.get('id', '')], [node.name]):
+            for attr in self.node_identify(node):
                 if re.search(r'meta|date|time|author|share|caption|attr|title|header|summary|'
                              'clear|tag|manage|info|social|avatar|small|sidebar|views|'
+                             'download|descriptor|'  # for arxiv.org
                              'created|name|related|nav|pull',
                              attr, re.I):
                     return True
@@ -344,10 +372,11 @@ class HtmlContentExtractor(object):
                 return img
         # Only as a fallback, github use user's avatar as their meta_images
         if self.get_meta_image():
-            img = WebImage.from_attrs(src=self.get_meta_image(), referrer=self.url)
-            if img.is_candidate:
-                logger.info('Found a meta image %s', img.url)
-                return img
+            for img_src in self.get_meta_image():
+                img = WebImage.from_attrs(src=img_src, referrer=self.url)
+                if img.is_candidate:
+                    logger.info('Found a meta image %s', img.url)
+                    return img
         logger.info('No top image is found on %s', self.url)
         return None
 

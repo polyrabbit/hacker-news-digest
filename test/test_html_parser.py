@@ -62,18 +62,19 @@ class PageContentExtractorTestCase(TestCase):
 
     def test_semantic_affect(self):
         # They are static methods
+        parser = HtmlContentExtractor('')
         self.assertTrue(
-            HtmlContentExtractor.has_positive_effect(
+            parser.has_positive_effect(
                 BS('<article>good</article>', features='lxml').article))
         self.assertFalse(
-            HtmlContentExtractor.has_negative_effect(BS('<p>good</p>', features='lxml').p))
+            parser.has_negative_effect(BS('<p>good</p>', features='lxml').p))
         self.assertFalse(
-            HtmlContentExtractor.has_positive_effect(BS('<p>good</p>', features='lxml').p))
+            parser.has_positive_effect(BS('<p>good</p>', features='lxml').p))
         self.assertTrue(
-            HtmlContentExtractor.has_positive_effect(
+            parser.has_positive_effect(
                 BS('<p class="conteNt">good</p>', features='lxml').p))
         self.assertTrue(
-            HtmlContentExtractor.has_negative_effect(
+            parser.has_negative_effect(
                 BS('<p class="comment">good</p>', features='lxml').p))
 
     def test_non_top_image(self):
@@ -220,7 +221,8 @@ and supported by community <em>donations</em>.</p></article>
     def test_arxiv_content(self):
         parser = parser_factory('https://arxiv.org/abs/2306.07695')
         content = parser.get_content()
-        self.assertTrue(content.startswith('Abstract: Short Message Service'))
+        self.assertTrue(content.startswith('Short Message Service'))
+        self.assertTrue(content.endswith('network architecture.'))
 
     def test_longer_meta_description(self):
         html_doc = """
@@ -229,6 +231,30 @@ and supported by community <em>donations</em>.</p></article>
         """
         parser = HtmlContentExtractor(html_doc)
         self.assertEqual(parser.get_meta_description(), "aaaa")
+
+    def test_get_all_meta_images(self):
+        src = 'https://opengraph.githubassets.com/740568cb37e42d5beb5c65378e1f66a0a72e5cb1650c8a45df4466e9472825a2/tikv/agatedb'
+        html_doc = f"""
+        <meta name="twitter:image:src" content="{src}" />
+        <meta property="og:image" content="{src}" />
+        <meta name="twitter:image" content="{src}" />
+        <meta property="og:image:alt" content=":newspaper:" />
+        """
+        parser = HtmlContentExtractor(html_doc)
+        self.assertEqual([src, src, src], parser.get_meta_image())
+
+    def test_no_double_punish_on_negative_node(self):
+        html_doc = f"""
+        <div>
+        <foot>
+        <h1>{'a'*10}</h1>
+        </foot>
+        </div>
+        """
+        parser = HtmlContentExtractor(html_doc)
+        self.assertEqual(2, parser.calc_effective_text_len(parser.doc.find('h1')))  # positive
+        self.assertEqual(2, parser.calc_effective_text_len(parser.doc.find('foot')))  # negative
+        self.assertEqual(2, parser.calc_effective_text_len(parser.doc.find('div')))  # positive
 
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):

@@ -40,6 +40,7 @@
             gtag('config', 'G-D9ZBQ6B4QQ');
         </script>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <script defer event-uuid="06ef5327-93ed-4390-9684-8bfdf58099b9" src="https://metricswave.com/js/visits.js"></script>
     {% endblock head %}
 </head>
 <body>
@@ -217,12 +218,15 @@
                     </a>
                 {% endif %}
                 {% if news.summary %}
-                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}">
+                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
+                        {% if news.summarized_by.value == 'OpenAI' and news.summary|translate(lang)|length > config.summary_size %}
+                         title="{{ news.summary|translate(lang)|trim }}"
+                        {% endif %}>
                         {% set summary = news.summary|translate(lang) -%}
-                        {% if news.summarized_by.can_truncate() %}
+{#                        {% if news.summarized_by.can_truncate() %}#}
                             {% set summary = summary|truncate -%}
-                        {% endif %}
-                        {% if news.summarized_by.value != 'OpenAI' %}
+{#                        {% endif %}#}
+                        {% if not news.summarized_by.need_escape() %}
                             {% set summary = summary|safe -%}
                         {% endif %}
                         {{ summary }}

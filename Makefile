@@ -24,23 +24,20 @@ gh_pages:
 	rm -rf output
 	mkdir -p output/image
 	python publish.py
-	cp -vr static output/static
+	cp -r static output/static
 	cp static/ads.txt output/ads.txt
 	ln -s index.html output/hackernews  # backward compatibility
 	ln -s feed.xml output/feed
 	ln -s static/favicon.ico output/favicon.ico
 
-test:
+test: initdb
 	python -m unittest
 
 dropdb:
 	python -c 'from models import db; db.drop_all()'
 
 initdb:
-	-createuser postgres;
-	-echo create database hndigest ENCODING "'UTF8'" TEMPLATE template0 | sudo -n -u postgres psql
-	-echo create database hndigest ENCODING "'UTF8'" TEMPLATE template0 | sudo -n su - postgres -c psql
-	python -c 'from models import db; db.create_all()'
+	python -c 'from db import init_db; init_db()'
 
 setcron:
 	while true; do sleep 600; curl -s -H "User-Agent: Update from internal" -L "http://localhost:$(PORT)/update" -X POST `[ -z $${HN_UPDATE_KEY} ] && echo '' || echo -d key=$${HN_UPDATE_KEY}`; done &

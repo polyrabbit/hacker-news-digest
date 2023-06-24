@@ -37,6 +37,7 @@ jobs:
       DISABLE_SUMMARY_CACHE: ${{ vars.DISABLE_SUMMARY_CACHE }}
       DISABLE_TRANSFORMER: ${{ vars.DISABLE_TRANSFORMER }}
       TRANSFORMER_MODEL: ${{ vars.TRANSFORMER_MODEL }}
+      SLOW_SQL_MS: ${{ vars.SLOW_SQL_MS }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -79,7 +80,7 @@ jobs:
         run: pip install --upgrade -r requirements.txt
 
       - name: Unit Test
-        run: python -m unittest
+        run: make test
         if: ${{ github.event_name == 'push' }}
 
       - name: Generate Pages
@@ -89,6 +90,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
           OPENAI_SCORE_THRESHOLD: ${{ vars.OPENAI_SCORE_THRESHOLD }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v2

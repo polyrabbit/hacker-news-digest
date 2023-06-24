@@ -10,8 +10,8 @@ from summarizer import Summarizer
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 import config
-from hacker_news import summary_cache, translation
-from hacker_news.summary_cache import Model
+import db.summary
+from db.summary import Model
 from page_content_extractor import parser_factory
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ class News:
             # From arxiv or pdf
             self.content = re.sub(r'^(abstract|summary):\s*', '', self.content, flags=re.IGNORECASE)
             self.summary = self.summarize()
-            summary_cache.add(self.url, self.summary, self.summarized_by)
+            db.summary.add(self.url, self.summary, self.summarized_by)
             tm = parser.get_illustration()
             if tm:
                 fname = tm.uniq_name()
@@ -75,7 +75,7 @@ class News:
         except Exception as e:
             logger.exception('Failed to fetch %s, %s', self.url, e)
         if not self.summary:  # last resort, in case remote server is down
-            self.summary = summary_cache.get(self.url)
+            self.summary = db.summary.get(self.url)
 
     def get_score(self):
         if isinstance(self.score, int):
@@ -112,14 +112,14 @@ class News:
             return self.content
 
     def summarize_by_openai(self, content):
-        summary = summary_cache.get(self.url, Model.OPENAI)
+        summary = db.summary.get(self.url, Model.OPENAI)
         if summary:
             logger.info("Cache hit for %s", self.url)
             return summary
         if not openai.api_key:
             logger.info("OpenAI API key is not set")
             return ''
-        if self.get_score() <= config.openai_score_threshold:  # Avoid expensive openai
+        if self.get_score() < config.openai_score_threshold:  # Avoid expensive openai
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
@@ -161,16 +161,19 @@ class News:
                 "type": "object",
                 "properties": {
                     "summary": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "English summary"
                     },
                     "summary_zh": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Chinese summary"
                     },
                     "translation": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Chinese translation of sentence"
                     },
                 },
-                "required": ["summary"]
+                # "required": ["summary"]  # ChatGPT only returns the required field?
             }}]
             kwargs['function_call'] = {"name": "render"}
         if config.openai_model.startswith('text-'):
@@ -200,7 +203,7 @@ class News:
         if config.disable_transformer:
             logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
             return ''
-        summary = summary_cache.get(self.url, Model.TRANSFORMER)
+        summary = db.summary.get(self.url, Model.TRANSFORMER)
         if summary:
             logger.info("Cache hit for %s", self.url)
             return summary
@@ -227,8 +230,8 @@ class News:
         return summary
 
     def parse_step_answer(self, answer):
-        translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
-        translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
+        db.translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
+        db.translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
         return answer.get('summary', '')
 
     def parse_title_translation(self, title):

@@ -7,14 +7,14 @@ from feedwerk.atom import AtomFeed
 from jinja2 import Environment, FileSystemLoader, filters
 
 import config
-from hacker_news import summary_cache, translation
+import db.translation
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
 
 
 def translate(text, lang):
-    return translation.get(text, lang)
+    return db.translation.get(text, lang)
 
 
 def truncate(text):
@@ -87,5 +87,5 @@ if __name__ == '__main__':
         news.pull_content()
     gen_page(news_list)
     gen_feed(news_list)
-    summary_cache.save()
-    translation.save()  # only save accessed
+    db.translation.expire()
+    db.summary.expire()
