@@ -1,0 +1,126 @@
+@media (min-width: 1200px) {
+    .container {
+        width: 916px !important;
+    }
+}
+
+.nav > li > a:hover, .nav > li > a:focus {
+    text-decoration: none;
+    background-color: transparent;
+}
+
+.navbar-toggle .icon-bar {
+    background-color: #888;
+}
+
+.navbar-brand {
+    padding-left: 0;
+}
+
+.post-item {
+    border-bottom: 1px solid #dddddd;
+    height: 100% !important;
+    margin: 5px;
+}
+
+.post-item .post-title {
+    display: block;
+    text-decoration: none;
+    font-weight: normal;
+    line-height: 42px;
+    height: auto;
+}
+
+.post-item .post-title a:visited {
+    color: #888;
+}
+
+.post-item .post-meta span {
+    color: #777777;
+}
+
+.post-item .post-meta a:hover, .post-item .post-meta a:focus {
+    text-decoration: none;
+    outline: none;
+}
+
+.post-item .post-meta > span {
+    margin-right: 10px;
+}
+
+.post-item .post-meta img {
+    width: 16px;
+    height: 16px;
+}
+
+.post-item .post-summary {
+    font-size: 1.125em;
+    line-height: 1.5em;
+    margin: 0 0 1.5em;
+}
+
+.post-item .post-summary .feature-image {
+    margin-top: 5px;
+    margin-right: 8px;
+    float: left;
+    cursor: pointer;
+    cursor: -webkit-zoom-in;
+    cursor: -moz-zoom-in;
+}
+
+.post-item .post-summary .feature-image img {
+    max-width: 220px;
+    border: 1px solid #F7F7F7;
+}
+
+.post-item .post-summary .summary-text {
+    padding-top: 5px;
+    word-wrap: break-word;
+}
+
+.post-item .post-summary .summary-text .gist .gist-file .gist-data {
+    max-height: 250px;
+}
+
+.post-item .post-summary pre {
+    font-size: 1em;
+    background-color: #f5f5d5;
+    line-height: 1.42857143;
+    color: #333;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    border: none;
+}
+
+.post-item .qrcode {
+    float: right;
+    display: none;
+    margin-top: 5px;
+}
+
+.modal-dialog {
+    max-width: 600px;
+}
+
+.modal .modal-dialog img {
+    display: block;
+    margin: auto;
+    background-color: #FFF;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+footer li, footer li a {
+    color: #777;
+}
+
+#scrollUp {
+    bottom: 10px;
+    right: 12px;
+    opacity: 0.4;
+    filter: alpha(opacity=40);
+}
+
+#scrollUp:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}

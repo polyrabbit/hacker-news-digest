@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="text">Hacker News Summary</title>
+  <id>https://hackernews.betacat.io/feed.xml</id>
+  <updated>2023-06-29T04:41:35.463541Z</updated>
+  <link href="{&#39;https://hackernews.betacat.io&#39;}" />
+  <link href="https://hackernews.betacat.io/feed.xml" rel="self" />
+  <author>
+    <name>polyrabbit</name>
+    <uri>https://github.com/polyrabbit/</uri>
+  </author>
+  <generator>Werkzeug</generator>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Canada announces open work-permit for tech workers and digital nomads</title>
+    <id>https://www.canada.ca/en/immigration-refugees-citizenship/news/2023/06/minister-fraser-launches-canadas-first-ever-tech-talent-strategy-at-collision-2023.html</id>
+    <updated>2023-06-29T04:19:16.986431Z</updated>
+    <link href="https://www.canada.ca/en/immigration-refugees-citizenship/news/2023/06/minister-fraser-launches-canadas-first-ever-tech-talent-strategy-at-collision-2023.html" />
+    <author>
+      <name>faramarz</name>
+      <uri>https://news.ycombinator.com/user?id=faramarz</uri>
+    </author>
+    <content type="html">Canada has launched its first-ever Tech Talent Strategy to attract top talent in high-growth industries and fuel innovation. The strategy includes measures such as open work permits for H-1B visa holders, employer-specific work permits for highly talented individuals, and improvements to the Start-up Visa Program. &lt;a href=&#34;https://hackernews.betacat.io/#canada-announces-open-work-permit-for-tech-workers-and-digital-nomads&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36516237&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">OpenOrca: open source dataset and instruct-tuned LLMs</title>
+    <id>https://erichartford.com/openorca</id>
+    <updated>2023-06-29T01:34:16.986992Z</updated>
+    <link href="https://erichartford.com/openorca" />
+    <author>
+      <name>npsomaratna</name>
+      <uri>https://news.ycombinator.com/user?id=npsomaratna</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://cdn.hashnode.com/res/hashnode/image/upload/v1679892037999/8e415364-050a-497b-9f66-c096e80180d4.jpeg?w=400&amp;h=400&amp;fit=crop&amp;crop=faces&amp;auto=compress,format&amp;format=webp&#34; style=&#34;width: 220px; height: 221px;&#34; /&gt;&lt;br /&gt;OpenOrca is an open-source dataset and instruct-tuned LLMs project that aims to replicate the efforts of Microsoft&#39;s Orca project. The dataset includes 3.5 million instructs from the ChatGPT dataset, and OpenOrca-LLaMA-13b is expected to be released in mid-July 2023. &lt;a href=&#34;https://hackernews.betacat.io/#openorca-open-source-dataset-and-instruct-tuned-llms&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36515187&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">XGen-7B, a new 7B foundational model trained on up to 8K length for 1.5T tokens</title>
+    <id>https://blog.salesforceairesearch.com/xgen/</id>
+    <updated>2023-06-29T01:34:16.987323Z</updated>
+    <link href="https://blog.salesforceairesearch.com/xgen/" />
+    <author>
+      <name>bratao</name>
+      <uri>https://news.ycombinator.com/user?id=bratao</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://lh5.googleusercontent.com/7BVsbldNGDMKZlMhp-a9HnhLjcxu1-Wi61MoXJH37rAfCWNVjutCtDlgORjRXbTnA55ecmII-lm64EdQW1-nySwLVZtFsUpE6jpzLBL6vp9jkw8T4ZALDOcB7cFf_qWbZD6y62xGhXGNaFxL8Yqq2SA&#34; style=&#34;width: 220px; height: 172px;&#34; /&gt;&lt;br /&gt;We trained a series of 7B LLMs named XGen-7B with standard dense attention on up to 8K sequence length for up to 1.5T tokens. XGen-7B achieves comparable or better results than state-of-the-art open-source LLMs of similar model size. XGen-7B performs well in both text and code tasks. &lt;a href=&#34;https://hackernews.betacat.io/#xgen-7b-a-new-7b-foundational-model-trained-on-up-to-8k-length-for-1-5t-tokens&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36514936&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Writing Python Like Rust</title>
+    <id>https://oatzy.github.io/2020/05/10/writing-python-like-rust.html</id>
+    <updated>2023-06-29T01:34:16.987673Z</updated>
+    <link href="https://oatzy.github.io/2020/05/10/writing-python-like-rust.html" />
+    <author>
+      <name>behnamoh</name>
+      <uri>https://news.ycombinator.com/user?id=behnamoh</uri>
+    </author>
+    <content type="html">The author discusses their experience of working on a Python project and borrowing tricks from Rust and Go. They highlight the benefits of type checking, the use of dataclasses, and the approach to error handling in Rust. They also mention the limitations of Python&#39;s enums and express their preference for Rust&#39;s richer enums and pattern matching. Additionally, they praise the pathlib library for its similarity to Rust&#39;s Path. &lt;a href=&#34;https://hackernews.betacat.io/#writing-python-like-rust&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36497508&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Future CSS: State Container Queries</title>
+    <id>https://ishadeed.com/article/css-state-queries/</id>
+    <updated>2023-06-28T19:34:16.988003Z</updated>
+    <link href="https://ishadeed.com/article/css-state-queries/" />
+    <author>
+      <name>brandrick</name>
+      <uri>https://news.ycombinator.com/user?id=brandrick</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://ishadeed.com/assets/state-queries/css-container-queries.png&#34; style=&#34;width: 220px; height: 216px;&#34; /&gt;&lt;br /&gt;The Chromium team is experimenting with a new type of query called State Query, which allows us to check if an element is stuck or if a flex container is wrapped. This feature would be useful for updating the design or functionality of elements based on their state. &lt;a href=&#34;https://hackernews.betacat.io/#future-css-state-container-queries&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36510745&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs</title>
+    <id>https://github.com/jetpack-io/typeid</id>
+    <updated>2023-06-28T16:34:16.988330Z</updated>
+    <link href="https://github.com/jetpack-io/typeid" />
+    <author>
+      <name>dloreto</name>
+      <uri>https://news.ycombinator.com/user?id=dloreto</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://opengraph.githubassets.com/23aced50ba59966fecccf78b2d41e10ff639daf152d8aa320ac030902f6f2222/jetpack-io/typeid&#34; style=&#34;width: 220px; height: 110px;&#34; /&gt;&lt;br /&gt;Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs - GitHub - jetpack-io/typeid: Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs &lt;a href=&#34;https://hackernews.betacat.io/#type-safe-k-sortable-globally-unique-identifier-inspired-by-stripe-ids&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36508811&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">The Bathyscaph Trieste: Technological and Operational Aspects (1962)</title>
+    <id>https://archive.org/details/bathyscaphtriest00wals</id>
+    <updated>2023-06-28T20:34:16.988650Z</updated>
+    <link href="https://archive.org/details/bathyscaphtriest00wals" />
+    <author>
+      <name>pmcjones</name>
+      <uri>https://news.ycombinator.com/user?id=pmcjones</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://archive.org/services/img/biodiversity&#34; style=&#34;width: 220px; height: 221px;&#34; /&gt;&lt;br /&gt;27 July 1962. &lt;a href=&#34;https://hackernews.betacat.io/#the-bathyscaph-trieste-technological-and-operational-aspects-1962&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36511545&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">The Comprehensive Guide to Elixir&#39;s List Comprehension (2022)</title>
+    <id>https://www.mitchellhanberg.com/the-comprehensive-guide-to-elixirs-for-comprehension/</id>
+    <updated>2023-06-28T21:34:16.989762Z</updated>
+    <link href="https://www.mitchellhanberg.com/the-comprehensive-guide-to-elixirs-for-comprehension/" />
+    <author>
+      <name>clessg</name>
+      <uri>https://news.ycombinator.com/user?id=clessg</uri>
+    </author>
+    <content type="html">The for special form, also known as a list comprehension, is a construct designed for concise and powerful enumerable transformation in Elixir. It looks very similar to a “for loop” in other languages like JavaScript and C, but rather than being a language construct, it is an expression (like everything else in Elixir). &lt;a href=&#34;https://hackernews.betacat.io/#the-comprehensive-guide-to-elixir-s-list-comprehension-2022&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36494520&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Visa to acquire Brazilian startup Pismo for $1B</title>
+    <id>https://www.pismo.io/blog/visa-to-acquire-pismo/</id>
+    <updated>2023-06-28T22:34:16.990098Z</updated>
+    <link href="https://www.pismo.io/blog/visa-to-acquire-pismo/" />
+    <author>
+      <name>jeanlucas</name>
+      <uri>https://news.ycombinator.com/user?id=jeanlucas</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://www.pismo.io/wp-content/uploads/2023/06/blog-announcement-social-2.png&#34; style=&#34;width: 220px; height: 115px;&#34; /&gt;&lt;br /&gt;Visa has agreed to acquire Brazilian startup Pismo for $1 billion in cash. The acquisition will allow Visa to provide core banking and issuer processing capabilities, as well as support for emerging payment rails like Pix in Brazil. &lt;a href=&#34;https://hackernews.betacat.io/#visa-to-acquire-brazilian-startup-pismo-for-1b&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36513135&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">I made a command-line tool to assist me with writing polyrhythmic drum parts</title>
+    <id>https://github.com/dredozubov/polyrhythmix</id>
+    <updated>2023-06-28T18:34:16.990436Z</updated>
+    <link href="https://github.com/dredozubov/polyrhythmix" />
+    <author>
+      <name>dredozubov</name>
+      <uri>https://news.ycombinator.com/user?id=dredozubov</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://raw.githubusercontent.com/dredozubov/polyrhythmix/master/doc/Guitar-Pro-Import.png&#34; style=&#34;width: 220px; height: 103px;&#34; /&gt;&lt;br /&gt;Polyrhythmically-inclinded Midi Drum generator. Contribute to dredozubov/polyrhythmix development by creating an account on GitHub. &lt;a href=&#34;https://hackernews.betacat.io/#i-made-a-command-line-tool-to-assist-me-with-writing-polyrhythmic-drum-parts&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36510273&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Honda Monkey Breaks World Record Covering 4,183 Km on Single Tank</title>
+    <id>https://www.advpulse.com/adv-news/honda-monkey-breaks-world-record-covering-4183-km-on-single-tank/</id>
+    <updated>2023-06-28T14:34:16.991136Z</updated>
+    <link href="https://www.advpulse.com/adv-news/honda-monkey-breaks-world-record-covering-4183-km-on-single-tank/" />
+    <author>
+      <name>harambae</name>
+      <uri>https://news.ycombinator.com/user?id=harambae</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://www.advpulse.com/wp-content/uploads/2023/06/acerbis-guinness-motorcycle-distance-world-record-.jpg&#34; style=&#34;width: 220px; height: 144px;&#34; /&gt;&lt;br /&gt;Acerbis has set a new Guinness World Record for the greatest distance ridden on a single tank of fuel by a gas-powered motorcycle. They covered an impressive 4,183.8 kilometers (2,599.7 miles) without refueling. &lt;a href=&#34;https://hackernews.betacat.io/#honda-monkey-breaks-world-record-covering-4183-km-on-single-tank&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36506444&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Junk websites filled w AI-generated text pulling in money from programmatic ads</title>
+    <id>https://www.technologyreview.com/2023/06/26/1075504/junk-websites-filled-with-ai-generated-text-are-pulling-in-money-from-programmatic-ads/</id>
+    <updated>2023-06-28T23:34:16.991467Z</updated>
+    <link href="https://www.technologyreview.com/2023/06/26/1075504/junk-websites-filled-with-ai-generated-text-are-pulling-in-money-from-programmatic-ads/" />
+    <author>
+      <name>bookofjoe</name>
+      <uri>https://news.ycombinator.com/user?id=bookofjoe</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://wp.technologyreview.com/wp-content/uploads/2023/06/programmatic-ad.jpeg&#34; style=&#34;width: 220px; height: 124px;&#34; /&gt;&lt;br /&gt;AI chatbots are being used to generate text for junk websites that attract paying advertisers. Over 140 major brands are unknowingly advertising on these unreliable AI-written sites, with Google serving 90% of the ads. This practice not only threatens the internet with spammy AI-generated content but also wastes billions of dollars in ad money. &lt;a href=&#34;https://hackernews.betacat.io/#junk-websites-filled-w-ai-generated-text-pulling-in-money-from-programmatic-ads&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36514063&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Launch HN: June (YC W21) – Product Analytics for B2B SaaS Companies</title>
+    <id>https://news.ycombinator.com/item?id=36505743</id>
+    <updated>2023-06-28T16:34:16.991802Z</updated>
+    <link href="https://news.ycombinator.com/item?id=36505743" />
+    <author>
+      <name>0xferruccio</name>
+      <uri>https://news.ycombinator.com/user?id=0xferruccio</uri>
+    </author>
+    <content type="html">Two and a half years ago, the founders left their jobs at Intercom to build a startup. After learning the differences between product analytics for B2C and B2B, they pivoted their company to focus on building a product analytics tool for B2B SaaS companies. Now, over a thousand B2B SaaS companies at seed and Series A use their product every month. &lt;a href=&#34;https://hackernews.betacat.io/#launch-hn-june-yc-w21-product-analytics-for-b2b-saas-companies&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36505743&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">The Password Game</title>
+    <id>https://neal.fun/password-game/</id>
+    <updated>2023-06-28T04:34:16.992177Z</updated>
+    <link href="https://neal.fun/password-game/" />
+    <author>
+      <name>kretaceous</name>
+      <uri>https://news.ycombinator.com/user?id=kretaceous</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://neal.fun/password-game/dynamite.png&#34; style=&#34;width: 220px; height: 91px;&#34; /&gt;&lt;br /&gt;Congratulations! You have sucessfully chosen a password in 0 characters. &lt;a href=&#34;https://hackernews.betacat.io/#the-password-game&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36493715&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Zygomys: Embedded Scripting Language for Go</title>
+    <id>https://github.com/glycerine/zygomys</id>
+    <updated>2023-06-28T22:34:16.992513Z</updated>
+    <link href="https://github.com/glycerine/zygomys" />
+    <author>
+      <name>ingve</name>
+      <uri>https://news.ycombinator.com/user?id=ingve</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://raw.githubusercontent.com/glycerine/zygomys/master/media/high_altitude_gopher.png&#34; style=&#34;width: 220px; height: 122px;&#34; /&gt;&lt;br /&gt;Zygo is a Lisp interpreter written in 100% Go. It allows for dynamically composing Go struct trees in a zygo script and invoking compiled Go functions on those trees, making Go reflection easy. &lt;a href=&#34;https://hackernews.betacat.io/#zygomys-embedded-scripting-language-for-go&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36493562&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">National Geographic lays off its last remaining staff writers</title>
+    <id>https://www.washingtonpost.com/media/2023/06/28/national-geographic-staff-writers-laid-off/</id>
+    <updated>2023-06-28T23:34:16.992837Z</updated>
+    <link href="https://www.washingtonpost.com/media/2023/06/28/national-geographic-staff-writers-laid-off/" />
+    <author>
+      <name>supportengineer</name>
+      <uri>https://news.ycombinator.com/user?id=supportengineer</uri>
+    </author>
+    <content type="html"> &lt;a href=&#34;https://hackernews.betacat.io/#national-geographic-lays-off-its-last-remaining-staff-writers&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36513881&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">How to make your scientific data accessible, discoverable and useful</title>
+    <id>https://www.nature.com/articles/d41586-023-01929-7</id>
+    <updated>2023-06-28T17:34:16.993477Z</updated>
+    <link href="https://www.nature.com/articles/d41586-023-01929-7" />
+    <author>
+      <name>JohnHammersley</name>
+      <uri>https://news.ycombinator.com/user?id=JohnHammersley</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://media.nature.com/w767/magazine-assets/d41586-023-01929-7/d41586-023-01929-7_25523502.jpg&#34; style=&#34;width: 220px; height: 140px;&#34; /&gt;&lt;br /&gt;Miguel Acevedo faced challenges in combining his research data on malaria in lizards with his colleague&#39;s older data due to inconsistencies in data format and standards. Metadata, which describe data, are crucial for making data findable, accessible, interoperable, and reusable. Scientists should include metadata in a &#39;README&#39; file that provides details about data collection, processing, and variables. Raw data and derived data should be shared if possible, but if storage is an issue, publishing the data used to generate figures is recommended. Data should be archived in open, non-proprietary file formats and code should be shared alongside the data. &lt;a href=&#34;https://hackernews.betacat.io/#how-to-make-your-scientific-data-accessible-discoverable-and-useful&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36494430&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Xerox PARC&#39;s NoteCards in a Nutshell (1987) [pdf]</title>
+    <id>https://dl.acm.org/doi/pdf/10.1145/29933.30859</id>
+    <updated>2023-06-28T18:34:16.993793Z</updated>
+    <link href="https://dl.acm.org/doi/pdf/10.1145/29933.30859" />
+    <author>
+      <name>mepian</name>
+      <uri>https://news.ycombinator.com/user?id=mepian</uri>
+    </author>
+    <content type="html">The article contains a long string of characters and symbols. It appears to be a code or encrypted message. &lt;a href=&#34;https://hackernews.betacat.io/#xerox-parc-s-notecards-in-a-nutshell-1987-pdf&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36494283&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Show HN: Litnerd (YC S21) – Kids Book Club Meets Gaming</title>
+    <id>https://news.ycombinator.com/item?id=36505918</id>
+    <updated>2023-06-28T16:34:16.994113Z</updated>
+    <link href="https://news.ycombinator.com/item?id=36505918" />
+    <author>
+      <name>Anisa_Mirza</name>
+      <uri>https://news.ycombinator.com/user?id=Anisa_Mirza</uri>
+    </author>
+    <content type="html">Litnerd is an online reading club program for kids that combines book club with gaming. It offers weekly live meetups, movie adaptations, music, reading courseware, mini lessons, and reading tournaments to make reading a lifelong habit. &lt;a href=&#34;https://hackernews.betacat.io/#show-hn-litnerd-yc-s21-kids-book-club-meets-gaming&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36505918&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">The idea maze for AI startups (2015)</title>
+    <id>https://cdixon.org/2015/02/01/the-ai-startup-idea-maze/</id>
+    <updated>2023-06-28T14:34:16.994443Z</updated>
+    <link href="https://cdixon.org/2015/02/01/the-ai-startup-idea-maze/" />
+    <author>
+      <name>gmays</name>
+      <uri>https://news.ycombinator.com/user?id=gmays</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://cdixon.org/static/0cb154dbd8fb0f2b3b29a97385793623/94a55/screen-shot-2015-02-01-at-11-51-53-am.png&#34; style=&#34;width: 220px; height: 142px;&#34; /&gt;&lt;br /&gt;An “idea maze” is a map of all the key decisions and tradeoffs that startups in a given space need to make. A good founder is capable of anticipating which turns lead to treasure and which lead to certain death. A bad founder is just running to the entrance of (say) the “movies/music/filesharing/P2P” maze or the “photosharing” maze without any sense for the history of the industry, the players in the maze, the casualties of the past, and the technologies that are likely to move walls and change assumptions. I thought it would be interesting to show an example of an idea maze for an area that I’m interested in: AI startups. Here’s a sketch of the maze. &lt;a href=&#34;https://hackernews.betacat.io/#the-idea-maze-for-ai-startups-2015&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36507010&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Construct&#39;s New WebGPU Renderer</title>
+    <id>https://www.construct.net/en/blogs/construct-official-blog-1/introducing-constructs-new-1768</id>
+    <updated>2023-06-28T15:34:16.994760Z</updated>
+    <link href="https://www.construct.net/en/blogs/construct-official-blog-1/introducing-constructs-new-1768" />
+    <author>
+      <name>AshleysBrain</name>
+      <uri>https://news.ycombinator.com/user?id=AshleysBrain</uri>
+    </author>
+    <content type="html">&lt;img src=&#34;https://construct-static.com/images/v1127/r/uploads/articleuploadobject/0/images/100720/texturethrash-perf_v430.png&#34; style=&#34;width: 220px; height: 177px;&#34; /&gt;&lt;br /&gt;After years of work, Construct is proud to introduce its all-new WebGPU renderer. This upgrade brings significant improvements and better performance compared to the existing WebGL renderer. The WebGPU renderer is based on modern graphics APIs like Vulkan, Metal, and DirectX 12, and it supersedes WebGL. &lt;a href=&#34;https://hackernews.betacat.io/#construct-s-new-webgpu-renderer&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36507648&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">In a major discovery, scientists say space-time churns like a choppy sea</title>
+    <id>https://www.washingtonpost.com/science/2023/06/28/gravitational-wave-background-nanograv/</id>
+    <updated>2023-06-29T00:34:16.996029Z</updated>
+    <link href="https://www.washingtonpost.com/science/2023/06/28/gravitational-wave-background-nanograv/" />
+    <author>
+      <name>zonotope</name>
+      <uri>https://news.ycombinator.com/user?id=zonotope</uri>
+    </author>
+    <content type="html"> &lt;a href=&#34;https://hackernews.betacat.io/#in-a-major-discovery-scientists-say-space-time-churns-like-a-choppy-sea&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36514521&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">Behind the Pretty Frames: Diablo IV</title>
+    <id>https://mamoniem.com/behind-the-pretty-frames-diablo-iv/</id>
+    <updated>2023-06-28T19:34:16.996348Z</updated>
+    <link href="https://mamoniem.com/behind-the-pretty-frames-diablo-iv/" />
+    <author>
+      <name>ibobev</name>
+      <uri>https://news.ycombinator.com/user?id=ibobev</uri>
+    </author>
+    <content type="html">Near 7 months ago i packaged everything related to “Behind the Pretty Frames” to an external portable drive, and decided to forget about writing new ones…or even continue in the couple of drafts that was WIP at that time (let’s keep their names secret🤐, they might see the light one day!). Life was good, spending my free-time on working on the 2nd iteration of my engine, or playing a lot of ... &lt;a href=&#34;https://hackernews.betacat.io/#behind-the-pretty-frames-diablo-iv&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36511111&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+  <entry xml:base="https://hackernews.betacat.io/feed.xml">
+    <title type="text">PayPal “Buy Now” buttons have been broken for a week</title>
+    <id>https://news.ycombinator.com/item?id=36514098</id>
+    <updated>2023-06-28T23:34:16.996672Z</updated>
+    <link href="https://news.ycombinator.com/item?id=36514098" />
+    <author>
+      <name>davisr</name>
+      <uri>https://news.ycombinator.com/user?id=davisr</uri>
+    </author>
+    <content type="html">PayPal broke their Buy Now buttons for customers who sell electronic goods. The error is because they use eval() in their JavaScript, which browsers block. &lt;a href=&#34;https://hackernews.betacat.io/#paypal-buy-now-buttons-have-been-broken-for-a-week&#34; target=&#34;_blank&#34;&gt;[summary]&lt;/a&gt; &lt;a href=&#34;https://news.ycombinator.com/item?id=36514098&#34; target=&#34;_blank&#34;&gt;[comments]&lt;/a&gt;</content>
+  </entry>
+</feed>

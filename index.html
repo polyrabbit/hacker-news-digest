@@ -1,0 +1,2848 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    
+    <meta name="description" content="Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing a seamless news scanning experience.">
+    <link rel="canonical" href="https://hackernews.betacat.io/"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content="Hacker News Summary - by ChatGPT"/>
+    <meta name="twitter:description" content="Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing a seamless news scanning experience."/>
+    
+        <title>Hacker News Summary - by ChatGPT</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="alternate" type="application/atom+xml" title="Hacker News Summary - by ChatGPT" href="/feed.xml"/>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        <link rel="bookmark" href="/static/favicon.ico">
+        <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+        <meta name="apple-mobile-web-app-title" content="Hacker News">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="manifest" href="/static/manifest.json">
+        <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" integrity="sha512-YTuMx+CIxXa1l+j5aDPm98KFbVcYFNhlr2Auha3pwjHCF1lLbY9/ITQQlsUzdM1scW45kHC5KNib4mNa1IFvJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script type="text/javascript">
+            // handle Ads inserted by ISP
+            if (window !== top) top.location.href = window.location.href;
+        </script>
+        <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style-1.css">
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        
+        <script>
+            function favicon_fall_back(img) { // If the favicon cannot be loaded, fall back to the default one
+                img.onerror = '';
+                $(img).replaceWith('<i class="fa fa-external-link"></i>');
+            }
+            function illustration_fall_back(img) { // If fetched images broken, fall back to origins
+                img.onerror = '';
+                img.src = $(img).attr('alt');
+            }
+        </script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-D9ZBQ6B4QQ"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-D9ZBQ6B4QQ');
+        </script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <script defer event-uuid="06ef5327-93ed-4390-9684-8bfdf58099b9" src="https://metricswave.com/js/visits.js"></script>
+    
+
+</head>
+<body>
+<div class="container">
+    <a target="_blank" href="https://github.com/polyrabbit/hacker-news-digest" class="github-corner"
+       aria-label="View source on GitHub">
+        <svg class="hidden-xs" width="80" height="80" viewBox="0 0 250 250"
+             style="fill:#FD6C6C; color:#fff; position: absolute; top: 0; border: 0; right: 0;"
+             aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+                  fill="currentColor" style="transform-origin: 130px 106px;"
+                  class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+                  fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+    }
+
+    @keyframes octocat-wave {
+        0%, 100% {
+            transform: rotate(0)
+        }
+        20%, 60% {
+            transform: rotate(-25deg)
+        }
+        40%, 80% {
+            transform: rotate(10deg)
+        }
+    }
+
+    @media (max-width: 500px) {
+        .github-corner:hover .octo-arm {
+            animation: none
+        }
+
+        .github-corner .octo-arm {
+            animation: octocat-wave 560ms ease-in-out
+        }
+    }</style>
+
+    <nav class="navbar">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#hn-menu">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+    <a class="navbar-brand" href="#">Hacker News Summary</a>
+
+        </div>
+        <div class="collapse navbar-collapse" id="hn-menu">
+            <ul class="nav navbar-nav nav-pills">
+                
+    <li>
+        <a href="https://news.ycombinator.com/news" target="_blank" title="Hacker News front page">Front</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/front" target="_blank" title="Hacker News front page before">Past</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/newcomments" target="_blank" title="Discussions on Hacker News">Comments</a>
+    </li>
+    <li>
+        <a href="https://news.ycombinator.com/show" target="_blank" title="Show HN">Show</a>
+    </li>
+
+                <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Star me on GitHub"
+                       target="_blank">GitHub</a>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                        Sort by
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   id="sort-by-hn-rank">HN
+                            rank</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   id="sort-by-score">Score</a>
+                        </li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   id="sort-by-comments">Comments</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   id="sort-by-submit-time">Submit
+                            time</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown" title="Translate">
+                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                        Translate
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
+                        <li role="presentation">
+                            <a role="menuitem" href="/">English</a>
+                        </li>
+                        <li role="presentation">
+                            <a role="menuitem" href="/zh.html">中文</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+        <article class="post-item" data-rank="0">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="canada-announces-open-work-permit-for-tech-workers-and-digital-nomads">
+                    <a target="_blank" class="post-url"
+                       href="https://www.canada.ca/en/immigration-refugees-citizenship/news/2023/06/minister-fraser-launches-canadas-first-ever-tech-talent-strategy-at-collision-2023.html">Canada announces open work-permit for tech workers and digital nomads
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            29
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=faramarz" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                faramarz
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 04:19:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T04:19:16Z"><span>2023-06-29 04:19:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36516237" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                4
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon.ico"/>
+                        
+                        <span>canada.ca</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#canada-announces-open-work-permit-for-tech-workers-and-digital-nomads">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Canada has launched its first-ever Tech Talent Strategy to attract top talent in high-growth industries and fuel innovation. The strategy includes measures such as open work permits for H-1B visa holders, employer-specific work permits for highly talented individuals, and improvements to the Start-up Visa Program.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="1">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="openorca-open-source-dataset-and-instruct-tuned-llms">
+                    <a target="_blank" class="post-url"
+                       href="https://erichartford.com/openorca">OpenOrca: open source dataset and instruct-tuned LLMs
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            63
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=npsomaratna" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                npsomaratna
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 01:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T01:34:16Z"><span>2023-06-29 01:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36515187" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                10
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1611242155728/W3_BYVVVh.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://cdn.hashnode.com/res/hashnode/image/upload/v1611242155728/W3_BYVVVh.png"/>
+                        
+                        <span>erichartford.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#openorca-open-source-dataset-and-instruct-tuned-llms">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/8fe10b012fd3ca71b98693162ba478e5.jpeg">
+                        
+                        <img class="img-rounded" src="/image/8fe10b012fd3ca71b98693162ba478e5.jpeg"
+                             alt="https://cdn.hashnode.com/res/hashnode/image/upload/v1679892037999/8e415364-050a-497b-9f66-c096e80180d4.jpeg?w=400&amp;h=400&amp;fit=crop&amp;crop=faces&amp;auto=compress,format&amp;format=webp" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 221px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        OpenOrca is an open-source dataset and instruct-tuned LLMs project that aims to replicate the efforts of Microsoft&#39;s Orca project. The dataset includes 3.5 million instructs from the ChatGPT dataset, and OpenOrca-LLaMA-13b is expected to be released in mid-July 2023.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+            <article class="post-item" data-rank="1">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="fluid"
+                     data-ad-layout-key="-et-7-f-rh+149"
+                     data-ad-client="ca-pub-9393129008813908"
+                     data-ad-slot="4020487288"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </article>
+        
+    
+        <article class="post-item" data-rank="2">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="xgen-7b-a-new-7b-foundational-model-trained-on-up-to-8k-length-for-1-5t-tokens">
+                    <a target="_blank" class="post-url"
+                       href="https://blog.salesforceairesearch.com/xgen/">XGen-7B, a new 7B foundational model trained on up to 8K length for 1.5T tokens
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            129
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=bratao" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                bratao
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 01:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T01:34:16Z"><span>2023-06-29 01:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36514936" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                56
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://blog.salesforceairesearch.com/assets/images/favicon.ico??v=ecece0f09b" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://blog.salesforceairesearch.com/assets/images/favicon.ico??v=ecece0f09b"/>
+                        
+                        <span>blog.salesforceairesearch.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#xgen-7b-a-new-7b-foundational-model-trained-on-up-to-8k-length-for-1-5t-tokens">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/7722b1903f393227e22204ae2a96d4e9.jpg">
+                        
+                        <img class="img-rounded" src="/image/7722b1903f393227e22204ae2a96d4e9.jpg"
+                             alt="https://lh5.googleusercontent.com/7BVsbldNGDMKZlMhp-a9HnhLjcxu1-Wi61MoXJH37rAfCWNVjutCtDlgORjRXbTnA55ecmII-lm64EdQW1-nySwLVZtFsUpE6jpzLBL6vp9jkw8T4ZALDOcB7cFf_qWbZD6y62xGhXGNaFxL8Yqq2SA" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 172px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        We trained a series of 7B LLMs named XGen-7B with standard dense attention on up to 8K sequence length for up to 1.5T tokens. XGen-7B achieves comparable or better results than state-of-the-art open-source LLMs of similar model size. XGen-7B performs well in both text and code tasks.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="3">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="writing-python-like-rust">
+                    <a target="_blank" class="post-url"
+                       href="https://oatzy.github.io/2020/05/10/writing-python-like-rust.html">Writing Python Like Rust
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            35
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=behnamoh" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                behnamoh
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 01:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T01:34:16Z"><span>2023-06-29 01:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36497508" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                29
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://oatzy.github.io/public/apple-touch-icon-precomposed.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://oatzy.github.io/public/apple-touch-icon-precomposed.png"/>
+                        
+                        <span>oatzy.github.io</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#writing-python-like-rust">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        
+                         title="The author discusses their experience of working on a Python project and borrowing tricks from Rust and Go. They highlight the benefits of type checking, the use of dataclasses, and the approach to error handling in Rust. They also mention the limitations of Python&#39;s enums and express their preference for Rust&#39;s richer enums and pattern matching. Additionally, they praise the pathlib library for its similarity to Rust&#39;s Path."
+                        >
+                        
+                            
+                        
+                        The author discusses their experience of working on a Python project and borrowing tricks from Rust and Go. They highlight the benefits of type checking, the use of dataclasses, and the approach to error handling in Rust. They also mention the limitations of Python&#39;s enums and express their preference for Rust&#39;s richer enums and pattern matching. Additionally, they praise the pathlib library ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="4">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="future-css-state-container-queries">
+                    <a target="_blank" class="post-url"
+                       href="https://ishadeed.com/article/css-state-queries/">Future CSS: State Container Queries
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            190
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=brandrick" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                brandrick
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 19:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T19:34:16Z"><span>2023-06-28 19:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36510745" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                54
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://ishadeed.com/assets/favicon-32x32.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://ishadeed.com/assets/favicon-32x32.png"/>
+                        
+                        <span>ishadeed.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#future-css-state-container-queries">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/7cafdd7f3ad0539c5d0543e505975f52.png">
+                        
+                        <img class="img-rounded" src="/image/7cafdd7f3ad0539c5d0543e505975f52.png"
+                             alt="https://ishadeed.com/assets/state-queries/css-container-queries.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 216px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        The Chromium team is experimenting with a new type of query called State Query, which allows us to check if an element is stuck or if a flex container is wrapped. This feature would be useful for updating the design or functionality of elements based on their state.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="5">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="type-safe-k-sortable-globally-unique-identifier-inspired-by-stripe-ids">
+                    <a target="_blank" class="post-url"
+                       href="https://github.com/jetpack-io/typeid">Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            311
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=dloreto" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                dloreto
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 16:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T16:34:16Z"><span>2023-06-28 16:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36508811" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                168
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://github.com/fluidicon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://github.com/fluidicon.png"/>
+                        
+                        <span>github.com/jetpack-io</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#type-safe-k-sortable-globally-unique-identifier-inspired-by-stripe-ids">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/50afeef36a072ea5b86b4f28840ef47e.png">
+                        
+                        <img class="img-rounded" src="/image/50afeef36a072ea5b86b4f28840ef47e.png"
+                             alt="https://opengraph.githubassets.com/23aced50ba59966fecccf78b2d41e10ff639daf152d8aa320ac030902f6f2222/jetpack-io/typeid" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 110px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs - GitHub - jetpack-io/typeid: Type-safe, K-sortable, globally unique identifier inspired by Stripe IDs
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="6">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="the-bathyscaph-trieste-technological-and-operational-aspects-1962">
+                    <a target="_blank" class="post-url"
+                       href="https://archive.org/details/bathyscaphtriest00wals">The Bathyscaph Trieste: Technological and Operational Aspects (1962)
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            108
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=pmcjones" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                pmcjones
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 20:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T20:34:16Z"><span>2023-06-28 20:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36511545" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                79
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://archive.org/images/glogo.jpg" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://archive.org/images/glogo.jpg"/>
+                        
+                        <span>archive.org</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#the-bathyscaph-trieste-technological-and-operational-aspects-1962">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/6ad110423960ca8f99f059ede2fbd5c6.jpg">
+                        
+                        <img class="img-rounded" src="/image/6ad110423960ca8f99f059ede2fbd5c6.jpg"
+                             alt="https://archive.org/services/img/biodiversity" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 221px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        27 July 1962.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="7">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="use-pygwalker-to-build-visual-analysis-app-in-streamlit">
+                    <a target="_blank" class="post-url"
+                       href="https://docs.kanaries.net/pygwalker/use-pygwalker-with-streamlit.en">Use pygwalker to build visual analysis app in streamlit
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            6
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=loa_observer" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                loa_observer
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 03:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T03:34:16Z"><span>2023-06-29 03:34:16 UTC</span></span>
+                </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://docs.kanaries.net/assets/kanaries.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://docs.kanaries.net/assets/kanaries.ico"/>
+                        
+                        <span>docs.kanaries.net</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Prefix
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#use-pygwalker-to-build-visual-analysis-app-in-streamlit">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/70a87e71a7b865a13cba516fd5cb14d2.jpeg">
+                        
+                        <img class="img-rounded" src="/image/70a87e71a7b865a13cba516fd5cb14d2.jpeg"
+                             alt="https://docs-us.oss-us-west-1.aliyuncs.com/img/pygwalker/use-pygwalker-in-streamlit.jpeg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 144px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        In this article, we&#39;ll dive into how you can use Pygwalker with Streamlit to analyze and visualize your data. It&#39;s going to be a fun and interactive journey, so let&#39;s get started! Pygwalker is a popular open-source Python library that makes data analysis and visualization a breeze. It takes your pandas dataframes (and even polar coordinate dataframes) and transforms them into ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="8">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="the-comprehensive-guide-to-elixir-s-list-comprehension-2022">
+                    <a target="_blank" class="post-url"
+                       href="https://www.mitchellhanberg.com/the-comprehensive-guide-to-elixirs-for-comprehension/">The Comprehensive Guide to Elixir&#39;s List Comprehension (2022)
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            94
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=clessg" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                clessg
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 21:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T21:34:16Z"><span>2023-06-28 21:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36494520" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                14
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.mitchellhanberg.com/apple-touch-icon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.mitchellhanberg.com/apple-touch-icon.png"/>
+                        
+                        <span>mitchellhanberg.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#the-comprehensive-guide-to-elixir-s-list-comprehension-2022">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        The for special form, also known as a list comprehension, is a construct designed for concise and powerful enumerable transformation in Elixir. It looks very similar to a “for loop” in other languages like JavaScript and C, but rather than being a language construct, it is an expression (like everything else in Elixir).
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="9">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="visa-to-acquire-brazilian-startup-pismo-for-1b">
+                    <a target="_blank" class="post-url"
+                       href="https://www.pismo.io/blog/visa-to-acquire-pismo/">Visa to acquire Brazilian startup Pismo for $1B
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            156
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=jeanlucas" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                jeanlucas
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 22:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T22:34:16Z"><span>2023-06-28 22:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36513135" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                71
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.pismo.io/wp-content/uploads/2021/12/pismo-favicon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.pismo.io/wp-content/uploads/2021/12/pismo-favicon.png"/>
+                        
+                        <span>pismo.io</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#visa-to-acquire-brazilian-startup-pismo-for-1b">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/206877bbb758f52c92c01916483f83df.png">
+                        
+                        <img class="img-rounded" src="/image/206877bbb758f52c92c01916483f83df.png"
+                             alt="https://www.pismo.io/wp-content/uploads/2023/06/blog-announcement-social-2.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 115px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Visa has agreed to acquire Brazilian startup Pismo for $1 billion in cash. The acquisition will allow Visa to provide core banking and issuer processing capabilities, as well as support for emerging payment rails like Pix in Brazil.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="10">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="i-made-a-command-line-tool-to-assist-me-with-writing-polyrhythmic-drum-parts">
+                    <a target="_blank" class="post-url"
+                       href="https://github.com/dredozubov/polyrhythmix">I made a command-line tool to assist me with writing polyrhythmic drum parts
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            162
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=dredozubov" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                dredozubov
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 18:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T18:34:16Z"><span>2023-06-28 18:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36510273" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                44
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://github.com/fluidicon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://github.com/fluidicon.png"/>
+                        
+                        <span>github.com/dredozubov</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#i-made-a-command-line-tool-to-assist-me-with-writing-polyrhythmic-drum-parts">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/955e6a7576afd96a2a74bbeb2959230c.png">
+                        
+                        <img class="img-rounded" src="/image/955e6a7576afd96a2a74bbeb2959230c.png"
+                             alt="https://raw.githubusercontent.com/dredozubov/polyrhythmix/master/doc/Guitar-Pro-Import.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 103px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Polyrhythmically-inclinded Midi Drum generator. Contribute to dredozubov/polyrhythmix development by creating an account on GitHub.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="11">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="vaporwave-and-unicode-analysis">
+                    <a target="_blank" class="post-url"
+                       href="https://yaytext.com/blog/vaporwave-unicode-analysis/">Vaporwave and Unicode Analysis
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            13
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=favourable" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                favourable
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 02:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T02:34:16Z"><span>2023-06-29 02:34:16 UTC</span></span>
+                </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="data:image/vnd.microsoft.icon;base64,AAABAAEAEBACAAAAAACwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAv7JVAP//AACxWwAAt1sAALG7AAC3WwAAEVEAAP//AAD//wAA//8AAP//AADNswAA9D0AAMWxAAC1rQAAtm0AAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="data:image/vnd.microsoft.icon;base64,AAABAAEAEBACAAAAAACwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAQAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAv7JVAP//AACxWwAAt1sAALG7AAC3WwAAEVEAAP//AAD//wAA//8AAP//AADNswAA9D0AAMWxAAC1rQAAtm0AAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"/>
+                        
+                        <span>yaytext.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        GoogleT5
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#vaporwave-and-unicode-analysis">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/d0867bab14723378cbc1e0dbd468f295.jpg">
+                        
+                        <img class="img-rounded" src="/image/d0867bab14723378cbc1e0dbd468f295.jpg"
+                             alt="https://yaytext.com/static/a6df4ee28eb4c260a388a55f96031366/0ede0/vaporwave%20text%20examples.jpg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 127px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Vaporwave is an art movement that toys with feelings of nostalgia, dream states, decay. the de-coupling of the visual from the music did nothing to ensure the genre&#39;s sustained popularity - van paugam says today the movement is a "fractured mess" the lack of unicode characters in the text encoding standard has led to the use of 'hyperbolic' characters instead of fullwidth ones in some
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="12">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="honda-monkey-breaks-world-record-covering-4183-km-on-single-tank">
+                    <a target="_blank" class="post-url"
+                       href="https://www.advpulse.com/adv-news/honda-monkey-breaks-world-record-covering-4183-km-on-single-tank/">Honda Monkey Breaks World Record Covering 4,183 Km on Single Tank
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            167
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=harambae" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                harambae
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 14:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T14:34:16Z"><span>2023-06-28 14:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36506444" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                109
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.advpulse.com/wp-content/uploads/2022/04/cropped-wordpress-2-32x32.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.advpulse.com/wp-content/uploads/2022/04/cropped-wordpress-2-32x32.png"/>
+                        
+                        <span>advpulse.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#honda-monkey-breaks-world-record-covering-4183-km-on-single-tank">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/ed19a1ab7468429e31ad66b26291a028.jpg">
+                        
+                        <img class="img-rounded" src="/image/ed19a1ab7468429e31ad66b26291a028.jpg"
+                             alt="https://www.advpulse.com/wp-content/uploads/2023/06/acerbis-guinness-motorcycle-distance-world-record-.jpg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 144px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Acerbis has set a new Guinness World Record for the greatest distance ridden on a single tank of fuel by a gas-powered motorcycle. They covered an impressive 4,183.8 kilometers (2,599.7 miles) without refueling.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="13">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="junk-websites-filled-w-ai-generated-text-pulling-in-money-from-programmatic-ads">
+                    <a target="_blank" class="post-url"
+                       href="https://www.technologyreview.com/2023/06/26/1075504/junk-websites-filled-with-ai-generated-text-are-pulling-in-money-from-programmatic-ads/">Junk websites filled w AI-generated text pulling in money from programmatic ads
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            115
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=bookofjoe" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                bookofjoe
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 23:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T23:34:16Z"><span>2023-06-28 23:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36514063" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                58
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.technologyreview.com/2023/06/26/1075504/junk-websites-filled-with-ai-generated-text-are-pulling-in-money-from-programmatic-ads/static/media/favicon.1cfcdb44.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.technologyreview.com/2023/06/26/1075504/junk-websites-filled-with-ai-generated-text-are-pulling-in-money-from-programmatic-ads/static/media/favicon.1cfcdb44.ico"/>
+                        
+                        <span>technologyreview.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#junk-websites-filled-w-ai-generated-text-pulling-in-money-from-programmatic-ads">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/84c173f6adb22d3c569335755ac2d4e2.jpeg">
+                        
+                        <img class="img-rounded" src="/image/84c173f6adb22d3c569335755ac2d4e2.jpeg"
+                             alt="https://wp.technologyreview.com/wp-content/uploads/2023/06/programmatic-ad.jpeg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 124px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        AI chatbots are being used to generate text for junk websites that attract paying advertisers. Over 140 major brands are unknowingly advertising on these unreliable AI-written sites, with Google serving 90% of the ads. This practice not only threatens the internet with spammy AI-generated content but also wastes billions of dollars in ad money.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="14">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="launch-hn-june-yc-w21-product-analytics-for-b2b-saas-companies">
+                    <a target="_blank" class="post-url"
+                       href="https://news.ycombinator.com/item?id=36505743">Launch HN: June (YC W21) – Product Analytics for B2B SaaS Companies
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            91
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=0xferruccio" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                0xferruccio
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 16:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T16:34:16Z"><span>2023-06-28 16:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36505743" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                36
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://news.ycombinator.com/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://news.ycombinator.com/favicon.ico"/>
+                        
+                        <span>news.ycombinator.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#launch-hn-june-yc-w21-product-analytics-for-b2b-saas-companies">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Two and a half years ago, the founders left their jobs at Intercom to build a startup. After learning the differences between product analytics for B2C and B2B, they pivoted their company to focus on building a product analytics tool for B2B SaaS companies. Now, over a thousand B2B SaaS companies at seed and Series A use their product every month.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="15">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="the-password-game">
+                    <a target="_blank" class="post-url"
+                       href="https://neal.fun/password-game/">The Password Game
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            1341
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=kretaceous" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                kretaceous
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 04:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T04:34:16Z"><span>2023-06-28 04:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36493715" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                465
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://neal.fun/favicons/password-game.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://neal.fun/favicons/password-game.png"/>
+                        
+                        <span>neal.fun</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#the-password-game">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/c19981a908d47c51ad2b12f85a13e860.png">
+                        
+                        <img class="img-rounded" src="/image/c19981a908d47c51ad2b12f85a13e860.png"
+                             alt="https://neal.fun/password-game/dynamite.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 91px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Congratulations! You have sucessfully chosen a password in 0 characters.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="16">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="zygomys-embedded-scripting-language-for-go">
+                    <a target="_blank" class="post-url"
+                       href="https://github.com/glycerine/zygomys">Zygomys: Embedded Scripting Language for Go
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            39
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=ingve" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                ingve
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 22:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T22:34:16Z"><span>2023-06-28 22:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36493562" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                6
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://github.com/fluidicon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://github.com/fluidicon.png"/>
+                        
+                        <span>github.com/glycerine</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#zygomys-embedded-scripting-language-for-go">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/5ccc1201c4fd4a1baee46a86d70803d4.png">
+                        
+                        <img class="img-rounded" src="/image/5ccc1201c4fd4a1baee46a86d70803d4.png"
+                             alt="https://raw.githubusercontent.com/glycerine/zygomys/master/media/high_altitude_gopher.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 122px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Zygo is a Lisp interpreter written in 100% Go. It allows for dynamically composing Go struct trees in a zygo script and invoking compiled Go functions on those trees, making Go reflection easy.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="17">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="national-geographic-lays-off-its-last-remaining-staff-writers">
+                    <a target="_blank" class="post-url"
+                       href="https://www.washingtonpost.com/media/2023/06/28/national-geographic-staff-writers-laid-off/">National Geographic lays off its last remaining staff writers
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            222
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=supportengineer" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                supportengineer
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 23:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T23:34:16Z"><span>2023-06-28 23:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36513881" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                218
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <i class="fa fa-external-link"></i>
+                        
+                        <span>washingtonpost.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#national-geographic-lays-off-its-last-remaining-staff-writers">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="18">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="deep-learning-digs-deep-ai-unveils-new-large-scale-images-in-peruvian-desert">
+                    <a target="_blank" class="post-url"
+                       href="https://blogs.nvidia.com/blog/2023/06/23/geoglyphs-in-peru/">Deep Learning Digs Deep: AI Unveils New Large-Scale Images in Peruvian Desert
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            16
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=bcaulfield" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                bcaulfield
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 00:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T00:34:16Z"><span>2023-06-29 00:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36514297" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                7
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://blogs.nvidia.com/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://blogs.nvidia.com/favicon.ico"/>
+                        
+                        <span>blogs.nvidia.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#deep-learning-digs-deep-ai-unveils-new-large-scale-images-in-peruvian-desert">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/915e8cede9dff792937b1b40c4318d27.jpg">
+                        
+                        <img class="img-rounded" src="/image/915e8cede9dff792937b1b40c4318d27.jpg"
+                             alt="https://blogs.nvidia.com/wp-content/uploads/2023/06/nvod-pilot-general-marketing-corp-blog-406x350-r4.jpg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 190px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Groundbreaking technology expedites the discovery of mysterious, ancient land art, known as Nazca geoglyphs, etched into Peru’s landscape.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="19">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="how-to-make-your-scientific-data-accessible-discoverable-and-useful">
+                    <a target="_blank" class="post-url"
+                       href="https://www.nature.com/articles/d41586-023-01929-7">How to make your scientific data accessible, discoverable and useful
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            61
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=JohnHammersley" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                JohnHammersley
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 17:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T17:34:16Z"><span>2023-06-28 17:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36494430" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                34
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://www.nature.com/static/images/favicons/nature/apple-touch-icon-f39cb19454.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://www.nature.com/static/images/favicons/nature/apple-touch-icon-f39cb19454.png"/>
+                        
+                        <span>nature.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#how-to-make-your-scientific-data-accessible-discoverable-and-useful">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/6d428c38fce6df460ddfb9faeecdc066.jpg">
+                        
+                        <img class="img-rounded" src="/image/6d428c38fce6df460ddfb9faeecdc066.jpg"
+                             alt="https://media.nature.com/w767/magazine-assets/d41586-023-01929-7/d41586-023-01929-7_25523502.jpg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 140px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        
+                         title="Miguel Acevedo faced challenges in combining his research data on malaria in lizards with his colleague&#39;s older data due to inconsistencies in data format and standards. Metadata, which describe data, are crucial for making data findable, accessible, interoperable, and reusable. Scientists should include metadata in a &#39;README&#39; file that provides details about data collection, processing, and variables. Raw data and derived data should be shared if possible, but if storage is an issue, publishing the data used to generate figures is recommended. Data should be archived in open, non-proprietary file formats and code should be shared alongside the data."
+                        >
+                        
+                            
+                        
+                        Miguel Acevedo faced challenges in combining his research data on malaria in lizards with his colleague&#39;s older data due to inconsistencies in data format and standards. Metadata, which describe data, are crucial for making data findable, accessible, interoperable, and reusable. Scientists should include metadata in a &#39;README&#39; file that provides details about data collection, processing, and ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="20">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="xerox-parc-s-notecards-in-a-nutshell-1987-pdf">
+                    <a target="_blank" class="post-url"
+                       href="https://dl.acm.org/doi/pdf/10.1145/29933.30859">Xerox PARC&#39;s NoteCards in a Nutshell (1987) [pdf]
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            60
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=mepian" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                mepian
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 18:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T18:34:16Z"><span>2023-06-28 18:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36494283" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                25
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://dl.acm.org/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://dl.acm.org/favicon.ico"/>
+                        
+                        <span>dl.acm.org</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#xerox-parc-s-notecards-in-a-nutshell-1987-pdf">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        The article contains a long string of characters and symbols. It appears to be a code or encrypted message.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="21">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="show-hn-litnerd-yc-s21-kids-book-club-meets-gaming">
+                    <a target="_blank" class="post-url"
+                       href="https://news.ycombinator.com/item?id=36505918">Show HN: Litnerd (YC S21) – Kids Book Club Meets Gaming
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            43
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=Anisa_Mirza" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                Anisa_Mirza
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 16:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T16:34:16Z"><span>2023-06-28 16:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36505918" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                25
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://news.ycombinator.com/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://news.ycombinator.com/favicon.ico"/>
+                        
+                        <span>news.ycombinator.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#show-hn-litnerd-yc-s21-kids-book-club-meets-gaming">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        Litnerd is an online reading club program for kids that combines book club with gaming. It offers weekly live meetups, movie adaptations, music, reading courseware, mini lessons, and reading tournaments to make reading a lifelong habit.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="22">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="the-idea-maze-for-ai-startups-2015">
+                    <a target="_blank" class="post-url"
+                       href="https://cdixon.org/2015/02/01/the-ai-startup-idea-maze/">The idea maze for AI startups (2015)
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            96
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=gmays" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                gmays
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 14:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T14:34:16Z"><span>2023-06-28 14:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36507010" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                39
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://cdixon.org/icons/icon-48x48.png?v=58d1d7feba39a41bfbc8f556445c70b1" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://cdixon.org/icons/icon-48x48.png?v=58d1d7feba39a41bfbc8f556445c70b1"/>
+                        
+                        <span>cdixon.org</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#the-idea-maze-for-ai-startups-2015">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/84516302043831723ca9bfe8a9fbf9e0.png">
+                        
+                        <img class="img-rounded" src="/image/84516302043831723ca9bfe8a9fbf9e0.png"
+                             alt="https://cdixon.org/static/0cb154dbd8fb0f2b3b29a97385793623/94a55/screen-shot-2015-02-01-at-11-51-53-am.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 142px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        
+                         title="An “idea maze” is a map of all the key decisions and tradeoffs that startups in a given space need to make. A good founder is capable of anticipating which turns lead to treasure and which lead to certain death. A bad founder is just running to the entrance of (say) the “movies/music/filesharing/P2P” maze or the “photosharing” maze without any sense for the history of the industry, the players in the maze, the casualties of the past, and the technologies that are likely to move walls and change assumptions. I thought it would be interesting to show an example of an idea maze for an area that I’m interested in: AI startups. Here’s a sketch of the maze."
+                        >
+                        
+                            
+                        
+                        An “idea maze” is a map of all the key decisions and tradeoffs that startups in a given space need to make. A good founder is capable of anticipating which turns lead to treasure and which lead to certain death. A bad founder is just running to the entrance of (say) the “movies/music/filesharing/P2P” maze or the “photosharing” maze without any sense for the history of the industry, the ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="23">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="construct-s-new-webgpu-renderer">
+                    <a target="_blank" class="post-url"
+                       href="https://www.construct.net/en/blogs/construct-official-blog-1/introducing-constructs-new-1768">Construct&#39;s New WebGPU Renderer
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            70
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=AshleysBrain" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                AshleysBrain
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 15:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T15:34:16Z"><span>2023-06-28 15:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36507648" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                20
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://construct-static.com/images/v1127/siteicons/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://construct-static.com/images/v1127/siteicons/favicon.ico"/>
+                        
+                        <span>construct.net</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#construct-s-new-webgpu-renderer">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/d50da537a9bc8a3604cb5cf438d665cf.png">
+                        
+                        <img class="img-rounded" src="/image/d50da537a9bc8a3604cb5cf438d665cf.png"
+                             alt="https://construct-static.com/images/v1127/r/uploads/articleuploadobject/0/images/100720/texturethrash-perf_v430.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 177px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        After years of work, Construct is proud to introduce its all-new WebGPU renderer. This upgrade brings significant improvements and better performance compared to the existing WebGL renderer. The WebGPU renderer is based on modern graphics APIs like Vulkan, Metal, and DirectX 12, and it supersedes WebGL.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="24">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="the-spilhaus-world-ocean-map-in-a-square-2020">
+                    <a target="_blank" class="post-url"
+                       href="https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d">The Spilhaus World Ocean Map in a Square (2020)
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            15
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=_Microft" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                _Microft
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 23:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T23:34:16Z"><span>2023-06-28 23:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36498614" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                1
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://storymaps.arcgis.com/static/images/favicon-32x32.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://storymaps.arcgis.com/static/images/favicon-32x32.png"/>
+                        
+                        <span>storymaps.arcgis.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#the-spilhaus-world-ocean-map-in-a-square-2020">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        A story about the "Spilhaus projection" – a map projection that went viral in fall 2018 and is now supported in ArcGIS.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="25">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="isaac-asimov-s-foundation-and-the-limits-of-liberalism">
+                    <a target="_blank" class="post-url"
+                       href="https://zacharydcarter.substack.com/p/isaac-asimovs-foundation-and-the">Isaac Asimov&#39;s Foundation and the Limits of Liberalism
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            3
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=herbertl" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                herbertl
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 02:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T02:34:16Z"><span>2023-06-29 02:34:16 UTC</span></span>
+                </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F4e76af54-d89b-4164-9198-c60d39311e4a%2Ffavicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F4e76af54-d89b-4164-9198-c60d39311e4a%2Ffavicon.ico"/>
+                        
+                        <span>zacharydcarter.substack.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Prefix
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#isaac-asimov-s-foundation-and-the-limits-of-liberalism">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/558fcb091c8a9e246bcc4bd916bd4db5.jpeg">
+                        
+                        <img class="img-rounded" src="/image/558fcb091c8a9e246bcc4bd916bd4db5.jpeg"
+                             alt="https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2F9719f6ba-c057-49b8-b8f3-7dc9041d9cb6_3508x2609.jpeg" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 164px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Over the weekend, The Atlantic ran an essay of mine about the Apple+ TV series Foundation, a science fiction epic ostensibly based on Isaac Asimov’s classic novels, which ultimately functions as a rejection of just about every important idea Asimov presented in his books. The story is here, and I urge you to read the whole thing. It’s about Liberalism, empire and epic drama. For this ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="26">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="motion-yc-w20-is-hiring-front-end-engineers">
+                    <a target="_blank" class="post-url"
+                       href="https://jobs.ashbyhq.com/motion/4f5f6a29-3af0-4d79-99a4-988ff7c5ba05?utm_source=hn">Motion (YC W20) Is Hiring Front End Engineers
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            0
+                        </span>
+                    </span>
+                
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 17:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T17:34:16Z"><span>2023-06-28 17:34:16 UTC</span></span>
+                </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://cdn.ashbyprd.com/cdn_assets/bbffae4047ab5d54a935417715b9905272bcb478/favicon.png" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://cdn.ashbyprd.com/cdn_assets/bbffae4047ab5d54a935417715b9905272bcb478/favicon.png"/>
+                        
+                        <span>jobs.ashbyhq.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#motion-yc-w20-is-hiring-front-end-engineers">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                    <a class="feature-image" href="/image/884f0519118a1aa5e44cc4951fbeb220.png">
+                        
+                        <img class="img-rounded" src="/image/884f0519118a1aa5e44cc4951fbeb220.png"
+                             alt="https://app.ashbyhq.com/api/images/org-theme-social/fd4042c5-a696-4b26-9058-2ac8131c2d75/fab07bab-a363-44f7-8435-32f76868d3d3.png" onerror="illustration_fall_back(this);"
+                             style="width: 220px; height: 91px;"
+                             loading="lazy"/>
+                    </a>
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Motion Careers: Senior/ Staff Software Engineer
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="27">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="in-a-major-discovery-scientists-say-space-time-churns-like-a-choppy-sea">
+                    <a target="_blank" class="post-url"
+                       href="https://www.washingtonpost.com/science/2023/06/28/gravitational-wave-background-nanograv/">In a major discovery, scientists say space-time churns like a choppy sea
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            71
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=zonotope" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                zonotope
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-29 00:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-29T00:34:16Z"><span>2023-06-29 00:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36514521" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                25
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <i class="fa fa-external-link"></i>
+                        
+                        <span>washingtonpost.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#in-a-major-discovery-scientists-say-space-time-churns-like-a-choppy-sea">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+            <article class="post-item" data-rank="27">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-format="fluid"
+                     data-ad-layout-key="-et-7-f-rh+149"
+                     data-ad-client="ca-pub-9393129008813908"
+                     data-ad-slot="4020487288"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </article>
+        
+    
+        <article class="post-item" data-rank="28">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="behind-the-pretty-frames-diablo-iv">
+                    <a target="_blank" class="post-url"
+                       href="https://mamoniem.com/behind-the-pretty-frames-diablo-iv/">Behind the Pretty Frames: Diablo IV
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            53
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=ibobev" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                ibobev
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 19:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T19:34:16Z"><span>2023-06-28 19:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36511111" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                21
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <i class="fa fa-external-link"></i>
+                        
+                        <span>mamoniem.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        Full
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#behind-the-pretty-frames-diablo-iv">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                            
+                        Near 7 months ago i packaged everything related to “Behind the Pretty Frames” to an external portable drive, and decided to forget about writing new ones…or even continue in the couple of drafts that was WIP at that time (let’s keep their names secret🤐, they might see the light one day!). Life was good, spending my free-time on working on the 2nd iteration of my engine, or playing a lot of ...
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+        <article class="post-item" data-rank="29">
+            <div class="qrcode"></div>
+            <div class="post-title">
+                <h3 id="paypal-buy-now-buttons-have-been-broken-for-a-week">
+                    <a target="_blank" class="post-url"
+                       href="https://news.ycombinator.com/item?id=36514098">PayPal “Buy Now” buttons have been broken for a week
+                    </a>
+                </h3>
+            </div>
+
+            <div class="post-meta">
+                
+                    <span class="score" title="Score">
+                        <i class="fa fa-heart" style="color: red;"></i>
+                        <span>
+                            45
+                        </span>
+                    </span>
+                
+                
+                    <span class="author-link" title="Author">
+                        <a href="https://news.ycombinator.com/user?id=davisr" rel="author" target="_blank">
+                            <i class="fa fa-user"></i>
+                            <span>
+                                davisr
+                            </span>
+                        </a>
+                    </span>
+                
+                <span class="summit-time" title="Submitted at 2023-06-28 23:34:16 UTC">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="last-updated"
+                          data-submitted="2023-06-28T23:34:16Z"><span>2023-06-28 23:34:16 UTC</span></span>
+                </span>
+                
+                    <span class="comment" title="Comments">
+                        <a href="https://news.ycombinator.com/item?id=36514098" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                15
+                            </span>
+                        </a>
+                    </span>
+                
+                
+                    <span class="host" title="Host">
+                        
+                            <img src="https://news.ycombinator.com/favicon.ico" class="favicon img-circle"
+                                 onerror="favicon_fall_back(this);" alt="https://news.ycombinator.com/favicon.ico"/>
+                        
+                        <span>news.ycombinator.com</span>
+                    </span>
+                
+                <span class="summary-model" title="Summary Model">
+                    <i class="fa fa-quote-left"></i>
+                    <span>
+                        OpenAI
+                    </span>
+                </span>
+                <a class="share-icon" href="https://hackernews.betacat.io/#paypal-buy-now-buttons-have-been-broken-for-a-week">
+                    <i class="fa fa-share-square-o"></i>
+                    <span>
+                        Share
+                    </span>
+                </a>
+            </div>
+
+            <div class="post-summary">
+                
+                
+                    <div class="summary-text"
+                        >
+                        
+                            
+                        
+                        PayPal broke their Buy Now buttons for customers who sell electronic goods. The error is because they use eval() in their JavaScript, which browsers block.
+                    </div>
+                
+                <div style="clear: both;"></div>
+            </div>
+        </article>
+        
+    
+
+    <footer>
+        <ul class="list-inline text-center">
+            <li class="dropdown" title="Translate">
+                <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                    Translate
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+                    <li role="presentation">
+                        <a role="menuitem" href="/">English</a>
+                    </li>
+                    <li role="presentation">
+                        <a role="menuitem" href="/zh.html">中文</a>
+                    </li>
+                </ul>
+            </li>
+            |
+            <li><a href="/feed.xml" data-toggle="tooltip"
+                    
+                    
+                    
+            >RSS</a></li>
+            |
+            <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Star me on GitHub"
+                   target="_blank">GitHub</a>
+            </li>
+            |
+            
+                <li><a href="https://www.paypal.me/polyrabbit" data-toggle="tooltip"
+                       title="Thanks for supporting hacker-news-summary" target="_blank">Donate</a>
+                </li>
+            
+            |
+            <li>
+                <a href="mailto:mcxin.221+hndigest@gmail.com?subject=Hacker News Summary - by ChatGPT feedback">Contact</a>
+            </li>
+            
+                |
+                <li class="last-updated"
+                    data-submitted="2023-06-29T04:40:05Z"
+                    data-toggle="tooltip"
+                    title="2023-06-29 04:40:05 UTC">Last
+                    updated: <span>2023-06-29 04:40:05 UTC</span>
+                </li>
+            
+        </ul>
+    </footer>
+</div>
+
+<!-- The modal dialog, which will be used to wrap the lightbox content -->
+<div class="modal fade in" id="img-preview-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <img>
+    </div>
+</div>
+<!-- End of the modal dialog -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
+<script src="/static/js/hn-2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.4.26/dist/index.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+</body>
+</html>
