@@ -98,29 +98,44 @@
         <div class="collapse navbar-collapse" id="hn-menu">
             <ul class="nav navbar-nav nav-pills">
                 {% block nav_links %} {% endblock %}
-                <li><a href="https://github.com/polyrabbit/hacker-news-digest" title="Star me on GitHub"
-                       target="_blank">GitHub</a>
-                </li>
-                <li class="dropdown">
+                <li class="sort-dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
-                        Sort by
+                        Sort
                         <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-hn-rank">HN
-                            rank</a></li>
+                                                   id="sort-by-hn-rank">HN rank</a>
+                        </li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-score">Score</a>
+                                                   id="sort-by-score">Points</a>
                         </li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
                                                    id="sort-by-comments">Comments</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-submit-time">Submit
-                            time</a></li>
+                                                   id="sort-by-submit-time">Submit time</a>
+                        </li>
                     </ul>
                 </li>
-                <li class="dropdown" title="{{ 'Translate'|translate(lang) }}">
+                <li class="filter-dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
+                        Filter
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   data-top="10">Top 10</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   data-top="20">Top 20</a>
+                        </li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   data-top="{{ news_list|length / 2 }}">Top 50%</a>
+                        </li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
+                                                   data-top="1000">All</a></li>
+                    </ul>
+                </li>
+                <li class="translate-dropdown" title="{{ 'Translate'|translate(lang) }}">
                     <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
                         {{ 'Translate'|translate(lang) }}
                         <span class="caret"></span>
@@ -310,7 +325,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
-<script src="/static/js/hn-2.js"></script>
+<script src="/static/js/hn-3.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.4.26/dist/index.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>

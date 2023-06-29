@@ -11,7 +11,7 @@ $('#sort-by-hn-rank').click(function () {
     } else {
         last_sort_by = 'rank';
     }
-    $('.navbar-nav>li.dropdown').toggleClass("open");
+    $('.navbar-nav>li.sort-dropdown').toggleClass("open");
     return false;
 });
 
@@ -31,7 +31,7 @@ $('#sort-by-score').click(function () {
     } else {
         last_sort_by = 'score';
     }
-    $('.navbar-nav>li.dropdown').toggleClass("open");
+    $('.navbar-nav>li.sort-dropdown').toggleClass("open");
     return false;
 });
 
@@ -51,7 +51,7 @@ $('#sort-by-comments').click(function () {
     } else {
         last_sort_by = 'comment';
     }
-    $('.navbar-nav>li.dropdown').toggleClass("open");
+    $('.navbar-nav>li.sort-dropdown').toggleClass("open");
     return false;
 });
 
@@ -81,10 +81,36 @@ $('#sort-by-submit-time').click(function () {
     } else {
         last_sort_by = 'submit-time';
     }
-    $('.navbar-nav>li.dropdown').toggleClass("open");
+    $('.navbar-nav>li.sort-dropdown').toggleClass("open");
     return false;
 });
-
+// Filter by
+$('.navbar-nav>li.filter-dropdown .dropdown-menu a').click(function (e){
+    let topN = parseInt($(this).data('top'));
+    let points = $.map($('article'), function(e) {
+        return parseInt($(e).find('.post-meta .score').text() || 0);
+    }).sort(function(a, b) {
+        return b - a;
+    });
+    let threshold = 0;
+    if (topN < points.length) {
+        threshold = points[topN-1];
+    }
+    $('article').each(function (){
+        let scoreDom = $(this).find('.post-meta .score');
+        if (!scoreDom.length) {
+            return;  // ads
+        }
+        let point = parseInt(scoreDom.text() || 0);
+        if (point >= threshold) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+    $('.navbar-nav>li.filter-dropdown').toggleClass("open");
+    return false;
+});
 // We don't need to wait for the document.ready event, that costs a lot of time.
 $.scrollUp({
     scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
@@ -114,6 +140,10 @@ $('.post-item .post-summary .feature-image').click(function (e) {
     PreviewImage($('img', this).attr('src'));
     return false;
 });
+// Load feature-image later
+setTimeout(() => {
+    $('.post-item .post-summary .feature-image img').attr('loading', 'eager');
+}, 30 * 1000);
 // screenshot
 //   prepare qrcode as it's rendered asynchronously, or wait until https://github.com/davidshimjs/qrcodejs/pull/136 is merged
 $(function () {

@@ -84,15 +84,16 @@ class WebImage(object):
         self.url = resp.url
         resp.raise_for_status()
         bytes = []
-        read_cnt = 0
+        read_bytes = 0
         for content in resp.iter_content(1 << 20):
+            if not content:
+                break
             bytes.append(content)
-            read_cnt += 1
-            if read_cnt >= 16:
+            read_bytes += len(content)
+            if read_bytes > 16 << 20:
                 # To avoid infinite chunk response like - https://hookrace.net/time.gif
                 raise IOError(
-                    "too much or infinite content - already read %d times, total size %d" % (
-                        read_cnt, sum(len(s) for s in bytes)))
+                    f'too much or infinite content - already read {read_bytes} bytes')
         # if anything goes wrong, do not set self._raw_data so it will try again the next time.
         self._raw_data = b''.join(bytes)
         self.content_type = resp.headers['Content-Type']

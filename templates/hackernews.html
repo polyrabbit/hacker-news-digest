@@ -2,7 +2,7 @@
 
 {% set title = 'Hacker News Summary - by ChatGPT'|translate(lang) -%}
 {% set site = 'hackernews' -%}
-{% set description = 'Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News articles, providing a seamless news scanning experience.' -%}
+{% set description = 'Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News posts, providing a seamless news scanning experience.' -%}
 
 {% block head %}
     <meta name="description" content="{{ description }}">
@@ -23,11 +23,5 @@
     </li>
     <li>
         <a href="https://news.ycombinator.com/front" target="_blank" title="Hacker News front page before">Past</a>
-    </li>
-    <li>
-        <a href="https://news.ycombinator.com/newcomments" target="_blank" title="Discussions on Hacker News">Comments</a>
-    </li>
-    <li>
-        <a href="https://news.ycombinator.com/show" target="_blank" title="Show HN">Show</a>
     </li>
 {% endblock %}

@@ -91,6 +91,7 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
           OPENAI_SCORE_THRESHOLD: ${{ vars.OPENAI_SCORE_THRESHOLD }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v2

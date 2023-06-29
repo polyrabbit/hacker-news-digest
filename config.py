@@ -1,5 +1,8 @@
 import logging
 import os
+import socket
+from logging.handlers import SysLogHandler
+from urllib.parse import urlparse
 
 import openai
 from dotenv import load_dotenv
@@ -10,9 +13,26 @@ DEBUG = os.getenv('DEBUG') == '1'
 
 site = 'https://hackernews.betacat.io'
 
+
+class ContextFilter(logging.Filter):
+    hostname = socket.gethostname()
+
+    def filter(self, record):
+        record.hostname = ContextFilter.hostname
+        return True
+
+
+log_handlers = [logging.StreamHandler()]
+if os.getenv('SYSLOG_ADDRESS'):
+    parsed = urlparse("//" + os.getenv('SYSLOG_ADDRESS'))
+    syslog = SysLogHandler(address=(parsed.hostname, parsed.port))
+    syslog.addFilter(ContextFilter())
+    log_handlers.append(syslog)
+
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
-                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d %(funcName)s] - %(message)s')
-logger = logging.getLogger(__name__)
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d %(funcName)s] - %(message)s',
+                    handlers=log_handlers)
+logger = logging.getLogger()
 
 
 def int_env(name, default):

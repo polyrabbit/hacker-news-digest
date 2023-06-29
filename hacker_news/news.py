@@ -64,7 +64,7 @@ class News:
             self.content = re.sub(r'\s+', ' ', parser.get_content(config.max_content_size))
             # From arxiv or pdf
             self.content = re.sub(r'^(abstract|summary):\s*', '', self.content, flags=re.IGNORECASE)
-            self.summary = self.summarize()
+            self.summary, self.summarized_by = self.summarize()
             db.summary.add(self.url, self.summary, self.summarized_by)
             tm = parser.get_illustration()
             if tm:
@@ -75,7 +75,7 @@ class News:
         except Exception as e:
             logger.exception('Failed to fetch %s, %s', self.url, e)
         if not self.summary:  # last resort, in case remote server is down
-            self.summary = db.summary.get(self.url)
+            self.summary, self.summarized_by = db.summary.get(self.url)
 
     def get_score(self):
         if isinstance(self.score, int):
@@ -89,30 +89,28 @@ class News:
         return slugify(self.title or 'no title')
 
     def summarize(self):
-        if not self.content:
-            return ''
         if self.content.startswith('<iframe '):
-            self.summarized_by = Model.EMBED
-            return self.content
+            return self.content, Model.EMBED
         if len(self.content) <= config.summary_size:
+            summary, summary_model = db.summary.get(self.url, peek=True)
+            if summary and summary_model != Model.FULL:
+                logger.info(f'Use cached summary, discarding "{self.content[:1024]}"')
+                return summary, summary_model
             logger.info(
                 f'No need to summarize since we have a small text of size {len(self.content)}')
-            return self.content
+            return self.content, Model.FULL
 
         summary = self.summarize_by_openai(self.content.strip())
         if summary:
-            self.summarized_by = Model.OPENAI
-            return summary
+            return summary, Model.OPENAI
         summary = self.summarize_by_transformer(self.content.strip())
         if summary:
-            self.summarized_by = Model.TRANSFORMER
-            return summary
+            return summary, Model.TRANSFORMER
         else:
-            self.summarized_by = Model.PREFIX
-            return self.content
+            return self.content, Model.PREFIX
 
     def summarize_by_openai(self, content):
-        summary = db.summary.get(self.url, Model.OPENAI)
+        summary, _ = db.summary.get(self.url, Model.OPENAI)
         if summary:
             logger.info("Cache hit for %s", self.url)
             return summary
@@ -203,7 +201,7 @@ class News:
         if config.disable_transformer:
             logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
             return ''
-        summary = db.summary.get(self.url, Model.TRANSFORMER)
+        summary, _ = db.summary.get(self.url, Model.TRANSFORMER)
         if summary:
             logger.info("Cache hit for %s", self.url)
             return summary

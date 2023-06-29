@@ -16,8 +16,8 @@ class Model(Enum):
     PREFIX = 'Prefix'
     FULL = 'Full'
     EMBED = 'Embed'
-    OPENAI = 'OpenAI'
     TRANSFORMER = 'GoogleT5'
+    OPENAI = 'OpenAI'
 
     def can_truncate(self):
         return self not in (Model.OPENAI, Model.EMBED)
@@ -38,23 +38,29 @@ class Summary(Base):
         return f'<{self.url} - {self.summary} - {self.model} - {self.birth} - {self.access}>'
 
 
-def get(url, model=None):
+def get(url, model=None, peek=False):
     if config.disable_summary_cache:
-        return ''
+        return '', Model.FULL
     stmt = select(Summary).where(Summary.url == url)
     if model:
         stmt = stmt.where(Summary.model == model.value)
     summary = session.scalars(stmt).first()
     if summary:
-        summary.access = datetime.utcnow()
-        session.commit()
-        return summary.summary
-    return ''
+        if not peek:
+            summary.access = datetime.utcnow()
+            session.commit()
+        try:
+            return summary.summary, Model(summary.model)
+        except ValueError as e:
+            logger.warning(f'{e}')
+            return summary.summary, Model.FULL
+    return '', Model.FULL
 
 
 def add(url, summary, model):
     if not summary or not url:
         return
+    summary = summary[:Summary.summary.type.length]
     summary = Summary(url=url, summary=summary, model=model.value, access=datetime.utcnow())
     session.merge(summary)
     session.commit()
