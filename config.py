@@ -1,6 +1,5 @@
 import logging
 import os
-import socket
 from logging.handlers import SysLogHandler
 from urllib.parse import urlparse
 
@@ -13,20 +12,10 @@ DEBUG = os.getenv('DEBUG') == '1'
 
 site = 'https://hackernews.betacat.io'
 
-
-class ContextFilter(logging.Filter):
-    hostname = socket.gethostname()
-
-    def filter(self, record):
-        record.hostname = ContextFilter.hostname
-        return True
-
-
 log_handlers = [logging.StreamHandler()]
 if os.getenv('SYSLOG_ADDRESS'):
     parsed = urlparse("//" + os.getenv('SYSLOG_ADDRESS'))
     syslog = SysLogHandler(address=(parsed.hostname, parsed.port))
-    syslog.addFilter(ContextFilter())
     log_handlers.append(syslog)
 
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
