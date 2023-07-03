@@ -7,13 +7,27 @@ from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup as BS
 from null import Null
 
+from config import sites_for_users
 from hacker_news.news import News
 from page_content_extractor import ParseError
+from page_content_extractor.http import session
 
 logger = logging.getLogger(__name__)
 
-from config import sites_for_users
-from page_content_extractor.http import session
+
+def parse_site(url):
+    if not url.startswith('http'):
+        url = 'http://' + url
+    us = urlsplit(url.lower())
+    comhead = us.hostname
+    hs = comhead.split('.')
+    if len(hs) > 2 and hs[0] == 'www':
+        comhead = comhead[4:]
+    if comhead in sites_for_users:
+        ps = us.path.split('/')
+        if len(ps) > 1 and ps[1]:
+            comhead = '%s/%s' % (comhead, ps[1])
+    return comhead
 
 
 class HackerNewsParser(object):
@@ -70,18 +84,7 @@ class HackerNewsParser(object):
         return items
 
     def parse_comhead(self, url):
-        if not url.startswith('http'):
-            url = 'http://' + url
-        us = urlsplit(url.lower())
-        comhead = us.hostname
-        hs = comhead.split('.')
-        if len(hs) > 2 and hs[0] == 'www':
-            comhead = comhead[4:]
-        if comhead in sites_for_users:
-            ps = us.path.split('/')
-            if len(ps) > 1 and ps[1]:
-                comhead = '%s/%s' % (comhead, ps[1])
-        return comhead
+        return parse_site(url)
 
     def get_comment_url(self, path):
         if not isinstance(path, str):

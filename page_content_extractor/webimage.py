@@ -1,4 +1,5 @@
 # coding: utf-8
+import json
 import logging
 import mimetypes
 import pathlib
@@ -20,6 +21,8 @@ class WebImage(object):
     MAX_BYTES_SIZE = 2.5 * 1024 * 1024
     SCALE_FROM_IMG_TO_TEXT = 22 * 22
     content_type = ''
+    width = 0
+    height = 0
 
     def __init__(self, src='', referrer='', **attrs):
         # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
@@ -156,3 +159,16 @@ class WebImage(object):
             # convert SRC to src, and list to tuple because list is unhashable
             attrs[key.lower()] = tuple(value) if isinstance(value, list) else value
         return cls.from_attrs(**attrs)
+
+    @classmethod
+    def from_json_str(cls, json_str):
+        if not json_str:
+            return None
+        attrs = json.loads(json_str)
+        img = cls(src=attrs['url'])
+        img.width, img.height = attrs.get('width', 0), attrs.get('height', 0)
+        return img
+
+    def to_json_str(self):
+        attrs = {'url': self.url, 'width': self.width, 'height': self.height}
+        return json.dumps(attrs, separators=(',', ':'))

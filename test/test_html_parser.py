@@ -224,6 +224,11 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(content.startswith('Short Message Service'))
         self.assertTrue(content.endswith('network architecture.'))
 
+    def test_link_intensive_wikipedia(self):
+        parser = parser_factory('https://en.wikipedia.org/wiki/Google_Sidewiki')
+        content = parser.get_content()
+        self.assertTrue(content.startswith('Google Sidewiki was a web annotation tool from Google'))
+
     def test_longer_meta_description(self):
         html_doc = """
         <meta property="og:description" content="aaaa" />

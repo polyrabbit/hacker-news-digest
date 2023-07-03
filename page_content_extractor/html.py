@@ -24,7 +24,7 @@ block_tags = {'article', 'header', 'aside', 'hgroup', 'blockquote', 'hr',
               'th', 'figure', 'thead', 'footer', 'tr', 'form', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5',
               'h6',
               'video', 'td'}
-negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|button|hidden|'
+negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|button|hidden|collaps|'
                            'toggle|'  # for arxiv.org
                            'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|abstract|main|content|toptext|'
@@ -131,7 +131,7 @@ class HtmlContentExtractor(object):
         self.set_article_tag_point(self.doc)
 
         self.calc_node_score(self.doc)
-        logger.info(f'Max score: {self.article.score or 0}, node: {" ".join(self.node_identify(self.article))}')
+        logger.info(f'Max score: {self.article.score or 0:.2f}, node: {" ".join(self.node_identify(self.article))}')
 
     def get_meta_description(self):
         if not hasattr(self, '_meta_desc'):
@@ -228,6 +228,11 @@ class HtmlContentExtractor(object):
         for tname in ignored_tags:
             for d in self.doc.find_all(tname):
                 d.extract()  # decompose calls extract with some more steps
+        # obvious hidden ones
+        hidden_styles = ('[style~="display:none"]', '[style~="display: none"]', '[style~="visibility:hidden"]', '[style~="visibility: hidden"]')
+        for style in hidden_styles:
+            for hidden in self.doc.select(style):
+                hidden.extract()
         for style_links in self.doc.find_all('link', attrs={'type': 'text/css'}):
             style_links.extract()
 
@@ -318,9 +323,8 @@ class HtmlContentExtractor(object):
                         continue
                     if child.name in block_tags:
                         # Ignore too many links and too short paragraphs
-                        if self.is_link_intensive(child) or (len(tokenize(child.text)) < 15 and
-                                                             1.0 * self.calc_effective_text_len(
-                                    child) / self.calc_effective_text_len(self.article) < .3):
+                        if (self.is_link_intensive(child) or len(tokenize(child.text)) < 15) \
+                                and 1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(self.article) < .3:
                             continue
                         child_summary = summarize(child, max_length).strip()
                         if len(tokenize(child_summary)) < 15 and \

@@ -20,9 +20,8 @@ class TranslationCacheTestCase(unittest.TestCase):
         self.assertEqual(1, deleted)
 
     def test_summary_cache(self):
-        summary.add('hello', 'world', db.summary.Model.OPENAI)
-        self.assertEqual('world', summary.get('hello', db.summary.Model.OPENAI)[0])
-        self.assertEqual('world', summary.get('hello')[0])  # ensure fallback works
+        summary.put(db.Summary('hello', 'world', db.summary.Model.OPENAI))
+        self.assertEqual('world', summary.get('hello').summary)
         deleted = summary.expire()
         self.assertEqual(0, deleted)
         summ = session.get(db.Summary, 'hello')
@@ -35,5 +34,5 @@ class TranslationCacheTestCase(unittest.TestCase):
 
     def test_exceeding_max_size(self):
         text = 'w' * summary.Summary.summary.type.length * 2
-        summary.add('hello', text, db.summary.Model.OPENAI)
-        self.assertEqual('w' * summary.Summary.summary.type.length, summary.get('hello')[0])
+        summary.put(db.Summary('hello', text, db.summary.Model.OPENAI))
+        self.assertEqual('w' * summary.Summary.summary.type.length, summary.get('hello').summary)

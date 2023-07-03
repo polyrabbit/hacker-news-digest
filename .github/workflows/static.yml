@@ -41,10 +41,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      #      - name: Dump GitHub Context
-      #        env:
-      #          GITHUB_CONTEXT: ${{ toJson(github) }}
-      #        run: echo "$GITHUB_CONTEXT"
       - name: My Host
         run: |
           free -h
@@ -79,6 +75,18 @@ jobs:
       - name: Install Python Dependencies
         run: pip install --upgrade -r requirements.txt
 
+      - name: Download Page Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: 'github-pages'
+          path: 'output'
+          workflow_conclusion: success
+
+      - name: Extract Page Artifact
+        run: |
+          tar -xf output/artifact.tar -C output
+          rm output/artifact.tar
+
       - name: Unit Test
         run: make test
         if: ${{ github.event_name == 'push' }}
@@ -96,11 +104,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v2
 
-      - name: Upload artifact
+      - name: Upload Page Artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          # Upload entire repository
           path: 'output'
+          retention-days: 7
 
       - name: Deploy to GitHub Pages
         id: deployment

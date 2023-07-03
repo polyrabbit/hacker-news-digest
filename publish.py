@@ -8,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader, filters
 
 import config
 import db.translation
+from db import image
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
@@ -89,3 +90,4 @@ if __name__ == '__main__':
     gen_feed(news_list)
     db.translation.expire()
     db.summary.expire()
+    db.image.expire()

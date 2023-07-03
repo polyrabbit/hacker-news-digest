@@ -41,7 +41,10 @@ SLOW_SQL_MS = int_env('SLOW_SQL_MS', 1000)
 
 max_content_size = 64 << 10  # cost 2.5 min when parsing large pdf
 summary_size = 400
-summary_ttl = int_env('SUMMARY_TTL_HOUR', 30 * 24) * 60 * 60
+summary_ttl = int_env('SUMMARY_TTL_HOUR', 60 * 24) * 60 * 60
+updatable_within_days = int_env('UPDATABLE_WITHIN_DAYS', 3)
+assert updatable_within_days < summary_ttl / (24 * 60 * 60)
+
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 
 disable_ads = os.getenv('DISABLE_ADS') == '1'
@@ -58,3 +61,4 @@ openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)
 logger.info(f'Use openai model {openai_model}')
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output/')
+image_dir = os.path.join(output_dir, 'image/')

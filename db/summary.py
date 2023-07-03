@@ -31,39 +31,52 @@ class Summary(Base):
 
     url = mapped_column(String(1024), primary_key=True)
     summary = mapped_column(String(65535))
-    model = mapped_column(String(16))
+    model = mapped_column(String(16), default=Model.FULL.value)
     birth = mapped_column(TIMESTAMP, default=datetime.utcnow)
 
+    favicon = mapped_column(String(65535), nullable=True)
+    image_name = mapped_column(String(65535), nullable=True, index=True)
+    image_json = mapped_column(String(65535), nullable=True)
+
+    def __init__(self, url, summary='', model=Model.FULL, **kw):
+        super().__init__(**kw)
+        self.url = url
+        self.summary = summary
+        self.model = model.value
+
     def __repr__(self):
-        return f'<{self.url} - {self.summary} - {self.model} - {self.birth} - {self.access}>'
+        return f'<{self.url} - {self.summary} - {self.model} - {self.birth} - {self.access}> - {self.favicon} - {self.image_name}'
 
-
-def get(url, model=None, peek=False):
-    if config.disable_summary_cache:
-        return '', Model.FULL
-    stmt = select(Summary).where(Summary.url == url)
-    if model:
-        stmt = stmt.where(Summary.model == model.value)
-    summary = session.scalars(stmt).first()
-    if summary:
-        if not peek:
-            summary.access = datetime.utcnow()
-            session.commit()
+    def get_summary_model(self):
         try:
-            return summary.summary, Model(summary.model)
+            return Model(self.model)
         except ValueError as e:
             logger.warning(f'{e}')
-            return summary.summary, Model.FULL
-    return '', Model.FULL
+            return Model.FULL
 
 
-def add(url, summary, model):
-    if not summary or not url:
-        return
-    summary = summary[:Summary.summary.type.length]
-    summary = Summary(url=url, summary=summary, model=model.value, access=datetime.utcnow())
-    session.merge(summary)
+def get(url) -> Summary:
+    if config.disable_summary_cache:
+        return Summary(url)
+    stmt = select(Summary).where(Summary.url == url)
+    # if model:
+    #     stmt = stmt.where(Summary.model == model.value)
+    summary = session.scalars(stmt).first()
+    return summary or Summary(url)
+
+
+def put(db_summary: Summary) -> Summary:
+    db_summary.access = datetime.utcnow()
+    db_summary.summary = db_summary.summary[:Summary.summary.type.length]
+    if db_summary.favicon:
+        db_summary.favicon = db_summary.favicon[:Summary.favicon.type.length]
+    if db_summary.image_name:
+        db_summary.image_name = db_summary.image_name[:Summary.image_name.type.length]
+    if db_summary.image_json:
+        db_summary.image_json = db_summary.image_json[:Summary.image_json.type.length]
+    db_summary = session.merge(db_summary)
     session.commit()
+    return db_summary
 
 
 def expire():

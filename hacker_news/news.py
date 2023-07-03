@@ -13,6 +13,7 @@ import config
 import db.summary
 from db.summary import Model
 from page_content_extractor import parser_factory
+from page_content_extractor.webimage import WebImage
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +42,12 @@ class News:
         self.submit_time = submit_time
         self.comment_cnt = comment_cnt
         self.comment_url = comment_url
-        self.content = ''
         self.summary = ''
-        self.summarized_by = Model.FULL
+        self.summarized_by: Model = Model.FULL
         self.favicon = ''
         self.image = None
-        self.img_id = None
+        self.img_id = ''
+        self.cache: db.Summary = db.Summary(url)
 
     def get_image_url(self):
         if self.image and self.image.url:
@@ -55,29 +56,30 @@ class News:
 
     def pull_content(self):
         try:
-            logger.info("#%d, fetching %s", self.rank, self.url)
-            parser = parser_factory(self.url)
-            if not self.title and hasattr(parser, 'title'):
-                self.title = parser.title.strip()
-            self.favicon = parser.get_favicon_url()
-            # Replace consecutive spaces with a single space
-            self.content = re.sub(r'\s+', ' ', parser.get_content(config.max_content_size))
-            # From arxiv or pdf
-            self.content = re.sub(r'^(abstract|summary):\s*', '', self.content, flags=re.IGNORECASE)
+            self.cache = db.summary.get(self.url)
+            if not self.title and hasattr(self.parser, 'title'):
+                self.title = self.parser.title.strip()
+            if self.cache.favicon:
+                self.favicon = self.cache.favicon
+            else:
+                self.favicon = self.cache.favicon = self.parser.get_favicon_url()
             self.summary, self.summarized_by = self.summarize()
-            db.summary.add(self.url, self.summary, self.summarized_by)
-            tm = parser.get_illustration()
-            if tm:
-                fname = tm.uniq_name()
-                tm.save(os.path.join(config.output_dir, "image", fname))
-                self.image = tm
-                self.img_id = fname
+            self.cache.summary, self.cache.model = self.summary, self.summarized_by.value
+            self.fetch_feature_image()
         except Exception as e:
             logger.exception('Failed to fetch %s, %s', self.url, e)
         if not self.summary:  # last resort, in case remote server is down
-            self.summary, self.summarized_by = db.summary.get(self.url)
+            self.summary, self.summarized_by = self.cache.summary, self.cache.get_summary_model()
+        db.summary.put(self.cache)
 
-    def get_score(self):
+    @property
+    def parser(self):  # lazy load
+        if not hasattr(self, '_parser'):
+            logger.info("#%d, fetching %s", self.rank, self.url)
+            self._parser = parser_factory(self.url)
+        return self._parser
+
+    def get_score(self) -> int:
         if isinstance(self.score, int):
             return self.score
         try:
@@ -88,32 +90,36 @@ class News:
     def slug(self):
         return slugify(self.title or 'no title')
 
-    def summarize(self):
-        if self.content.startswith('<iframe '):
-            return self.content, Model.EMBED
-        if len(self.content) <= config.summary_size:
-            summary, summary_model = db.summary.get(self.url, peek=True)
-            if summary and summary_model != Model.FULL:
-                logger.info(f'Use cached summary, discarding "{self.content[:1024]}"')
-                return summary, summary_model
+    def summarize(self, content=None) -> (str, Model):
+        # settled summary
+        if self.cache.model in (Model.EMBED.value, Model.OPENAI.value):
+            logger.info(f"Cache hit for {self.url}, model {self.cache.model}")
+            return self.cache.summary, self.cache.get_summary_model()
+        if content is None:
+            # Replace consecutive spaces with a single space
+            content = re.sub(r'\s+', ' ', self.parser.get_content(config.max_content_size))
+            # From arxiv or pdf
+            content = re.sub(r'^(abstract|summary):\s*', '', content, flags=re.IGNORECASE).strip()
+        if content.startswith('<iframe '):
+            return content, Model.EMBED
+        if len(content) <= config.summary_size:
+            if self.cache.summary and self.cache.model != Model.FULL.value:
+                logger.info(f'Use cached summary, discarding "{content[:1024]}"')
+                return self.cache.summary, self.cache.get_summary_model()
             logger.info(
-                f'No need to summarize since we have a small text of size {len(self.content)}')
-            return self.content, Model.FULL
+                f'No need to summarize since we have a small text of size {len(content)}')
+            return content, Model.FULL
 
-        summary = self.summarize_by_openai(self.content.strip())
+        summary = self.summarize_by_openai(content)
         if summary:
             return summary, Model.OPENAI
-        summary = self.summarize_by_transformer(self.content.strip())
+        summary = self.summarize_by_transformer(content)
         if summary:
             return summary, Model.TRANSFORMER
         else:
-            return self.content, Model.PREFIX
+            return content, Model.PREFIX
 
     def summarize_by_openai(self, content):
-        summary, _ = db.summary.get(self.url, Model.OPENAI)
-        if summary:
-            logger.info("Cache hit for %s", self.url)
-            return summary
         if not openai.api_key:
             logger.info("OpenAI API key is not set")
             return ''
@@ -137,9 +143,10 @@ class News:
         try:
             answer = self.openai_complete(prompt, True)
             summary = self.parse_step_answer(answer).strip()
-            if not summary: # If step parse failed, ignore the translation
-                summary = self.openai_complete(f'Summarize the article delimited by triple backticks in 2 sentences.\n'
-                                               f'```{content.strip(".")}.```', False)
+            if not summary:  # If step parse failed, ignore the translation
+                summary = self.openai_complete(
+                    f'Summarize the article delimited by triple backticks in 2 sentences.\n'
+                    f'```{content.strip(".")}.```', False)
             return summary
         except Exception as e:
             logger.warning('Failed to summarize using openai, %s', e)
@@ -201,10 +208,9 @@ class News:
         if config.disable_transformer:
             logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
             return ''
-        summary, _ = db.summary.get(self.url, Model.TRANSFORMER)
-        if summary:
-            logger.info("Cache hit for %s", self.url)
-            return summary
+        if self.cache.model == Model.TRANSFORMER.value and self.cache.summary:
+            logger.info(f"Cache hit for {self.url}, model {self.cache.model}")
+            return self.cache.summary
         if self.get_score() <= 10:  # Avoid slow transformer
             logger.info("Score %d is too small, ignore transformer", self.get_score())
             return ''
@@ -251,3 +257,21 @@ class News:
         while title_cn and title_cn[0] in quote and title_cn[-1] in quote:
             title_cn = title_cn[1:-1].strip()
         return title_cn.removesuffix('。').removesuffix('.').strip()
+
+    def fetch_feature_image(self):
+        if self.cache.image_name is not None:
+            if os.path.exists(os.path.join(config.image_dir, self.cache.image_name)):
+                self.image = WebImage.from_json_str(self.cache.image_json)
+                self.img_id = self.cache.image_name
+                logger.info(f"Cache hit image {self.img_id}")
+                return
+            else:
+                logger.warning(f'{self.cache.image_name} not exist in {config.image_dir}')
+        tm = self.parser.get_illustration()
+        if tm:
+            fname = tm.uniq_name()
+            tm.save(os.path.join(config.image_dir, fname))
+            self.image = tm
+            self.cache.image_json = tm.to_json_str()
+            self.img_id = fname
+        self.cache.image_name = self.img_id  # tried but not found

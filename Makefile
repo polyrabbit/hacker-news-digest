@@ -21,8 +21,7 @@ run-in-heroku: initdb setcron initnewrelic
 		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
 
 gh_pages:
-	rm -rf output
-	mkdir -p output/image
+	find output -mindepth 1 ! -path 'output/image*' -delete
 	python publish.py
 	cp -r static output/static
 	cp static/ads.txt output/ads.txt
