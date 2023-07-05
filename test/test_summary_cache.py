@@ -10,8 +10,8 @@ from db.engine import session
 class TranslationCacheTestCase(unittest.TestCase):
 
     def test_translation_cache(self):
-        translation.add('hello', 'world', 'en')
-        self.assertEqual('world', translation.get('hello', 'en'))
+        translation.add('hello', 'hello', 'en')
+        self.assertEqual('hello', translation.get('hello', 'en'))
         deleted = translation.expire()
         self.assertEqual(0, deleted)
         trans = session.get(Translation, 'hello')

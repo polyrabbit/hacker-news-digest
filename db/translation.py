@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 
 from sqlalchemy import String, delete, select
@@ -23,6 +24,8 @@ class Translation(Base):
 
 # TODO: enable other translation api
 def get(text, to_lang):
+    if to_lang == 'en':
+        return text  # shortcut
     text = text[:Translation.source.type.length]
     stmt = select(Translation).where(Translation.source == text, Translation.language == to_lang)
     trans = session.scalars(stmt).first()
@@ -44,8 +47,11 @@ def add(source, target, lang):
 
 
 def expire():
-    stmt = delete(Translation).where(Translation.access < datetime.utcnow() - timedelta(seconds=config.summary_ttl))
+    start = time.time()
+    stmt = delete(Translation).where(
+        Translation.access < datetime.utcnow() - timedelta(seconds=config.summary_ttl))
     result = session.execute(stmt)
     session.commit()
-    logger.info(f'evicted {result.rowcount} translation items')
+    cost = (time.time() - start) * 1000
+    logger.info(f'evicted {result.rowcount} translation items, cost(ms): {cost:.2f}')
     return result.rowcount

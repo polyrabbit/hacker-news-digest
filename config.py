@@ -41,7 +41,7 @@ SLOW_SQL_MS = int_env('SLOW_SQL_MS', 1000)
 
 max_content_size = 64 << 10  # cost 2.5 min when parsing large pdf
 summary_size = 400
-summary_ttl = int_env('SUMMARY_TTL_HOUR', 60 * 24) * 60 * 60
+summary_ttl = int_env('SUMMARY_TTL_DAYS', 60) * 24 * 60 * 60
 updatable_within_days = int_env('UPDATABLE_WITHIN_DAYS', 3)
 assert updatable_within_days < summary_ttl / (24 * 60 * 60)
 

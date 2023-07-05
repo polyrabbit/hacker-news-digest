@@ -49,6 +49,9 @@ class News:
         self.img_id = ''
         self.cache: db.Summary = db.Summary(url)
 
+    def __repr__(self):
+        return f'{self.rank} - {self.title} - {self.url} - {self.score} - {self.author}- {self.submit_time}'
+
     def get_image_url(self):
         if self.image and self.image.url:
             return self.image.url
@@ -99,7 +102,8 @@ class News:
             # Replace consecutive spaces with a single space
             content = re.sub(r'\s+', ' ', self.parser.get_content(config.max_content_size))
             # From arxiv or pdf
-            content = re.sub(r'^(abstract|summary):\s*', '', content, flags=re.IGNORECASE).strip()
+            content = re.sub(r'^(abstract|summary):\s*', '', content,
+                             flags=re.IGNORECASE).strip()
         if content.startswith('<iframe '):
             return content, Model.EMBED
         if len(content) <= config.summary_size:

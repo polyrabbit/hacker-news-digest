@@ -1,6 +1,8 @@
 import logging
 import os
-from datetime import datetime
+import random
+import time
+from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from feedwerk.atom import AtomFeed
@@ -9,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader, filters
 import config
 import db.translation
 from db import image
+from hacker_news.algolia_api import get_daily_news
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
@@ -31,19 +34,53 @@ environment.filters["truncate"] = truncate
 environment.globals["config"] = config
 
 
-# Generate github pages
-def gen_page(news_list):
-    template = environment.get_template("hackernews.html")
-    lang_output = {'en': {'fname':'index.html', 'path':'/'}, 'zh': {'fname':'zh.html', 'path':'/zh.html'}}
-    for lang, output in lang_output.items():
-        static_page = os.path.join(config.output_dir, output['fname'])
-        rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang, path=urljoin(config.site, output['path']))
-        with open(static_page, "w") as fp:
-            fp.write(rendered)
-        logger.info(f'Written {len(rendered)} bytes to {static_page}')
+def gen_frontpage():
+    hn = HackerNewsParser()
+    news_list = hn.parse_news_list()
+    for news in news_list:
+        news.pull_content()
+    gen_page(news_list, 'index.html', 'en')
+    gen_page(news_list, 'zh.html', 'zh')
+    gen_feed(news_list)
+
+
+def gen_daily():
+    yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    yesterday_summary = os.path.join(config.output_dir, f'daily/{yesterday.strftime("%Y-%m-%d")}/index.html')
+    if not os.path.exists(yesterday_summary):
+        logger.info(f'Generating a fresh daily page as {yesterday_summary} does not exist')
+    elif random.random() > 0.5:
+        logger.info('Will not generate daily page this time')
+        return
+    else:
+        logger.info('Will refresh daily page this time')
+    daily_items = get_daily_news(config.updatable_within_days)
+    for date, items in daily_items.items():
+        for i, item in enumerate(items):
+            item.rank = i
+            item.pull_content()
+        gen_page(items, f'daily/{date.strftime("%Y-%m-%d")}/index.html')
+
+
+# Generate GitHub pages
+def gen_page(news_list, path, lang='en'):
+    if not news_list:
+        return  # no overwrite
+    template = environment.get_template('hackernews.html')
+    static_page = os.path.join(config.output_dir, path)
+    directory = os.path.dirname(static_page)
+    os.makedirs(directory, exist_ok=True)
+    start = time.time()
+    rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang,
+                               path=urljoin(config.site + '/', path.rstrip('index.html')))
+    with open(static_page, "w") as fp:
+        fp.write(rendered)
+    cost = (time.time() - start) * 1000
+    logger.info(f'Written {len(rendered)} bytes to {static_page}, cost(ms): {cost:.2f}')
 
 
 def gen_feed(news_list):
+    start = time.time()
     feed = AtomFeed('Hacker News Summary',
                     updated=datetime.utcnow(),
                     feed_url=f'{config.site}/feed.xml',
@@ -78,16 +115,13 @@ def gen_feed(news_list):
     output_path = os.path.join(config.output_dir, "feed.xml")
     with open(output_path, "w") as fp:
         fp.write(rendered)
-    logger.info(f'Written {len(rendered)} bytes to {output_path}')
+    cost = (time.time() - start) * 1000
+    logger.info(f'Written {len(rendered)} bytes to {output_path}, cost(ms): {cost:.2f}')
 
 
 if __name__ == '__main__':
-    hn = HackerNewsParser()
-    news_list = hn.parse_news_list()
-    for news in news_list:
-        news.pull_content()
-    gen_page(news_list)
-    gen_feed(news_list)
+    gen_daily()
+    gen_frontpage()
     db.translation.expire()
     db.summary.expire()
     db.image.expire()

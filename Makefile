@@ -21,13 +21,14 @@ run-in-heroku: initdb setcron initnewrelic
 		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
 
 gh_pages:
-	find output -mindepth 1 ! -path 'output/image*' -delete
+	#find output -maxdepth 1 -type f -delete
+	rm -rf output/static
 	python publish.py
 	cp -r static output/static
 	cp static/ads.txt output/ads.txt
-	ln -s index.html output/hackernews  # backward compatibility
-	ln -s feed.xml output/feed
-	ln -s static/favicon.ico output/favicon.ico
+	ln -sf index.html output/hackernews  # backward compatibility
+	ln -sf feed.xml output/feed
+	ln -sf static/favicon.ico output/favicon.ico
 
 test: initdb
 	python -m unittest

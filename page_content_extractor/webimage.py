@@ -5,7 +5,7 @@ import mimetypes
 import pathlib
 from functools import lru_cache
 from hashlib import md5
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, unquote
 
 import math
 
@@ -110,7 +110,7 @@ class WebImage(object):
 
     def uniq_name(self):
         fname = md5(self.raw_data).hexdigest()
-        suffix = pathlib.Path(urlparse(self.url).path).suffix
+        suffix = pathlib.Path(urlparse(unquote(self.url)).path).suffix
         if not suffix:
             suffix = self.guess_suffix()
         return fname+suffix

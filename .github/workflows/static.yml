@@ -34,12 +34,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     env:
       TOKENIZERS_PARALLELISM: false
-      DISABLE_SUMMARY_CACHE: ${{ vars.DISABLE_SUMMARY_CACHE }}
-      DISABLE_TRANSFORMER: ${{ vars.DISABLE_TRANSFORMER }}
-      TRANSFORMER_MODEL: ${{ vars.TRANSFORMER_MODEL }}
-      SLOW_SQL_MS: ${{ vars.SLOW_SQL_MS }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: My Host
         run: |
@@ -47,6 +43,12 @@ jobs:
           df -h
           nproc
           curl -s ifconfig.me/all
+
+      - name: Export vars to env
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          echo "$VARS_JSON" | jq -r 'keys[] as $k | "\($k)=\(.[$k])"' >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -86,6 +88,7 @@ jobs:
         run: |
           tar -xf output/artifact.tar -C output
           rm output/artifact.tar
+          rm output/image/.gitignore
 
       - name: Unit Test
         run: make test
@@ -94,10 +97,7 @@ jobs:
       - name: Generate Pages
         run: make gh_pages
         env:
-          DISABLE_ADS: ${{ vars.DISABLE_ADS }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-          OPENAI_SCORE_THRESHOLD: ${{ vars.OPENAI_SCORE_THRESHOLD }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
 

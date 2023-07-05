@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -58,10 +59,7 @@ class Summary(Base):
 def get(url) -> Summary:
     if config.disable_summary_cache:
         return Summary(url)
-    stmt = select(Summary).where(Summary.url == url)
-    # if model:
-    #     stmt = stmt.where(Summary.model == model.value)
-    summary = session.scalars(stmt).first()
+    summary = session.get(Summary, url)  # Try to leverage the identity map cache
     return summary or Summary(url)
 
 
@@ -79,7 +77,15 @@ def put(db_summary: Summary) -> Summary:
     return db_summary
 
 
+def filter_url(url_list: list[str]) -> set[str]:
+    # use `all()` to populate the Identity Map so that following `get` can read from cache
+    summaries = session.scalars(select(Summary).where(Summary.url.in_(url_list))).all()
+    assert len(session.identity_map) == len(summaries)
+    return set(s.url for s in summaries)
+
+
 def expire():
+    start = time.time()
     stmt = delete(Summary).where(
         Summary.access < datetime.utcnow() - timedelta(seconds=config.summary_ttl))
     result = session.execute(stmt)
@@ -90,6 +96,7 @@ def expire():
         Summary.access < datetime.utcnow() - timedelta(seconds=CONTENT_TTL),
         Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value)))
     result = session.execute(stmt)
-    logger.info(f'evicted {result.rowcount} content items')
+    cost = (time.time() - start) * 1000
+    logger.info(f'evicted {result.rowcount} content items, cost(ms): {cost:.2f}')
     session.commit()
     return deleted + result.rowcount

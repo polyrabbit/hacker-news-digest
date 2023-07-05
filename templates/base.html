@@ -250,7 +250,7 @@
                 <div style="clear: both;"></div>
             </div>
         </article>
-        {% if (not config.disable_ads) and (loop.index0 == 1 or loop.index0 == 27) %}
+        {% if (not config.disable_ads) and (loop.index0 % 26 == 1 or loop.index0 == (news_list|length - 3)) %}
             <article class="post-item" data-rank="{{ loop.index0 }}">
                 <ins class="adsbygoogle"
                      style="display:block"
