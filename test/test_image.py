@@ -52,3 +52,13 @@ class WebImageTestCase(TestCase):
         mock_requests.get.return_value.headers = {'Content-Type': 'image/svg+xml;charset=utf-8'}
         img = WebImage.from_node('', node)
         self.assertEqual(img.uniq_name(), 'd41d8cd98f00b204e9800998ecf8427e.svg')
+
+    def test_webp_compression(self):
+        img = WebImage.from_json_str('{"url":"aaa"}')
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/home.png')
+        with open(fpath, 'rb') as stream:
+            img.raw_data = stream.read()
+        self.assertEqual('.png', img.suffix)
+        img.try_compress()
+        self.assertEqual('.webp', img.suffix)
+        self.assertEqual('c1a11593331f7678c7addb3c0001f57f.webp', img.uniq_name())

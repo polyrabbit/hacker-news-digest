@@ -273,6 +273,7 @@ class News:
                 logger.warning(f'{self.cache.image_name} not exist in {config.image_dir}')
         tm = self.parser.get_illustration()
         if tm:
+            tm.try_compress()
             fname = tm.uniq_name()
             tm.save(os.path.join(config.image_dir, fname))
             self.image = tm

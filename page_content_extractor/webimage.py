@@ -1,4 +1,5 @@
 # coding: utf-8
+import io
 import json
 import logging
 import mimetypes
@@ -8,6 +9,7 @@ from hashlib import md5
 from urllib.parse import urlparse, urljoin, unquote
 
 import math
+from PIL import Image
 
 from page_content_extractor.http import session
 from . import imgsz
@@ -102,18 +104,15 @@ class WebImage(object):
         self.content_type = resp.headers['Content-Type']
         return self._raw_data
 
+    @raw_data.setter
+    def raw_data(self, value):
+        self._raw_data = value
+
     # 'image/svg+xml;charset=utf-8' -> svg
     def guess_suffix(self):
         if not self.content_type:
             return ''
         return mimetypes.guess_extension(self.content_type.partition(';')[0].strip())
-
-    def uniq_name(self):
-        fname = md5(self.raw_data).hexdigest()
-        suffix = pathlib.Path(urlparse(unquote(self.url)).path).suffix
-        if not suffix:
-            suffix = self.guess_suffix()
-        return fname+suffix
 
     def to_text_len(self):
         return self.img_area_px / self.scale
@@ -137,6 +136,45 @@ class WebImage(object):
 
     def check_image_bytesize(self):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
+
+    def try_compress(self):
+        if self.suffix.lower() in ('.svg', '.webp', '.gif'):  # PIL doesnot recognize svg
+            return
+        out = io.BytesIO()
+        try:
+            img = Image.open(io.BytesIO(self.raw_data))
+            img.save(out, format='webp', optimize=True, quality=50)
+            if len(self.raw_data) <= len(out.getbuffer()):
+                logger.info(f'got a bigger webp, src: {self.url}')
+                return
+            self.raw_data = out.getbuffer()
+            self.suffix = '.webp'
+        except Exception as e:
+            logger.warning(f'{self.url}, {e}')
+
+    def uniq_name(self):
+        fname = md5(self.raw_data).hexdigest()
+        return fname + self.suffix
+
+    @property
+    def suffix(self):
+        if not hasattr(self, '_suffix'):
+            suffix = pathlib.Path(urlparse(unquote(self.url)).path).suffix
+            if not suffix:
+                suffix = self.guess_suffix()
+            if not suffix:
+                try:
+                    img = Image.open(io.BytesIO(self.raw_data))
+                    if img.format:
+                        suffix = '.' + img.format.lower()
+                except:
+                    pass
+            self._suffix = suffix
+        return self._suffix
+
+    @suffix.setter
+    def suffix(self, value):
+        self._suffix = value
 
     def save(self, fp):
         if isinstance(fp, (str, bytes)):
