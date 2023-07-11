@@ -263,7 +263,9 @@ class News:
         return title_cn.removesuffix('。').removesuffix('.').strip()
 
     def fetch_feature_image(self):
-        if self.cache.image_name is not None:
+        if config.force_fetch_feature_image:
+            logger.warning(f'Will force fetch feature image')
+        elif self.cache.image_name is not None:
             if os.path.exists(os.path.join(config.image_dir, self.cache.image_name)):
                 self.image = WebImage.from_json_str(self.cache.image_json)
                 self.img_id = self.cache.image_name

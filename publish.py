@@ -47,13 +47,14 @@ def gen_frontpage():
 def gen_daily():
     yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
     yesterday_summary = os.path.join(config.output_dir, f'daily/{yesterday.strftime("%Y-%m-%d")}/index.html')
+    rand = random.random()
     if not os.path.exists(yesterday_summary):
         logger.info(f'Generating a fresh daily page as {yesterday_summary} does not exist')
-    elif random.random() > 0.5:
-        logger.info('Will not generate daily page this time')
+    elif rand > 0.3:
+        logger.info(f'Will not generate daily page this time, rand {rand}')
         return
     else:
-        logger.info('Will refresh daily page this time')
+        logger.info(f'Will refresh daily page for the past {config.updatable_within_days} days')
     daily_items = get_daily_news(config.updatable_within_days)
     for date, items in daily_items.items():
         for i, item in enumerate(items):

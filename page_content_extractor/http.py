@@ -7,6 +7,7 @@ from fake_useragent import UserAgent
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import timeout
+from urllib3.util.ssl_ import create_urllib3_context
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,13 @@ class CustomHTTPAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         if "max_retries" not in kwargs:
             kwargs['max_retries'] = 3
+        # Remove until switching to Python 3.12,
+        # https://stackoverflow.com/questions/71603314/ssl-error-unsafe-legacy-renegotiation-disabled
+        # https://github.com/urllib3/urllib3/issues/2653
+        self.ssl_context = create_urllib3_context()
+        self.ssl_context.load_default_certs()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.options |= 0x4  # OP_LEGACY_SERVER_CONNECT
         super().__init__(*args, **kwargs)
 
     def send(self, request, **kwargs):
@@ -33,6 +41,10 @@ class CustomHTTPAdapter(HTTPAdapter):
                                  or ['ISO-8859-1'])[-1]  # the last one overwrites the first one
         # If response.encoding is None, encoding will be guessed using `chardet` by `requests`
         return response
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs['ssl_context'] = self.ssl_context
+        return super().init_poolmanager(*args, **kwargs)
 
 
 logging.getLogger("requests").setLevel(logging.WARNING)

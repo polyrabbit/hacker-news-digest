@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class WebImage(object):
     MIN_PX = 100
     MIN_BYTES_SIZE = 4000
-    MAX_BYTES_SIZE = 2.5 * 1024 * 1024
+    MAX_BYTES_SIZE = 10 * 1024 * 1024  # we have compression now
     SCALE_FROM_IMG_TO_TEXT = 22 * 22
     content_type = ''
     width = 0
@@ -68,14 +68,20 @@ class WebImage(object):
         return True
 
     def get_size(self):
-        height = self.attrs.get('height', '').strip().rstrip('px')
-        width = self.attrs.get('width', '').strip().rstrip('px')
+        height_attr = self.attrs.get('height', '').strip().rstrip('px')
+        width_attr = self.attrs.get('width', '').strip().rstrip('px')
 
-        if width.isdigit() and height.isdigit():
-            return int(width), int(height)
+        if width_attr.isdigit() and height_attr.isdigit():
+            return int(width_attr), int(height_attr)
 
         try:
-            return imgsz.frombytes(self.raw_data)[1:]
+            w, h = imgsz.frombytes(self.raw_data)[1:]
+            # Scale according to size attr
+            if height_attr.isdigit():
+                return w / (h / int(height_attr)), int(height_attr)
+            if width_attr.isdigit():
+                return int(width_attr), h / (w / int(width_attr))
+            return w, h
         except Exception as e:
             logger.warning('Error while determine the size of %s, %s', self.url, e)
         return 0, 0
