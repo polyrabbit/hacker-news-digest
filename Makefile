@@ -1,24 +1,13 @@
 export NEW_RELIC_CONFIG_FILE=config/newrelic.ini
 export BLUEWARE_CONFIG_FILE=config/blueware.ini 
 
-.PHONY: run test initdb dropdb gh_pages
+.PHONY: run test initdb dropdb gh_pages minify_static hash_static
 run: initdb
 	# DEBUG=1 python index.py
 	python index.py
 
 run-in-docker: initdb
 	gunicorn -b 0.0.0.0:5000 -c config.py index:app
-
-run-in-heroku: initdb setcron initnewrelic
-	mkdir -p logs/nginx
-	touch /tmp/app-initialized
-	# blueware-admin run-program 
-	[ -f bin/start-nginx ] && \
-		bin/start-nginx \
-		newrelic-admin run-program \
-		gunicorn -c config.py index:app || \
-		newrelic-admin run-program \
-		gunicorn --bind 0.0.0.0:$(PORT) -c config.py index:app
 
 gh_pages:
 	#find output -maxdepth 1 -type f -delete
@@ -29,6 +18,8 @@ gh_pages:
 	ln -sf index.html output/hackernews  # backward compatibility
 	ln -sf feed.xml output/feed
 	ln -sf static/favicon.ico output/favicon.ico
+	$(MAKE) hash_static
+	$(MAKE) minify_static
 
 test: initdb
 	python -m unittest
@@ -42,10 +33,21 @@ initdb:
 setcron:
 	while true; do sleep 600; curl -s -H "User-Agent: Update from internal" -L "http://localhost:$(PORT)/update" -X POST `[ -z $${HN_UPDATE_KEY} ] && echo '' || echo -d key=$${HN_UPDATE_KEY}`; done &
 
-initnewrelic:
-	pip install newrelic
-	sed -i "s/xxxxxxxxx/${NEW_RELIC_API_KEY}/" ${NEW_RELIC_CONFIG_FILE}
+minify_static:
+	@which minify > /dev/null || { sudo apt-get update; sudo apt-get install --no-install-recommends --yes minify; }
+	minify -v --mime=text/html --html-keep-document-tags --html-keep-quotes --html-keep-end-tags -r output --match='index' -o .
+	minify -v --mime=text/css -r output --match='style' -o .
+	minify -v --mime=application/javascript -r output --match='hn' -o .
 
-initoneapm:
-	pip install -i http://pypi.oneapm.com/simple --trusted-host pypi.oneapm.com blueware
-	sed -i "s/xxxxxxxxx/${ONEAPM_API_KEY}/" ${BLUEWARE_CONFIG_FILE}
+cssname = $(shell md5sum static/css/style.css | cut -c1-10)
+jsname = $(shell md5sum static/js/hn.js | cut -c1-10)
+
+output/static/css/style.$(cssname).css: output/static/css/style.css
+	cp output/static/css/style.css output/static/css/style.$(cssname).css
+
+output/static/js/hn.$(jsname).js: output/static/js/hn.js
+	cp output/static/js/hn.js output/static/js/hn.$(jsname).js
+
+hash_static: output/static/css/style.$(cssname).css output/static/js/hn.$(jsname).js output/index.html
+	find output -name '*.html' -print0 | xargs -0 sed -i 's/style\.css/style.$(cssname).css/g'
+	find output -name '*.html' -print0 | xargs -0 sed -i 's/hn\.js/hn.$(jsname).js/g'

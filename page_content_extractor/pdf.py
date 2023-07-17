@@ -74,7 +74,7 @@ class PdfExtractor(object):
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
             for line in output_fp.getvalue().split('\n'):
-                if line.strip():
+                if line.strip() and line.strip().isprintable():  # avoid handling \x01\x02...
                     has_began = True
                     p.append(line.strip())
                 elif has_began:  # end one paragraph

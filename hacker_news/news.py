@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import time
+from json import JSONDecodeError
 
 import openai
 from slugify import slugify
@@ -153,7 +154,7 @@ class News:
                     f'```{content.strip(".")}.```', False)
             return summary
         except Exception as e:
-            logger.warning('Failed to summarize using openai, %s', e)
+            logger.exception(f'Failed to summarize using openai, {e}')  # Make this error explicit in the log
             return ''
 
     def openai_complete(self, prompt, need_json):
@@ -199,7 +200,14 @@ class News:
                 **kwargs)
             message = resp["choices"][0]["message"]
             if message.get('function_call'):
-                answer = json.loads(message['function_call']['arguments'])
+                json_str = message['function_call']['arguments']
+                if resp["choices"][0]['finish_reason'] == 'length':
+                    json_str += '"}'  # best effort to save truncated answers
+                try:
+                    answer = json.loads(json_str)
+                except JSONDecodeError as e:
+                    logger.warning(f'Failed to decode answer from openai, will fallback to plain text, error: {e}')
+                    return ''  # Let fallback code kicks in
             else:
                 answer = message['content'].strip()
         logger.info(f'prompt: {prompt}')
@@ -238,6 +246,8 @@ class News:
         return summary
 
     def parse_step_answer(self, answer):
+        if not answer:
+            return answer
         db.translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
         db.translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
         return answer.get('summary', '')
