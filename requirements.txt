@@ -3,11 +3,11 @@ beautifulsoup4==4.12.2
 cchardet==2.1.7
 chardet==5.1.0
 Flask==2.3.2
-lxml==4.9.2
+lxml==4.9.3
 null==0.6.1
 pdfminer==20191125
 requests==2.31.0
-mock==5.0.2
+mock==5.1.0
 werkzeug==2.3.6
 feedwerk==1.1.0
 Pillow==10.0.0
@@ -16,8 +16,9 @@ olefile
 openai==0.27.8
 torch==2.0.1
 bert-extractive-summarizer==0.10.1
-transformers==4.30.2
+transformers==4.31.0
 python-dotenv==1.0.0
 python_slugify==8.0.1
-sqlalchemy==2.0.17
+sqlalchemy==2.0.19
 psycopg2==2.9.6
+humanize==4.7.0

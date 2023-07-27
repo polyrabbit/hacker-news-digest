@@ -318,7 +318,7 @@ class HtmlContentExtractor(object):
                         self.article) < .3 and \
                             self.calc_effective_text_len(child) < max_length:
                         continue
-                    if child.name in ('pre', 'code') and '\n' in child.text:
+                    if child.name in ('code',) and '\n' in child.text:
                         #  High possibility this is a code block, no need to summarize code to save OpenAI tokens
                         continue
                     if child.name in block_tags:

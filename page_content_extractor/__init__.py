@@ -1,6 +1,8 @@
 ﻿# coding: utf-8
 import logging
 
+import humanize
+
 from page_content_extractor.http import session
 from .embeddable import EmbeddableExtractor
 from .exceptions import ParseError
@@ -34,7 +36,7 @@ def parser_factory(url):
     # if no content-type is provided, Chrome set as a html
     ct = resp.headers.get('content-type', 'text').lower()
     if ct.startswith('application/pdf'):  # Some pdfs even have charset indicator, eg. "application/pdf; charset=utf-8"
-        logger.info(f'Get a pdf to parse, {resp.url}, size: {resp.headers.get("content-length", "-1")} bytes')
+        logger.info(f'Get a pdf to parse, {resp.url}, size: {humanize.naturalsize(resp.headers.get("content-length", "-1"), binary=True)}')
         try:
             return PdfExtractor(resp.content, resp.url)
         except ParseError:

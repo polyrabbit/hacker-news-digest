@@ -120,6 +120,16 @@ class PageContentExtractorTestCase(TestCase):
         pp.article = BS(html_doc, features='lxml').div
         self.assertTrue(pp.get_content(300).startswith('2 ' * 10))
 
+    def test_pre_tag_in_maillist_sites(self):
+        mail = '''I promised a post-mortem three weeks ago after I brought the Tarsnap service
+back online. It took me an unforgivably long time to get around to writing
+this, but here it is.'''
+        html_doc = f'''<pre style="margin: 0em;">
+        {mail}
+        </pre>'''
+        page = HtmlContentExtractor(html_doc)
+        self.assertEqual(page.get_content(), mail)
+
     def test_escaped_summary(self):
         html_doc = '<code>&lt;a href=&quot;&quot; title=&quot;&quot;&gt; &lt;</code>'
         article = HtmlContentExtractor(html_doc)
