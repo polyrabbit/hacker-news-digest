@@ -22,9 +22,9 @@ def parser_factory(url):
     """
     if not url.startswith('http'):
         url = 'http://' + url
-    # Sad, urllib2 cannot handle cookie/gzip automatically
     resp = session.get(url)
-    resp.raise_for_status()
+    # Some sites like science.org forbid us by responding 403, but still have meta description tags, so donot raise here
+    # resp.raise_for_status()
 
     if EmbeddableExtractor.is_embeddable(url):
         logger.info('Get an embeddable to parse(%s)', resp.url)
