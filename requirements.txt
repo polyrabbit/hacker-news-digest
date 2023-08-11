@@ -22,3 +22,4 @@ python_slugify==8.0.1
 sqlalchemy==2.0.19
 psycopg2==2.9.6
 humanize==4.7.0
+litellm==0.1.381
