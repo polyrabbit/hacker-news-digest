@@ -282,7 +282,7 @@ class News:
                 logger.info(f"Cache hit image {self.img_id}")
                 return
             else:
-                logger.warning(f'{self.cache.image_name} not exist in {config.image_dir}')
+                logger.info(f'{self.cache.image_name} not exist in {config.image_dir}')
         tm = self.parser.get_illustration()
         if tm:
             tm.try_compress()

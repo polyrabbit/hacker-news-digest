@@ -16,6 +16,7 @@ log_handlers = [logging.StreamHandler()]
 if os.getenv('SYSLOG_ADDRESS'):
     parsed = urlparse("//" + os.getenv('SYSLOG_ADDRESS'))
     syslog = SysLogHandler(address=(parsed.hostname, parsed.port))
+    syslog.setLevel(logging.WARNING)  # avoid insufficient quota
     log_handlers.append(syslog)
 
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
