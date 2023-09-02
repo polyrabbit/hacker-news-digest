@@ -4,7 +4,8 @@ import os
 import re
 import time
 from json import JSONDecodeError
-
+import litellm 
+from litellm import completion
 import openai
 from slugify import slugify
 from summarizer import Summarizer
@@ -193,7 +194,7 @@ class News:
             )
             answer = resp['choices'][0]['text'].strip()
         else:
-            resp = openai.ChatCompletion.create(
+            resp = completion(
                 messages=[
                     {'role': 'user', 'content': prompt},
                 ],
