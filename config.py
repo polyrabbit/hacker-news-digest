@@ -53,6 +53,10 @@ disable_summary_cache = os.getenv('DISABLE_SUMMARY_CACHE') == '1'
 disable_translation_cache = os.getenv('DISABLE_TRANSLATION_CACHE') == '1'
 force_fetch_feature_image = os.getenv('FORCE_FETCH_FEATURE_IMAGE') == '1'
 
+disable_llama = os.getenv('DISABLE_LLAMA') == '1'
+llama_model = os.getenv('LLAMA_MODEL_PATH') or os.path.expanduser('~/.cache/huggingface/hub/models_llama-2-7b-chat.Q6_K.gguf')
+logger.info(f'Use llama model {llama_model}')
+
 disable_transformer = os.getenv('DISABLE_TRANSFORMER') == '1'
 transformer_model = os.getenv('TRANSFORMER_MODEL') or 't5-large'
 logger.info(f'Use transformer model {transformer_model}')

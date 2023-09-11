@@ -23,7 +23,7 @@ permissions:
 
 # Allow one concurrent deployment
 concurrency:
-  group: "pages"
+  group: event-${{ github.event_name }}  # So UT won't be interrupted by cronjobs
   cancel-in-progress: true # Avoid batch pending when one job hangs
 
 jobs:
@@ -39,10 +39,11 @@ jobs:
     steps:
       - name: My Host
         run: |
-          free -h
-          df -h
-          nproc
-          curl -s ifconfig.me/all
+          echo -e "free -h:\n`free -h`"
+          echo -e "df -h:\n`df -h`"
+          echo "pwd: `pwd`"
+          echo "nproc: `nproc`"
+          echo "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`"
 
       - name: Export vars to env
         env:
@@ -74,6 +75,12 @@ jobs:
           path: ~/.cache/huggingface/hub/models*
           key: ${{ runner.os }}-huggingface
 
+      #      - name: LLaMA 2 model
+      #        run: |
+      #          mkdir -p ~/.cache/huggingface/hub/
+      #          ls -alh ~/.cache/huggingface/hub/
+      #          curl -L -o ~/.cache/huggingface/hub/models_llama-2-7b-chat.Q6_K.gguf -z ~/.cache/huggingface/hub/models_llama-2-7b-chat.Q6_K.gguf https://huggingface.co/TheBloke/Llama-2-7b-Chat-GGUF/resolve/main/llama-2-7b-chat.Q6_K.gguf
+
       - name: Install Python Dependencies
         run: pip install --upgrade -r requirements.txt
 
@@ -89,13 +96,22 @@ jobs:
           tar -xf output/artifact.tar -C output
           rm output/artifact.tar
           rm output/image/.gitignore
+          echo -e "df -h:\n`df -h`"
 
       - name: Unit Test
         run: make test
         if: ${{ github.event_name == 'push' }}
 
-      - name: Generate Pages
-        run: make gh_pages
+      - name: Generate Daily Page
+        run: make gh_daily_page
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
+        if: ${{ endswith(github.run_id, '3') || endswith(github.run_id, '6') || endswith(github.run_id, '9') }}
+
+      - name: Generate Home Page
+        run: make gh_home_page
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

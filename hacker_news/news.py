@@ -7,8 +7,6 @@ from json import JSONDecodeError
 
 import openai
 from slugify import slugify
-from summarizer import Summarizer
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 import config
 import db.summary
@@ -17,16 +15,6 @@ from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
 logger = logging.getLogger(__name__)
-
-# google t5 transformer
-model, tokenizer, bert_model = None, None, None
-if not config.disable_transformer:
-    MAX_TOKEN = 4096
-    # github runner only has 7 GB of RAM, https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-    MODEL_NAME = config.transformer_model
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, model_max_length=MAX_TOKEN)
-    bert_model = Summarizer()
 
 
 class News:
@@ -74,7 +62,7 @@ class News:
             logger.exception('Failed to fetch %s, %s', self.url, e)
         if not self.summary:  # last resort, in case remote server is down
             self.summary, self.summarized_by = self.cache.summary, self.cache.get_summary_model()
-        db.summary.put(self.cache)
+        return db.summary.put(self.cache)
 
     @property
     def parser(self):  # lazy load
@@ -118,11 +106,19 @@ class News:
         summary = self.summarize_by_openai(content)
         if summary:
             return summary, Model.OPENAI
-        summary = self.summarize_by_transformer(content)
-        if summary:
-            return summary, Model.TRANSFORMER
+        if self.get_score() >= 10:  # Avoid slow local inference
+            if Model.from_value(self.cache.model).local_llm() and self.cache.summary:
+                logger.info(f'Cache hit for {self.url}, model {self.cache.model}')
+                return self.cache.summary, self.cache.get_summary_model()
+            summary = self.summarize_by_llama(content)
+            if summary:
+                return summary, Model.LLAMA
+            summary = self.summarize_by_transformer(content)
+            if summary:
+                return summary, Model.TRANSFORMER
         else:
-            return content, Model.PREFIX
+            logger.info("Score %d is too small, ignore local llm", self.get_score())
+        return content, Model.PREFIX
 
     def summarize_by_openai(self, content):
         if not openai.api_key:
@@ -216,35 +212,6 @@ class News:
                     f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
         return answer
 
-    def summarize_by_transformer(self, content):
-        if config.disable_transformer:
-            logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
-            return ''
-        if self.cache.model == Model.TRANSFORMER.value and self.cache.summary:
-            logger.info(f"Cache hit for {self.url}, model {self.cache.model}")
-            return self.cache.summary
-        if self.get_score() <= 10:  # Avoid slow transformer
-            logger.info("Score %d is too small, ignore transformer", self.get_score())
-            return ''
-
-        start_time = time.time()
-        if len(content) > tokenizer.model_max_length:
-            content = bert_model(content, use_first=True,
-                                 ratio=tokenizer.model_max_length / len(content))
-        tokens_input = tokenizer.encode("summarize: " + content, return_tensors='pt',
-                                        max_length=tokenizer.model_max_length,
-                                        truncation=True)
-        summary_ids = model.generate(tokens_input, min_length=80,
-                                     max_length=int(config.summary_size / 4),  # tokens
-                                     length_penalty=20,
-                                     no_repeat_ngram_size=2,
-                                     temperature=0,
-                                     num_beams=2)
-        summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True,
-                                   clean_up_tokenization_spaces=True).capitalize()
-        logger.info(f'took {time.time() - start_time}s to generate: {summary}')
-        return summary
-
     def parse_step_answer(self, answer):
         if not answer:
             return answer
@@ -292,3 +259,26 @@ class News:
             self.cache.image_json = tm.to_json_str()
             self.img_id = fname
         self.cache.image_name = self.img_id  # tried but not found
+
+    def summarize_by_llama(self, content):
+        if config.disable_llama:
+            logger.warning("LLaMA is disabled by env DISABLE_LLAMA=1")
+            return ''
+
+        start_time = time.time()
+        from hacker_news.llm.llama import summarize_by_llama
+        resp = summarize_by_llama(content)
+        logger.info(f'took {time.time() - start_time}s to generate: {resp}')
+        return resp['choices'][0]['text'].strip()
+
+    def summarize_by_transformer(self, content):
+        if config.disable_transformer:
+            logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
+            return ''
+
+        start_time = time.time()
+        # Too time-consuming to init t5 model, so lazy load here until we have to
+        from hacker_news.llm.google_t5 import summarize_by_t5
+        summary = summarize_by_t5(content)
+        logger.info(f'took {time.time() - start_time}s to generate: {summary}')
+        return summary

@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import pathlib
+import unittest
 from unittest import TestCase, mock
 
 import config
@@ -26,12 +27,23 @@ class NewsSummaryTestCase(TestCase):
         self.assertEqual(summary, content)
         self.assertEqual(summarized_by, Model.EMBED)
 
+    @unittest.skipIf(config.disable_transformer, 'transformer is disabled')
     def test_summarize_by_transformer(self):
         news = News(score='11')
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
         with open(fpath, 'r') as fp:
             content = fp.read()
         summary = news.summarize_by_transformer(content)
+        self.assertGreater(len(summary), 80)
+        self.assertLess(len(summary), config.summary_size * 2)
+
+    @unittest.skipIf(config.disable_llama, 'llama is disabled')
+    def test_summarize_by_llama(self):
+        news = News(score='11')
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
+        with open(fpath, 'r') as fp:
+            content = fp.read()
+        summary = news.summarize_by_llama(content)
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
 
@@ -77,6 +89,9 @@ class NewsSummaryTestCase(TestCase):
 
     @mock.patch.object(News, 'parser')
     def test_all_from_cache(self, mock_news_parser):
+        mock_news_parser.get_content.return_value = 'never called content, should read from cache'
+        mock_news_parser.get_favicon_url.return_value = 'never called url, should read from cache'
+        mock_news_parser.get_illustration.return_value = None
         news = News(title='Flea market find is medieval hand cannon',
                     url='non_exist_url')
         db_summary = db.Summary(news.url, 'wonderful summary', Model.OPENAI)
@@ -85,7 +100,10 @@ class NewsSummaryTestCase(TestCase):
             db_summary.image_name = 'image_name.jpg'
             pathlib.Path(os.path.join(config.image_dir, db_summary.image_name)).touch()
             db.summary.put(db_summary)
-            news.pull_content()
+            cached = news.pull_content()
+            cached.birth = db_summary.birth
+            cached.access = db_summary.access
+            self.assertEqual(db_summary, cached)
             self.assertFalse(mock_news_parser.called)
         finally:
             session.delete(news.cache)
