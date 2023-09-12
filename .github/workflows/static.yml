@@ -43,7 +43,7 @@ jobs:
           echo -e "df -h:\n`df -h`"
           echo "pwd: `pwd`"
           echo "nproc: `nproc`"
-          echo "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`"
+          echo -e "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`"
 
       - name: Export vars to env
         env:

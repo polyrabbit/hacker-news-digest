@@ -262,7 +262,7 @@ class News:
 
     def summarize_by_llama(self, content):
         if config.disable_llama:
-            logger.warning("LLaMA is disabled by env DISABLE_LLAMA=1")
+            logger.info("LLaMA is disabled by env DISABLE_LLAMA=1")
             return ''
 
         start_time = time.time()

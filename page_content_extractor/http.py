@@ -51,7 +51,7 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Some sites just refuses bot connection
-ua = UserAgent(browsers=['chrome'], fallback='Twitterbot/1.0')
+ua = UserAgent(browsers=['chrome'], min_percentage=10.0)
 ua_str = ua.random
 logger.info(f'Use user-agent {ua_str}')
 
