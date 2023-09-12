@@ -40,7 +40,6 @@
             gtag('config', 'G-D9ZBQ6B4QQ');
         </script>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-        <script defer event-uuid="06ef5327-93ed-4390-9684-8bfdf58099b9" src="https://metricswave.com/js/visits.js"></script>
     {% endblock head %}
 </head>
 <body>
@@ -175,7 +174,7 @@
                 {% if news.comhead %}
                     <span class="host" title="Host">
                         {% if news.favicon %}
-                            <img src="{{ news.favicon }}" class="favicon img-circle"
+                            <img src="{{ news.favicon }}" class="favicon img-circle" loading="lazy"
                                  onerror="favicon_fall_back(this);" alt="{{ news.favicon }}"/>
                         {% else %}
                             <i class="fa fa-external-link"></i>

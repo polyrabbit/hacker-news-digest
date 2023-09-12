@@ -1,7 +1,7 @@
 export NEW_RELIC_CONFIG_FILE=config/newrelic.ini
 export BLUEWARE_CONFIG_FILE=config/blueware.ini 
 
-.PHONY: run test initdb dropdb gh_pages minify_static hash_static
+.PHONY: run test initdb dropdb gh_home_page gh_daily_page minify_static hash_static
 run: initdb
 	# DEBUG=1 python index.py
 	python index.py
@@ -9,10 +9,13 @@ run: initdb
 run-in-docker: initdb
 	gunicorn -b 0.0.0.0:5000 -c config.py index:app
 
-gh_pages:
+gh_daily_page:
+	python publish.py daily
+
+gh_home_page:
 	#find output -maxdepth 1 -type f -delete
 	rm -rf output/static
-	python publish.py
+	python publish.py home
 	cp -r static output/static
 	cp static/ads.txt output/ads.txt
 	ln -sf index.html output/hackernews  # backward compatibility

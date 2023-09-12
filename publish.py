@@ -1,8 +1,8 @@
+import argparse
 import logging
 import os
-import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urljoin
 
 from feedwerk.atom import AtomFeed
@@ -15,6 +15,10 @@ from hacker_news.algolia_api import get_daily_news
 from hacker_news.parser import HackerNewsParser
 
 logger = logging.getLogger(__name__)
+
+parser = argparse.ArgumentParser(description='Generate hacker news static page')
+parser.add_argument("page", choices=['home', 'daily'], help="Specify page to generate (home or daily)")
+args = parser.parse_args()
 
 
 def translate(text, lang):
@@ -45,16 +49,16 @@ def gen_frontpage():
 
 
 def gen_daily():
-    yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
-    yesterday_summary = os.path.join(config.output_dir, f'daily/{yesterday.strftime("%Y-%m-%d")}/index.html')
-    rand = random.random()
-    if not os.path.exists(yesterday_summary):
-        logger.info(f'Generating a fresh daily page as {yesterday_summary} does not exist')
-    elif rand > 0.3:
-        logger.info(f'Will not generate daily page this time, rand {rand}')
-        return
-    else:
-        logger.info(f'Will refresh daily page for the past {config.updatable_within_days} days')
+    # yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    # yesterday_summary = os.path.join(config.output_dir, f'daily/{yesterday.strftime("%Y-%m-%d")}/index.html')
+    # rand = random.random()
+    # if not os.path.exists(yesterday_summary):
+    #     logger.info(f'Generating a fresh daily page as {yesterday_summary} does not exist')
+    # elif rand > 0.3:
+    #     logger.info(f'Will not generate daily page this time, rand {rand}')
+    #     return
+    # else:
+    logger.info(f'Will refresh daily page for the past {config.updatable_within_days} days')
     daily_items = get_daily_news(config.updatable_within_days)
     for date, items in daily_items.items():
         for i, item in enumerate(items):
@@ -121,8 +125,10 @@ def gen_feed(news_list):
 
 
 if __name__ == '__main__':
-    gen_daily()
-    gen_frontpage()
-    db.translation.expire()
-    db.summary.expire()
-    db.image.expire()
+    if args.page == 'daily':
+        gen_daily()
+    else:
+        gen_frontpage()
+        db.translation.expire()
+        db.summary.expire()
+        db.image.expire()

@@ -142,7 +142,7 @@ $('.post-item .post-summary .feature-image').click(function (e) {
 });
 // Load feature-image later
 setTimeout(() => {
-    $('.post-item .post-summary .feature-image img').attr('loading', 'eager');
+    $('.post-item img').attr('loading', 'eager');
 }, 30 * 1000);
 // screenshot
 //   prepare qrcode as it's rendered asynchronously, or wait until https://github.com/davidshimjs/qrcodejs/pull/136 is merged

@@ -18,13 +18,25 @@ class Model(Enum):
     FULL = 'Full'
     EMBED = 'Embed'
     TRANSFORMER = 'GoogleT5'
+    LLAMA = 'LLaMA'
     OPENAI = 'OpenAI'
 
     def can_truncate(self):
         return self not in (Model.OPENAI, Model.EMBED)
 
+    def local_llm(self):
+        return self in (Model.LLAMA, Model.TRANSFORMER)
+
     def need_escape(self):
         return self in (Model.OPENAI,)
+
+    @classmethod
+    def from_value(cls, value):
+        try:
+            return cls(value)
+        except ValueError as e:
+            logger.warning(f'{e}')
+            return Model.FULL
 
 
 class Summary(Base):
@@ -48,12 +60,11 @@ class Summary(Base):
     def __repr__(self):
         return f'<{self.url} - {self.summary} - {self.model} - {self.birth} - {self.access}> - {self.favicon} - {self.image_name}'
 
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+
     def get_summary_model(self):
-        try:
-            return Model(self.model)
-        except ValueError as e:
-            logger.warning(f'{e}')
-            return Model.FULL
+        return Model.from_value(self.model)
 
 
 def get(url) -> Summary:
@@ -94,7 +105,7 @@ def expire():
 
     stmt = delete(Summary).where(
         Summary.access < datetime.utcnow() - timedelta(seconds=CONTENT_TTL),
-        Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value)))
+        Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value, Model.LLAMA.value)))
     result = session.execute(stmt)
     cost = (time.time() - start) * 1000
     logger.info(f'evicted {result.rowcount} content items, cost(ms): {cost:.2f}')
