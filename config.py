@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from logging.handlers import SysLogHandler
 from urllib.parse import urlparse
 
@@ -61,7 +62,8 @@ disable_transformer = os.getenv('DISABLE_TRANSFORMER') == '1'
 transformer_model = os.getenv('TRANSFORMER_MODEL') or 't5-large'
 logger.info(f'Use transformer model {transformer_model}')
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_keys = os.getenv('OPENAI_API_KEY').split(',') if os.getenv('OPENAI_API_KEY') else [None]
+openai.api_key = random.choice(openai_keys)  # Round-robin available keys
 openai_model = os.getenv('OPENAI_MODEL') or 'gpt-3.5-turbo'
 openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)
 logger.info(f'Use openai model {openai_model}')

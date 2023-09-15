@@ -121,12 +121,12 @@ jobs:
         uses: actions/configure-pages@v2
 
       - name: Upload Page Artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: 'output'
           retention-days: 7
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
         if: ${{ success() }}

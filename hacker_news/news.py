@@ -6,6 +6,7 @@ import time
 from json import JSONDecodeError
 
 import openai
+import tiktoken
 from slugify import slugify
 
 import config
@@ -128,11 +129,15 @@ class News:
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
-        if len(content) > 4096 * 2:
-            # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
-            content = content[:4096 * 2]
-
         content = content.replace('```', ' ').strip()  # in case of prompt injection
+
+        # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
+        if len(content) > 4096 * 2:
+            enc = tiktoken.encoding_for_model(config.openai_model)
+            tokens = enc.encode(content)
+            if len(tokens) > 4096 - 200:  # 4096: model's context limit, 200: function + prompt tokens (to reduce hitting rate limit)
+                content = enc.decode(tokens[:4096 - 200])
+
         title = self.title.replace('"', "'").replace('\n', ' ').strip() or 'no title'
         # Hope one day this model will be clever enough to output correct json
         # Note: sentence should end with ".", "third person" - https://news.ycombinator.com/item?id=36262670
