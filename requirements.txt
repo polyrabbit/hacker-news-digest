@@ -10,7 +10,7 @@ requests==2.31.0
 mock==5.1.0
 werkzeug==2.3.7
 feedwerk==1.1.0
-Pillow==10.0.0
+Pillow==10.0.1
 fake-useragent==1.2.1
 olefile
 openai==0.28.0
