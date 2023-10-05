@@ -69,5 +69,5 @@ class EmbeddableParserTestCase(TestCase):
     def test_gist_github_com(self):
         parser = EmbeddableExtractor('<html></html>', 'https://gist.github.com/polyrabbit/5693787')
         self.assertEqual(parser.get_content(),
-                         '<script src="https://gist.github.com/polyrabbit/5693787.js"></script>')
+                         '<iframe src="https://gist.github.com/polyrabbit/5693787.pibb" style="width: 100%; height: 250px; border: 0;"></iframe>')
         self.assertRaises(ParseError, EmbeddableExtractor, 'whatever', 'https://gist.github.com/')

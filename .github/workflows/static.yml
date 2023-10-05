@@ -108,7 +108,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
-        if: ${{ endswith(github.run_id, '3') || endswith(github.run_id, '6') || endswith(github.run_id, '9') }}
+        if: ${{ github.event_name == 'push' || endswith(github.run_id, '3') || endswith(github.run_id, '6') || endswith(github.run_id, '9') }}
 
       - name: Generate Home Page
         run: make gh_home_page

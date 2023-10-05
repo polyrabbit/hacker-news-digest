@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class CustomHTTPAdapter(HTTPAdapter):
-    timeout = timeout.Timeout(connect=2, read=20)
+    timeout = timeout.Timeout(connect=10, read=30)
 
     def __init__(self, *args, **kwargs):
         if "max_retries" not in kwargs:

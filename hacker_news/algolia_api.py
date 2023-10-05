@@ -44,7 +44,7 @@ def get_news(updatable_within_days):
         for hits in get_all_stories(filter):
             for rank, hit in enumerate(hits):
                 comment_url = f'https://news.ycombinator.com/item?id={hit["objectID"]}'
-                url = hit['url']
+                url = hit.get('url')
                 if not url:
                     url = comment_url
                 items.append(News(

@@ -116,4 +116,6 @@ class EmbeddableExtractor(object):
         path = urlsplit(url).path
         if path.count('/') < 2:
             raise ParseError('Invalid gist.github.com embeddable url(%s)' % url)
-        return '<script src="https://gist.github.com%s.js"></script>' % path
+        # See https://milanaryal.com.np/how-to-embed-github-gists-in-an-iframe-tag/
+        return f'<iframe src="https://gist.github.com{path}.pibb" style="width: 100%; height: 250px; border: 0;"></iframe>'
+        # return '<script src="https://gist.github.com%s.js"></script>' % path
