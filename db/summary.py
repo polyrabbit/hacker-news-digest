@@ -108,6 +108,7 @@ def expire():
         Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value, Model.LLAMA.value)))
     result = session.execute(stmt)
     cost = (time.time() - start) * 1000
-    logger.info(f'evicted {result.rowcount} content items, cost(ms): {cost:.2f}')
+    logger.info(f'evicted {result.rowcount} full content items, cost(ms): {cost:.2f}')
+
     session.commit()
     return deleted + result.rowcount

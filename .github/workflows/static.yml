@@ -20,6 +20,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  deployments: write
 
 # Allow one concurrent deployment
 concurrency:
@@ -130,3 +131,13 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v2
         if: ${{ success() }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@1
+        if: ${{ success() }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: hndigest
+          directory: 'output'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
