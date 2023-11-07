@@ -63,7 +63,7 @@ transformer_model = os.getenv('TRANSFORMER_MODEL') or 't5-large'
 logger.info(f'Use transformer model {transformer_model}')
 
 openai_keys = os.getenv('OPENAI_API_KEY').split(',') if os.getenv('OPENAI_API_KEY') else [None]
-openai.api_key = random.choice(openai_keys)  # Round-robin available keys
+raise Exception("The 'openai.api_key' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(api_key=random.choice(openai_keys))'")  # Round-robin available keys
 logger.info(f'Use openai api key #{openai_keys.index(openai.api_key)}')
 openai_model = os.getenv('OPENAI_MODEL') or 'gpt-3.5-turbo'
 openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)

@@ -5,7 +5,9 @@ import re
 import time
 from json import JSONDecodeError
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import tiktoken
 from slugify import slugify
 
@@ -188,17 +190,14 @@ class News:
             }}]
             kwargs['function_call'] = {"name": "render"}
         if config.openai_model.startswith('text-'):
-            resp = openai.Completion.create(
-                prompt=prompt,
-                **kwargs
-            )
+            resp = client.completions.create(prompt=prompt,
+            **kwargs)
             answer = resp['choices'][0]['text'].strip()
         else:
-            resp = openai.ChatCompletion.create(
-                messages=[
-                    {'role': 'user', 'content': prompt},
-                ],
-                **kwargs)
+            resp = client.chat.completions.create(messages=[
+                {'role': 'user', 'content': prompt},
+            ],
+            **kwargs)
             message = resp["choices"][0]["message"]
             if message.get('function_call'):
                 json_str = message['function_call']['arguments']
