@@ -41,6 +41,8 @@ jobs:
       - name: My Host
         run: |
           echo -e "free -h:\n`free -h`"
+          sudo rm -rf /usr/local/lib/android # release about 12 GB, cost 1min
+          sudo rm -rf /usr/share/dotnet # release about 1 GB, cost 2s
           echo -e "df -h:\n`df -h`"
           echo "pwd: `pwd`"
           echo "nproc: `nproc`"

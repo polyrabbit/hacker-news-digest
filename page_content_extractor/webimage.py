@@ -2,13 +2,13 @@
 import io
 import json
 import logging
+import math
 import mimetypes
 import pathlib
 from functools import lru_cache
 from hashlib import md5
 from urllib.parse import urlparse, urljoin, unquote
 
-import math
 from PIL import Image
 
 from page_content_extractor.http import session
@@ -101,13 +101,14 @@ class WebImage(object):
                 break
             bytes.append(content)
             read_bytes += len(content)
-            if read_bytes > 16 << 20:
+            if read_bytes > (17 << 20):
                 # To avoid infinite chunk response like - https://hookrace.net/time.gif
-                raise IOError(
+                raise OverflowError(
                     f'too much or infinite content - already read {read_bytes} bytes')
         # if anything goes wrong, do not set self._raw_data so it will try again the next time.
         self._raw_data = b''.join(bytes)
-        self.content_type = resp.headers['Content-Type']
+        if 'Content-Type' in resp.headers:
+            self.content_type = resp.headers['Content-Type']
         return self._raw_data
 
     @raw_data.setter
