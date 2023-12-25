@@ -42,7 +42,7 @@ class Model(Enum):
 class Summary(Base):
     __tablename__ = 'summary'
 
-    url = mapped_column(String(1024), primary_key=True)
+    url = mapped_column(String(4096), primary_key=True)
     summary = mapped_column(String(65535))
     model = mapped_column(String(16), default=Model.FULL.value)
     birth = mapped_column(TIMESTAMP, default=datetime.utcnow)

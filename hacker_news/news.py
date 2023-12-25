@@ -155,7 +155,7 @@ class News:
                     f'```{content.strip(".")}.```', False)
             return summary
         except Exception as e:
-            logger.exception(f'Failed to summarize using openai, {e}')  # Make this error explicit in the log
+            logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
             return ''
 
     def openai_complete(self, prompt, need_json):
