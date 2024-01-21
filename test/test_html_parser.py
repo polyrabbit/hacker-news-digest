@@ -247,6 +247,15 @@ and supported by community <em>donations</em>.</p></article>
         parser = HtmlContentExtractor(html_doc)
         self.assertEqual(parser.get_meta_description(), "aaaa")
 
+    def test_need_escape_unsafe_meta_description(self):
+        content = "The upload handler checks that the content type starts with &quot;image/&quot;, but this check includes the image/svg+xml content type, so the following image is accepted: &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt; &lt;svg xmlns=&quot;http://w..."
+        html_doc = f"""
+        <meta name="description" content="{content}">
+        """
+        parser = HtmlContentExtractor(html_doc)
+        # &quot; == &#34;
+        self.assertEqual(parser.get_meta_description(), content.replace('&quot;', '&#34;'))
+
     def test_get_all_meta_images(self):
         src = 'https://opengraph.githubassets.com/740568cb37e42d5beb5c65378e1f66a0a72e5cb1650c8a45df4466e9472825a2/tikv/agatedb'
         html_doc = f"""

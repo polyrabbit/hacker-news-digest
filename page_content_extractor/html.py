@@ -143,7 +143,8 @@ class HtmlContentExtractor(object):
             for desc in descs:
                 content = desc.get('content', '')
                 if len(content) > len(self._meta_desc):
-                    self._meta_desc = content
+                    # Reason to escape https://github.com/berthubert/trifecta/issues/38
+                    self._meta_desc = escape(content)
         return self._meta_desc
 
     def get_meta_image(self):
