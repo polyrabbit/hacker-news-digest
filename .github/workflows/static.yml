@@ -106,6 +106,10 @@ jobs:
       - name: Unit Test
         run: make test
         if: ${{ github.event_name == 'push' }}
+        env:
+          COZE_API_ENDPOINT: ${{ secrets.COZE_API_ENDPOINT }}
+          COZE_API_KEY: ${{ secrets.COZE_API_KEY }}
+          COZE_BOT_ID: ${{ secrets.COZE_BOT_ID }}
 
       - name: Generate Daily Page
         run: make gh_daily_page
@@ -113,6 +117,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
+          COZE_API_ENDPOINT: ${{ secrets.COZE_API_ENDPOINT }}
+          COZE_API_KEY: ${{ secrets.COZE_API_KEY }}
+          COZE_BOT_ID: ${{ secrets.COZE_BOT_ID }}
         if: ${{ github.event_name == 'push' || endswith(github.run_id, '3') || endswith(github.run_id, '6') || endswith(github.run_id, '9') }}
 
       - name: Generate Home Page
@@ -121,6 +128,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SYSLOG_ADDRESS: ${{ secrets.SYSLOG_ADDRESS }}
+          COZE_API_ENDPOINT: ${{ secrets.COZE_API_ENDPOINT }}
+          COZE_API_KEY: ${{ secrets.COZE_API_KEY }}
+          COZE_BOT_ID: ${{ secrets.COZE_BOT_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v2

@@ -8,6 +8,7 @@ import config
 import db
 from db.engine import session
 from db.summary import Model
+from hacker_news.llm.coze import summarize_by_coze
 from hacker_news.news import News
 
 
@@ -44,6 +45,15 @@ class NewsSummaryTestCase(TestCase):
         with open(fpath, 'r') as fp:
             content = fp.read()
         summary = news.summarize_by_llama(content)
+        self.assertGreater(len(summary), 80)
+        self.assertLess(len(summary), config.summary_size * 2)
+
+    @unittest.skipUnless(config.coze_enabled(), 'coze is disabled')
+    def test_summarize_by_coze(self):
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
+        with open(fpath, 'r') as fp:
+            content = fp.read()
+        summary = summarize_by_coze(content)
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
 

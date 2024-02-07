@@ -63,6 +63,11 @@ class WebImage(object):
             logger.info('Failed on image bytesize check, size is %s, %s', len(self.raw_data),
                         self.url)
             return False
+        img = Image.open(io.BytesIO(self.raw_data))
+        colors = img.getcolors(maxcolors=2)
+        if colors is not None and len(colors) == 1:
+            logger.info('Maybe a solid color image(%s), colors=%s', self.url, len(colors))
+            return True
         self._is_candidate = True
         self.width, self.height = width, height
         return True

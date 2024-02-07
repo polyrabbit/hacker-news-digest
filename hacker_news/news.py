@@ -6,12 +6,13 @@ import time
 from json import JSONDecodeError
 
 import openai
-import tiktoken
 from slugify import slugify
 
 import config
 import db.summary
 from db.summary import Model
+from hacker_news.llm.coze import summarize_by_coze
+from hacker_news.llm.openai import sanitize_for_openai, sanitize_title
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
@@ -104,10 +105,10 @@ class News:
                 f'No need to summarize since we have a small text of size {len(content)}')
             return content, Model.FULL
 
-        summary = self.summarize_by_openai(content)
+        summary = self.summarize_by_coze(content) or self.summarize_by_openai(content)
         if summary:
             return summary, Model.OPENAI
-        if self.get_score() >= 10:  # Avoid slow local inference
+        if self.get_score() >= config.local_llm_score_threshold:  # Avoid slow local inference
             if Model.from_value(self.cache.model).local_llm() and self.cache.summary:
                 logger.info(f'Cache hit for {self.url}, model {self.cache.model}')
                 return self.cache.summary, self.cache.get_summary_model()
@@ -121,6 +122,11 @@ class News:
             logger.info("Score %d is too small, ignore local llm", self.get_score())
         return content, Model.PREFIX
 
+    def summarize_by_coze(self, content):
+        if self.get_score() < config.local_llm_score_threshold:
+            return ''
+        return summarize_by_coze(content)
+
     def summarize_by_openai(self, content):
         if not openai.api_key:
             logger.info("OpenAI API key is not set")
@@ -129,16 +135,10 @@ class News:
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
-        content = content.replace('```', ' ').strip()  # in case of prompt injection
+        # 200: function + prompt tokens (to reduce hitting rate limit)
+        content = sanitize_for_openai(content, overhead=200)
 
-        # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
-        if len(content) > 4096 * 2:
-            enc = tiktoken.encoding_for_model(config.openai_model)
-            tokens = enc.encode(content)
-            if len(tokens) > 4096 - 200:  # 4096: model's context limit, 200: function + prompt tokens (to reduce hitting rate limit)
-                content = enc.decode(tokens[:4096 - 200])
-
-        title = self.title.replace('"', "'").replace('\n', ' ').strip() or 'no title'
+        title = sanitize_title(self.title) or 'no title'
         # Hope one day this model will be clever enough to output correct json
         # Note: sentence should end with ".", "third person" - https://news.ycombinator.com/item?id=36262670
         prompt = f'Output only answers to following 3 steps.\n' \
@@ -158,6 +158,7 @@ class News:
             logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
             return ''
 
+    # TODO: move to llm module
     def openai_complete(self, prompt, need_json):
         start_time = time.time()
         kwargs = {'model': config.openai_model,
