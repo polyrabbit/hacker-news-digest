@@ -366,7 +366,9 @@ class HtmlContentExtractor(object):
             smr = summarize(self.article, max_length).strip()
         if len(smr) <= len(self.get_meta_description()):
             logger.info('Calculated summary is shorter than meta description(%s)', self.url)
-            return self.get_meta_description()
+            smr = self.get_meta_description()
+        if not smr:
+            logger.info('No content found on %s, doc: %s', self.url, self.doc)
         return smr
 
     def get_illustration(self):

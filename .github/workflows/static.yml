@@ -40,13 +40,18 @@ jobs:
     steps:
       - name: My Host
         run: |
-          echo -e "free -h:\n`free -h`"
+          sudo apt install -y -qq moreutils  # https://unix.stackexchange.com/questions/26728/prepending-a-timestamp-to-each-line-of-output-from-a-command
+          echo -e "free -h:\n`free -h`" | ts
+          echo
           sudo rm -rf /usr/local/lib/android # release about 12 GB, cost 1min
           sudo rm -rf /usr/share/dotnet # release about 1 GB, cost 2s
-          echo -e "df -h:\n`df -h`"
-          echo "pwd: `pwd`"
-          echo "nproc: `nproc`"
-          echo -e "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`"
+          echo -e "df -h:\n`df -h`" | ts
+          echo
+          echo "pwd: `pwd`" | ts
+          echo
+          echo "nproc: `nproc`" | ts
+          echo
+          echo -e "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`" | ts
 
       - name: Export vars to env
         env:
@@ -88,7 +93,7 @@ jobs:
         run: pip install --upgrade -r requirements.txt
 
       - name: Download Page Artifact
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         with:
           name: 'github-pages'
           path: 'output'
@@ -133,21 +138,21 @@ jobs:
           COZE_BOT_ID: ${{ secrets.COZE_BOT_ID }}
 
       - name: Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v4
 
       - name: Upload Page Artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'output'
           retention-days: 7
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
         if: ${{ success() }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/pages-action@v1
         continue-on-error: true  # tolerate cloudflare api failure
         if: ${{ success() }}
         with:
