@@ -13,6 +13,7 @@ coze_headers = {
     'Authorization': f'Bearer {config.coze_api_key}',
 }
 
+
 # example response (SSEs):
 # b'event:message
 # data:{
@@ -56,18 +57,23 @@ def summarize_by_coze(content: str) -> str:
     # Seems coze adds more context in prompt, and even answer is counted
     content = sanitize_for_openai(content, overhead=1000)
 
+    # For model: GPT-4 Turbo (128K), temperature: 0.5 - GPT-4 Turbo is an excellent rule follower.
     prompt = (f'Use third person mood to summarize the main points of the following article delimited by triple backticks in 2 concise sentences. '
-              f'Ensure the summary does not exceed 100 characters.\n'
+              f'Ensure the summary does not exceed 300 characters.\n'
               f'```{content}.```')
 
     try:
-        resp = session.post(config.coze_api_endpoint, headers=coze_headers, stream=True, json={
-            'conversation_id': f'{random.randint(100, 9999)}',
-            'bot_id': config.coze_bot_id,
-            'user': 'single_user',
-            'query': prompt,
-            'stream': False,
-        })
+        resp = session.post(url=config.coze_api_endpoint,
+                            headers=coze_headers,
+                            stream=True,
+                            timeout=30,
+                            json={
+                                'conversation_id': f'{random.randint(100, 9999)}',
+                                'bot_id': config.coze_bot_id,
+                                'user': 'single_user',
+                                'query': prompt,
+                                'stream': False,
+                            })
         resp.raise_for_status()
 
         for line in resp.iter_lines():
