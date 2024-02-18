@@ -62,3 +62,15 @@ class WebImageTestCase(TestCase):
         img.try_compress()
         self.assertEqual('.webp', img.suffix)
         self.assertEqual('c1a11593331f7678c7addb3c0001f57f.webp', img.uniq_name())
+
+    def test_predominantly_white_color(self):
+        for fname, is_white_color in (
+                ('home.png', False),
+                ('reddit.png', True),
+                ('medium_Comment_f406ff2a89.png', False),
+        ):
+            fpath = os.path.join(os.path.dirname(__file__), 'fixtures', fname)
+            img = WebImage.from_json_str('{"url":"%s"}' % fpath)
+            with open(fpath, 'rb') as stream:
+                img.raw_data = stream.read()
+            self.assertEqual(is_white_color, img.is_predominantly_white_color())

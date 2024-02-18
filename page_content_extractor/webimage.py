@@ -63,14 +63,8 @@ class WebImage(object):
             logger.info('Failed on image bytesize check, size is %s, %s', len(self.raw_data),
                         self.url)
             return False
-        try:
-            img = Image.open(io.BytesIO(self.raw_data))
-            colors = img.getcolors(maxcolors=2)
-            if colors is not None and len(colors) == 1:
-                logger.info('Maybe a solid color image(%s), colors=%s', self.url, len(colors))
-                return False
-        except Exception as e:
-            logger.warning('Failed on image colors check, %s, url=%s', e, self.url)
+        if self.is_predominantly_white_color():
+            return False
         self._is_candidate = True
         self.width, self.height = width, height
         return True
@@ -122,6 +116,24 @@ class WebImage(object):
     @raw_data.setter
     def raw_data(self, value):
         self._raw_data = value
+
+    def is_predominantly_white_color(self, predominance=.99, white_distance=10):
+        try:
+            maxpixels = 1024
+            with Image.open(io.BytesIO(self.raw_data)) as img:
+                img = img.convert('RGB')
+                # img.show()
+                if img.width and img.height:
+                    maxpixels = img.width * img.height
+                colors = img.getcolors(maxcolors=maxpixels)
+                total_count = sum(count for count, color in colors)
+                for count, color in colors:
+                    if count / total_count > predominance and all(255 - white_distance <= value <= 255 for value in color):
+                        logger.info('Maybe a solid color image(%s), dominant_pct=%f, RGB=%s', self.url, count / total_count, color)
+                        return True
+        except Exception as e:
+            logger.warning('Failed on image colors check, %s, url=%s', e, self.url)
+        return False
 
     # 'image/svg+xml;charset=utf-8' -> svg
     def guess_suffix(self):
