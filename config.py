@@ -23,7 +23,7 @@ if os.getenv('SYSLOG_ADDRESS'):
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO,
                     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d %(funcName)s] - %(message)s',
                     handlers=log_handlers)
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 def int_env(name, default):

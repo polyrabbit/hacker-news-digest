@@ -1,0 +1,51 @@
+# Simple workflow for deploying static content to GitHub Pages
+name: Probe
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+  repository_dispatch:
+    types: [ probe-hn-sites ]
+
+  schedule:
+   - cron: "*/10 * * * *"
+
+# Allow one concurrent deployment
+concurrency:
+  group: probe-event-${{ github.event_name }}  # So UT won't be interrupted by cronjobs
+  cancel-in-progress: true # Avoid batch pending when one job hangs
+
+jobs:
+  # Single deploy job since we're just deploying
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.3.0
+        with:
+          python-version: 3.9
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: pip install --upgrade -r requirements.txt
+
+      - name: Blog
+        run: python probe.py blog
+        if: ${{ always() }}
+
+      - name: HN Summary
+        run: python probe.py hn
+        if: ${{ always() }}
+
+      - name: HN Summary ZH
+        run: python probe.py hn-zh
+        if: ${{ always() }}
