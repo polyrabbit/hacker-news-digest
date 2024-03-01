@@ -7,7 +7,7 @@ from sqlalchemy import String, column, Values, select
 
 import config
 from db import Summary
-from db.engine import session
+from db.engine import session_scope
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,11 @@ def expire():
         stmt = select(values).join(Summary, Summary.image_name == values.c.name,
                                    isouter=True  # Add this to implement left outer join
                                    ).where(Summary.image_name.is_(None))
-        for image_name in session.execute(stmt):
-            logger.debug(f'removing {image_name[0]}')
-            os.remove(os.path.join(config.image_dir, image_name[0]))
-            removed += 1
+        with session_scope() as session:
+            for image_name in session.execute(stmt):
+                logger.debug(f'removing {image_name[0]}')
+                os.remove(os.path.join(config.image_dir, image_name[0]))
+                removed += 1
     cost = (time.time() - start) * 1000
     logger.info(f'removed {removed} feature images, cost(ms): {cost:.2f}')
 

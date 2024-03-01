@@ -7,7 +7,7 @@ from sqlalchemy import String, TIMESTAMP, select, delete
 from sqlalchemy.orm import mapped_column
 
 import config
-from db.engine import Base, session
+from db.engine import Base, session_scope
 
 logger = logging.getLogger(__name__)
 CONTENT_TTL = 1 * 24 * 60 * 60
@@ -70,7 +70,8 @@ class Summary(Base):
 def get(url) -> Summary:
     if config.disable_summary_cache:
         return Summary(url)
-    summary = session.get(Summary, url)  # Try to leverage the identity map cache
+    with session_scope() as session:
+        summary = session.get(Summary, url)  # Try to leverage the identity map cache
     return summary or Summary(url)
 
 
@@ -83,15 +84,16 @@ def put(db_summary: Summary) -> Summary:
         db_summary.image_name = db_summary.image_name[:Summary.image_name.type.length]
     if db_summary.image_json:
         db_summary.image_json = db_summary.image_json[:Summary.image_json.type.length]
-    db_summary = session.merge(db_summary)
-    session.commit()
+    with session_scope() as session:
+        db_summary = session.merge(db_summary)
     return db_summary
 
 
 def filter_url(url_list: list[str]) -> set[str]:
     # use `all()` to populate the Identity Map so that following `get` can read from cache
-    summaries = session.scalars(select(Summary).where(Summary.url.in_(url_list))).all()
-    assert len(session.identity_map) == len(summaries)
+    with session_scope() as session:
+        summaries = session.scalars(select(Summary).where(Summary.url.in_(url_list))).all()
+        assert len(session.identity_map) == len(summaries)
     return set(s.url for s in summaries)
 
 
@@ -99,16 +101,16 @@ def expire():
     start = time.time()
     stmt = delete(Summary).where(
         Summary.access < datetime.utcnow() - timedelta(seconds=config.summary_ttl))
-    result = session.execute(stmt)
-    deleted = result.rowcount
-    logger.info(f'evicted {result.rowcount} summary items')
+    with session_scope() as session:
+        result = session.execute(stmt)
+        deleted = result.rowcount
+        logger.info(f'evicted {result.rowcount} summary items')
 
-    stmt = delete(Summary).where(
-        Summary.access < datetime.utcnow() - timedelta(seconds=CONTENT_TTL),
-        Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value, Model.LLAMA.value)))
-    result = session.execute(stmt)
-    cost = (time.time() - start) * 1000
-    logger.info(f'evicted {result.rowcount} full content items, cost(ms): {cost:.2f}')
+        stmt = delete(Summary).where(
+            Summary.access < datetime.utcnow() - timedelta(seconds=CONTENT_TTL),
+            Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value, Model.LLAMA.value)))
+        result = session.execute(stmt)
+        cost = (time.time() - start) * 1000
+        logger.info(f'evicted {result.rowcount} full content items, cost(ms): {cost:.2f}')
 
-    session.commit()
     return deleted + result.rowcount

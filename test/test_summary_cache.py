@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import config
 import db.summary
 from db import translation, Translation, summary
-from db.engine import session
+from db.engine import session_scope
 
 
 class TranslationCacheTestCase(unittest.TestCase):
@@ -14,7 +14,8 @@ class TranslationCacheTestCase(unittest.TestCase):
         self.assertEqual('hello', translation.get('hello', 'en'))
         deleted = translation.expire()
         self.assertEqual(0, deleted)
-        trans = session.get(Translation, 'hello')
+        with session_scope() as session:
+            trans = session.get(Translation, 'hello')
         trans.access = datetime.utcnow() - timedelta(seconds=translation.config.summary_ttl + 1)
         deleted = translation.expire()
         self.assertEqual(1, deleted)
@@ -24,7 +25,8 @@ class TranslationCacheTestCase(unittest.TestCase):
         self.assertEqual('world', summary.get('hello').summary)
         deleted = summary.expire()
         self.assertEqual(0, deleted)
-        summ = session.get(db.Summary, 'hello')
+        with session_scope() as session:
+            summ = session.get(db.Summary, 'hello')
         summ.access = datetime.utcnow() - timedelta(seconds=summary.CONTENT_TTL + 1)  # not expired
         deleted = summary.expire()
         self.assertEqual(0, deleted)

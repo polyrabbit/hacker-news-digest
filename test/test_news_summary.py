@@ -6,7 +6,7 @@ from unittest import TestCase, mock
 
 import config
 import db
-from db.engine import session
+from db.engine import session_scope
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
 from hacker_news.news import News
@@ -94,8 +94,8 @@ class NewsSummaryTestCase(TestCase):
             self.assertEqual('wonderful summary', summary)
             self.assertEqual(news.cache.get_summary_model(), summarized_by)
         finally:
-            session.delete(news.cache)
-            session.commit()
+            with session_scope() as session:
+                session.delete(news.cache)
 
     @mock.patch.object(News, 'parser')
     def test_all_from_cache(self, mock_news_parser):
@@ -116,6 +116,6 @@ class NewsSummaryTestCase(TestCase):
             self.assertEqual(db_summary, cached)
             self.assertFalse(mock_news_parser.called)
         finally:
-            session.delete(news.cache)
-            pathlib.Path(os.path.join(config.image_dir, db_summary.image_name)).unlink()
-            session.commit()
+            with session_scope() as session:
+                session.delete(news.cache)
+                pathlib.Path(os.path.join(config.image_dir, db_summary.image_name)).unlink()

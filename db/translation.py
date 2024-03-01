@@ -6,7 +6,7 @@ from sqlalchemy import String, delete, select
 from sqlalchemy.orm import mapped_column
 
 import config
-from db.engine import Base, session
+from db.engine import Base, session_scope
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +28,11 @@ def get(text, to_lang):
         return text  # shortcut
     text = text[:Translation.source.type.length]
     stmt = select(Translation).where(Translation.source == text, Translation.language == to_lang)
-    trans = session.scalars(stmt).first()
-    if trans:
-        trans.access = datetime.utcnow()
-        # session.commit()  # Ok to batch it
-        return trans.target
+    with session_scope(defer_commit=True) as session:  # Ok to batch it
+        trans = session.scalars(stmt).first()
+        if trans:
+            trans.access = datetime.utcnow()
+            return trans.target
     return text
 
 
@@ -42,16 +42,16 @@ def add(source, target, lang):
     source = source[:Translation.source.type.length]
     target = target[:Translation.source.type.length]
     trans = Translation(source=source, target=target, language=lang, access=datetime.utcnow())
-    session.merge(trans)  # source is primary key
-    session.commit()
+    with session_scope() as session:
+        session.merge(trans)  # source is primary key
 
 
 def expire():
     start = time.time()
     stmt = delete(Translation).where(
         Translation.access < datetime.utcnow() - timedelta(seconds=config.summary_ttl))
-    result = session.execute(stmt)
-    session.commit()
+    with session_scope() as session:
+        result = session.execute(stmt)
     cost = (time.time() - start) * 1000
     logger.info(f'evicted {result.rowcount} translation items, cost(ms): {cost:.2f}')
     return result.rowcount

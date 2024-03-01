@@ -17,7 +17,10 @@ class CustomHTTPAdapter(HTTPAdapter):
 
     def __init__(self, *args, **kwargs):
         if "max_retries" not in kwargs:
-            kwargs['max_retries'] = 3
+            # Just fail fast, otherwise the total timeout will be 30s * max_retries
+            # bad case is https://struct.ai/blog/introducing-the-struct-chat-platform,
+            # which blocks all image requests, so the whole update-round times out
+            kwargs['max_retries'] = 1
         # Remove until switching to Python 3.12,
         # https://stackoverflow.com/questions/71603314/ssl-error-unsafe-legacy-renegotiation-disabled
         # https://github.com/urllib3/urllib3/issues/2653
