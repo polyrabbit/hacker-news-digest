@@ -147,12 +147,13 @@ class News:
                  f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
                  f'```{content.strip(".")}.```'
         try:
-            answer = self.openai_complete(prompt, True)
-            summary = self.parse_step_answer(answer).strip()
-            if not summary:  # If step parse failed, ignore the translation
-                summary = self.openai_complete(
-                    f'Summarize the article delimited by triple backticks in 2 sentences.\n'
-                    f'```{content.strip(".")}.```', False)
+            # Too many exceptions to support translation, give up...
+            # answer = self.openai_complete(prompt, True)
+            # summary = self.parse_step_answer(answer).strip().strip(' *-')
+            # if not summary:  # If step parse failed, ignore the translation
+            summary = self.openai_complete(
+                f'Use third person mood to summarize the main points of the following article delimited by triple backticks in 2 concise sentences. Ensure the summary does not exceed 100 characters.\n'
+                f'```{content.strip(".")}.```', False)
             return summary
         except Exception as e:
             logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
@@ -219,7 +220,7 @@ class News:
         return answer
 
     def parse_step_answer(self, answer):
-        if not answer:
+        if not answer or isinstance(answer, str):
             return answer
         db.translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
         db.translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')

@@ -5,7 +5,6 @@ import requests.utils
 import urllib3
 from fake_useragent import UserAgent
 from requests.adapters import HTTPAdapter
-from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import timeout
 from urllib3.util.ssl_ import create_urllib3_context
 

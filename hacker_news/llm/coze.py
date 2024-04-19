@@ -58,7 +58,7 @@ def summarize_by_coze(content: str) -> str:
     content = sanitize_for_openai(content, overhead=1000)
 
     # For model: GPT-4 Turbo (128K), temperature: 0.5 - GPT-4 Turbo is an excellent rule follower.
-    prompt = (f'Use third person mood to summarize the main points of the following article delimited by triple backticks in 2 concise sentences. '
+    prompt = (f'Use third person mood to summarize the main points of the following article delimited by triple backticks in 2 concise English sentences. '
               f'Ensure the summary does not exceed 300 characters.\n'
               f'```{content}.```')
 
@@ -75,20 +75,7 @@ def summarize_by_coze(content: str) -> str:
                                 'stream': False,
                             })
         resp.raise_for_status()
-
-        for line in resp.iter_lines():
-            if line and line.startswith(b'data:'):
-                line = line[len(b'data:'):].strip()
-                try:
-                    resp_json = json.loads(line)
-                except json.JSONDecodeError as e:
-                    logger.warning(f'Failed to decode coze response, unexpected json {line}, error: {e}')
-                    return ''
-                break
-        else:
-            logger.warning(f'Unexpected coze response, no data line found')
-            return ''
-
+        resp_json = resp.json()
     except Exception as e:
         logger.warning(f'Failed to summarize using coze, {e}')
         return ''
