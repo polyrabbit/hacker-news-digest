@@ -12,7 +12,7 @@ import config
 import db.summary
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
-from hacker_news.llm.openai import sanitize_for_openai, sanitize_title
+from hacker_news.llm.openai import summarize_by_openai_family
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
@@ -105,7 +105,7 @@ class News:
                 f'No need to summarize since we have a small text of size {len(content)}')
             return content, Model.FULL
 
-        summary = self.summarize_by_coze(content) or self.summarize_by_openai(content)
+        summary = self.summarize_by_openai(content)
         if summary:
             return summary, Model.OPENAI
         if self.get_score() >= config.local_llm_score_threshold:  # Avoid slow local inference
@@ -135,89 +135,15 @@ class News:
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 
-        # 200: function + prompt tokens (to reduce hitting rate limit)
-        content = sanitize_for_openai(content, overhead=200)
-
-        title = sanitize_title(self.title) or 'no title'
-        # Hope one day this model will be clever enough to output correct json
-        # Note: sentence should end with ".", "third person" - https://news.ycombinator.com/item?id=36262670
-        prompt = f'Output only answers to following 3 steps.\n' \
-                 f'1 - Summarize the article delimited by triple backticks in 2 sentences.\n' \
-                 f'2 - Translate the summary into Chinese.\n' \
-                 f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
-                 f'```{content.strip(".")}.```'
         try:
             # Too many exceptions to support translation, give up...
             # answer = self.openai_complete(prompt, True)
             # summary = self.parse_step_answer(answer).strip().strip(' *-')
             # if not summary:  # If step parse failed, ignore the translation
-            summary = self.openai_complete(
-                f'Use third person mood to summarize the main points of the following article delimited by triple backticks in 2 concise sentences. Ensure the summary does not exceed 100 characters.\n'
-                f'```{content.strip(".")}.```', False)
-            return summary
+            return summarize_by_openai_family(content, False)
         except Exception as e:
             logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
             return ''
-
-    # TODO: move to llm module
-    def openai_complete(self, prompt, need_json):
-        start_time = time.time()
-        kwargs = {'model': config.openai_model,
-                  # one token generally corresponds to ~4 characters
-                  # 'max_tokens': int(config.summary_size / 4),
-                  'stream': False,
-                  'temperature': 0,
-                  'n': 1,  # only one choice
-                  'timeout': 30}
-        if need_json:
-            kwargs['functions'] = [{"name": "render", "parameters": {
-                "type": "object",
-                "properties": {
-                    "summary": {
-                        "type": "string",
-                        "description": "English summary"
-                    },
-                    "summary_zh": {
-                        "type": "string",
-                        "description": "Chinese summary"
-                    },
-                    "translation": {
-                        "type": "string",
-                        "description": "Chinese translation of sentence"
-                    },
-                },
-                # "required": ["summary"]  # ChatGPT only returns the required field?
-            }}]
-            kwargs['function_call'] = {"name": "render"}
-        if config.openai_model.startswith('text-'):
-            resp = openai.Completion.create(
-                prompt=prompt,
-                **kwargs
-            )
-            answer = resp['choices'][0]['text'].strip()
-        else:
-            resp = openai.ChatCompletion.create(
-                messages=[
-                    {'role': 'user', 'content': prompt},
-                ],
-                **kwargs)
-            message = resp["choices"][0]["message"]
-            if message.get('function_call'):
-                json_str = message['function_call']['arguments']
-                if resp["choices"][0]['finish_reason'] == 'length':
-                    json_str += '"}'  # best effort to save truncated answers
-                try:
-                    answer = json.loads(json_str)
-                except JSONDecodeError as e:
-                    logger.warning(f'Failed to decode answer from openai, will fallback to plain text, error: {e}')
-                    return ''  # Let fallback code kicks in
-            else:
-                answer = message['content'].strip()
-        logger.info(f'prompt: {prompt}')
-        logger.info(f'took {time.time() - start_time}s to generate: '
-                    # Default str(resp) prints \u516c
-                    f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
-        return answer
 
     def parse_step_answer(self, answer):
         if not answer or isinstance(answer, str):

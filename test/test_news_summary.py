@@ -4,11 +4,13 @@ import pathlib
 import unittest
 from unittest import TestCase, mock
 
+import openai
 import config
 import db
 from db.engine import session_scope
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
+from hacker_news.llm.openai import summarize_by_openai_family
 from hacker_news.news import News
 
 
@@ -54,6 +56,17 @@ class NewsSummaryTestCase(TestCase):
         with open(fpath, 'r') as fp:
             content = fp.read()
         summary = summarize_by_coze(content)
+        self.assertGreater(len(summary), 80)
+        self.assertLess(len(summary), config.summary_size * 2)
+
+    @unittest.skipUnless(openai.api_key, 'openai families are disabled')
+    def test_summarize_by_openai_family(self):
+        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
+        with open(fpath, 'r') as fp:
+            content = fp.read()
+        summary = summarize_by_openai_family(content, False)
+        self.assertIn('Telnet', summary)
+        self.assertFalse(summary.startswith(': '))
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
 
