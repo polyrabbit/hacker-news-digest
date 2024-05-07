@@ -283,7 +283,10 @@ and supported by community <em>donations</em>.</p></article>
     @unittest.skip('Only for debug purpose')
     def test_for_debug(self):
         news = News(
-            url='https://infinitemac.org/',
+            # url='https://infinitemac.org/',
+            # url='https://www.leviathansecurity.com/blog/tunnelvision',
+            # url='https://voidstarsec.com/blog/jtag-pifex',
+            url='https://yosefk.com/blog/a-100x-speedup-with-unsafe-python.html',
             score=config.openai_score_threshold + 1)
         news.pull_content()
         print(news.summary)

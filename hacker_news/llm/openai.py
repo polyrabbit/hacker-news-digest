@@ -56,9 +56,6 @@ def summarize_by_openai_family(content: str, need_json: bool):
     #          f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
     #          f'```{content.strip(".")}.```'
 
-    prompt = (f'Use third person mood to summarize the following article delimited by triple backticks in 2 concise English sentences. Ensure the summary does not exceed 100 characters.\n'
-              f'```{content.strip(".")}.```')
-
     kwargs = {'model': config.openai_model,
               # one token generally corresponds to ~4 characters
               # 'max_tokens': int(config.summary_size / 4),
@@ -90,6 +87,8 @@ def summarize_by_openai_family(content: str, need_json: bool):
         kwargs['function_call'] = {"name": "render"}
 
     if config.openai_model.startswith('text-'):
+        prompt = (f'Use third person mood to summarize the following article delimited by triple backticks in 2 concise English sentences. Ensure the summary does not exceed 100 characters.\n'
+                  f'```{content.strip(".")}.```')
         resp = openai.Completion.create(
             prompt=prompt,
             **kwargs
@@ -98,7 +97,12 @@ def summarize_by_openai_family(content: str, need_json: bool):
     else:
         resp = openai.ChatCompletion.create(
             messages=[
-                {'role': 'user', 'content': prompt},
+                {
+                    "role": "system",
+                    "content": "Let's think step by step. You are a helpful summarizer. Use third person mood to summarize all user's input in 2 short English sentences. Ensure the summary does not "
+                               "exceed 100 characters. Provide response in plain text format without any Markdown formatting."
+                },
+                {'role': 'user', 'content': content},
             ],
             **kwargs)
         message = resp["choices"][0]["message"]
@@ -113,10 +117,15 @@ def summarize_by_openai_family(content: str, need_json: bool):
                 return ''  # Let fallback code kicks in
         else:
             answer = message['content'].strip()
-    logger.info(f'prompt: {prompt}')
+    logger.info(f'content: {content}')
     logger.info(f'took {time.time() - start_time}s to generate: '
                 # Default str(resp) prints \u516c
                 f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
+    # Gemma sometimes returns "**Summary:**\n\nXXX\n\n**Key points:**\n\nXXX", extract the summary part
+    for part in answer.split('**Key points:**'):
+        if part:  # first non-empty
+            answer = part
+            break
     # Remove leading ': ', ' *-' etc. from answer
     answer = answer.strip('**Summary:**')
     answer = re.sub(r'^[^a-zA-Z0-9]+', '', answer)
