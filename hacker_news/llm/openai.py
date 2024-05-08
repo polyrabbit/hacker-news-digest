@@ -99,7 +99,7 @@ def summarize_by_openai_family(content: str, need_json: bool):
             messages=[
                 {
                     "role": "system",
-                    "content": "Let's think step by step. You are a helpful summarizer. Use third person mood to summarize all user's input in 2 short English sentences. Ensure the summary does not "
+                    "content": "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. Ensure the summary does not "
                                "exceed 100 characters. Provide response in plain text format without any Markdown formatting."
                 },
                 {'role': 'user', 'content': content},
