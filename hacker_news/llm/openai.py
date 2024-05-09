@@ -7,24 +7,34 @@ from json import JSONDecodeError
 import openai
 import tiktoken
 import config
+from db.summary import Model
 
 logger = logging.getLogger(__name__)
 
 
-def context_limit(model: str):
+def context_limit():
+    model = config.openai_model
     if '128k' in model:
         return 128 * 1024
     if '32k' in model or 'mistral-7b' in model:
         return 32 * 1024
-    if 'gemma-7b' in model:
+    if 'gemma' in model or 'llama' in model:
         return 8 * 1024
     return 4096
+
+
+def model_family() -> Model:
+    if 'llama' in config.openai_model:
+        return Model.LLAMA
+    if 'gemma' in config.openai_model:
+        return Model.GEMMA
+    return Model.OPENAI
 
 
 def sanitize_for_openai(text, overhead):
     text = text.replace('```', ' ').strip()  # in case of prompt injection
 
-    limit = context_limit(config.openai_model)
+    limit = context_limit()
     # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
     if len(text) > limit * 2:
         try:
@@ -41,7 +51,7 @@ def sanitize_title(title):
     return title.replace('"', "'").replace('\n', ' ').strip()
 
 
-def summarize_by_openai_family(content: str, need_json: bool):
+def summarize_by_openai_family(content: str, need_json: bool) -> str:
     start_time = time.time()
 
     # 200: function + prompt tokens (to reduce hitting rate limit)
@@ -99,8 +109,8 @@ def summarize_by_openai_family(content: str, need_json: bool):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. Ensure the summary does not "
-                               "exceed 100 characters. Provide response in plain text format without any Markdown formatting."
+                    "content": "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. "
+                               "Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting."
                 },
                 {'role': 'user', 'content': content},
             ],
@@ -122,11 +132,15 @@ def summarize_by_openai_family(content: str, need_json: bool):
                 # Default str(resp) prints \u516c
                 f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
     # Gemma sometimes returns "**Summary:**\n\nXXX\n\n**Key points:**\n\nXXX", extract the summary part
-    for part in answer.split('**Key points:**'):
-        if part:  # first non-empty
-            answer = part
-            break
+    for line in answer.split('\n'):
+        if not line.strip():
+            continue
+        if 'summary' in line.lower() and len(line) <= 100:
+            continue
+        answer = line
+        break
     # Remove leading ': ', ' *-' etc. from answer
-    answer = answer.strip('**Summary:**')
     answer = re.sub(r'^[^a-zA-Z0-9]+', '', answer)
+    # Always have bold **?
+    answer = answer.replace('**', ' ')
     return answer.strip()

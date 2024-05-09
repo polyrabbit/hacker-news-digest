@@ -12,7 +12,7 @@ import config
 import db.summary
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
-from hacker_news.llm.openai import summarize_by_openai_family
+from hacker_news.llm.openai import summarize_by_openai_family, model_family
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
@@ -86,7 +86,7 @@ class News:
 
     def summarize(self, content=None) -> (str, Model):
         # settled summary
-        if self.cache.model in (Model.EMBED.value, Model.OPENAI.value):
+        if self.cache.get_summary_model().is_finally():
             logger.info(f"Cache hit for {self.url}, model {self.cache.model}")
             return self.cache.summary, self.cache.get_summary_model()
         if content is None:
@@ -107,7 +107,7 @@ class News:
 
         summary = self.summarize_by_openai(content)
         if summary:
-            return summary, Model.OPENAI
+            return summary, model_family()
         if self.get_score() >= config.local_llm_score_threshold:  # Avoid slow local inference
             if Model.from_value(self.cache.model).local_llm() and self.cache.summary:
                 logger.info(f'Cache hit for {self.url}, model {self.cache.model}')

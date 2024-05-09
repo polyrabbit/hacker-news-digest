@@ -18,7 +18,8 @@ class Model(Enum):
     FULL = 'Full'
     EMBED = 'Embed'
     TRANSFORMER = 'GoogleT5'
-    LLAMA = 'LLaMA'
+    LLAMA = 'Llama'
+    GEMMA = 'Gemma'
     OPENAI = 'OpenAI'
 
     def can_truncate(self):
@@ -26,6 +27,9 @@ class Model(Enum):
 
     def local_llm(self):
         return self in (Model.LLAMA, Model.TRANSFORMER)
+
+    def is_finally(self) -> bool:  # already best, no need to try other models
+        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA)
 
     def need_escape(self):
         return self in (Model.OPENAI,)
@@ -63,7 +67,7 @@ class Summary(Base):
     def __eq__(self, other):
         return repr(self) == repr(other)
 
-    def get_summary_model(self):
+    def get_summary_model(self) -> Model:
         return Model.from_value(self.model)
 
 
