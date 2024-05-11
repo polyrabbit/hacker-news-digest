@@ -29,7 +29,7 @@ class Model(Enum):
         return self in (Model.LLAMA, Model.TRANSFORMER)
 
     def is_finally(self) -> bool:  # already best, no need to try other models
-        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA)
+        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA)
 
     def need_escape(self):
         return self in (Model.OPENAI,)

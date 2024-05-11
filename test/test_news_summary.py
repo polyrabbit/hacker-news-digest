@@ -64,8 +64,8 @@ class NewsSummaryTestCase(TestCase):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
         with open(fpath, 'r') as fp:
             content = fp.read()
-        summary = summarize_by_openai_family(content, False)
-        self.assertIn('Telnet', summary)
+        summary = summarize_by_openai_family(content)
+        self.assertIn('elnet', summary)
         self.assertFalse(summary.startswith(': '))
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)

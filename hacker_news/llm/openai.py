@@ -51,7 +51,7 @@ def sanitize_title(title):
     return title.replace('"', "'").replace('\n', ' ').strip()
 
 
-def summarize_by_openai_family(content: str, need_json: bool) -> str:
+def call_openai_family(content: str, sys_prompt: str) -> str:
     start_time = time.time()
 
     # 200: function + prompt tokens (to reduce hitting rate limit)
@@ -75,26 +75,9 @@ def summarize_by_openai_family(content: str, need_json: bool) -> str:
               "frequency_penalty": 1,  # Avoid token repetition
               "presence_penalty": 1,
               'timeout': 30}
-    if need_json:
-        kwargs['functions'] = [{"name": "render", "parameters": {
-            "type": "object",
-            "properties": {
-                "summary": {
-                    "type": "string",
-                    "description": "English summary"
-                },
-                "summary_zh": {
-                    "type": "string",
-                    "description": "Chinese summary"
-                },
-                "translation": {
-                    "type": "string",
-                    "description": "Chinese translation of sentence"
-                },
-            },
-            # "required": ["summary"]  # ChatGPT only returns the required field?
-        }}]
-        kwargs['function_call'] = {"name": "render"}
+    if model_family() == Model.GEMMA:
+        # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
+        kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
 
     if config.openai_model.startswith('text-'):
         prompt = (f'Use third person mood to summarize the following article delimited by triple backticks in 2 concise English sentences. Ensure the summary does not exceed 100 characters.\n'
@@ -109,8 +92,7 @@ def summarize_by_openai_family(content: str, need_json: bool) -> str:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. "
-                               "Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting."
+                    "content": sys_prompt
                 },
                 {'role': 'user', 'content': content},
             ],
@@ -143,4 +125,14 @@ def summarize_by_openai_family(content: str, need_json: bool) -> str:
     answer = re.sub(r'^[^a-zA-Z0-9]+', '', answer)
     # Always have bold **?
     answer = answer.replace('**', ' ')
+    answer = re.sub(r'^summary:?', '', answer, flags=re.IGNORECASE)
     return answer.strip()
+
+
+def summarize_by_openai_family(content: str) -> str:
+    return call_openai_family(content, "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. "
+                                       "Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting.")
+
+
+def translate_by_openai_family(content: str, lang: str) -> str:
+    return call_openai_family(content, f"You are a helpful translator. Translate user's input into {lang}.")

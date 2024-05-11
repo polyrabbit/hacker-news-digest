@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import time
-from json import JSONDecodeError
 
 import openai
 from slugify import slugify
@@ -12,7 +11,7 @@ import config
 import db.summary
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
-from hacker_news.llm.openai import summarize_by_openai_family, model_family
+from hacker_news.llm.openai import summarize_by_openai_family, model_family, translate_by_openai_family
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
@@ -136,21 +135,29 @@ class News:
             return ''
 
         try:
-            # Too many exceptions to support translation, give up...
-            # answer = self.openai_complete(prompt, True)
-            # summary = self.parse_step_answer(answer).strip().strip(' *-')
-            # if not summary:  # If step parse failed, ignore the translation
-            return summarize_by_openai_family(content, False)
+            sum = summarize_by_openai_family(content)
+            self.translate_summary(sum)
+            return sum
         except Exception as e:
             logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
             return ''
 
-    def parse_step_answer(self, answer):
-        if not answer or isinstance(answer, str):
-            return answer
-        db.translation.add(answer.get('summary', ''), answer.get('summary_zh', ''), 'zh')
-        db.translation.add(self.title, self.parse_title_translation(answer.get('translation', '')), 'zh')
-        return answer.get('summary', '')
+    def translate_summary(self, summary: str):
+        if not summary:
+            return
+        try:
+            if db.translation.exists(summary, 'zh'):
+                return
+            trans = translate_by_openai_family(summary, 'simplified Chinese')
+            for char in trans:
+                if '\u4e00' <= char <= '\u9fff':
+                    break
+            else:
+                logger.info(f'No Chinese chars in translation: {trans}')
+                return
+            db.translation.add(summary, trans, 'zh')
+        except Exception as e:
+            logger.exception(f'Failed to translate summary using openai, key #{config.openai_key_index}, {e}')
 
     def parse_title_translation(self, title):
         # Somehow, openai always return the original title

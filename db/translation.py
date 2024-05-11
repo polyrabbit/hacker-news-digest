@@ -36,6 +36,13 @@ def get(text, to_lang):
     return text
 
 
+def exists(text, to_lang) -> bool:
+    text = text[:Translation.source.type.length]
+    stmt = select(Translation).where(Translation.source == text, Translation.language == to_lang)
+    with session_scope(defer_commit=True) as session:
+        return session.scalars(stmt).first()
+
+
 def add(source, target, lang):
     if not (source and target):
         return
