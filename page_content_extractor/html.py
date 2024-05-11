@@ -69,6 +69,9 @@ class HtmlContentExtractor(object):
         # self.clean_up_html()
         self.relative_path2_abs_url()
 
+    def is_empty(self):
+        return not self.article.get_text(separator='', strip=True)
+
     # def __del__(self):
     #     # TODO won't call
     #     logger.info('calc_effective_text_len: %s, parents_of_article_header: %s, calc_img_area_len: %s',

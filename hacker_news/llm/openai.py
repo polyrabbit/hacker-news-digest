@@ -130,8 +130,7 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
 
 
 def summarize_by_openai_family(content: str) -> str:
-    return call_openai_family(content, "You are a helpful summarizer. Please think step by step and use third person mood to summarize all user's input in 2 short English sentences. "
-                                       "Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting.")
+    return call_openai_family(content, "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting.")
 
 
 def translate_by_openai_family(content: str, lang: str) -> str:

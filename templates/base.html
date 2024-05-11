@@ -208,7 +208,7 @@
                 {% endif %}
                 {% if news.summary %}
                     <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
-                        {% if news.summarized_by.value == 'OpenAI' and news.summary|translate(lang)|length > config.summary_size %}
+                        {% if news.summarized_by.is_finally() and news.summary|translate(lang)|length > config.summary_size %}
                          title="{{ news.summary|translate(lang)|trim }}"
                         {% endif %}>
                         {% set summary = news.summary|translate(lang) -%}

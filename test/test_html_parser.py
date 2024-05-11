@@ -239,6 +239,11 @@ and supported by community <em>donations</em>.</p></article>
         content = parser.get_content()
         self.assertTrue(content.startswith('Google Sidewiki was a web annotation tool from Google'))
 
+    def test_dynamic_js_page(self):
+        parser = parser_factory('https://www.science.org/content/article/u-s-wants-change-how-researchers-get-access-huge-trove-health-data-many-don-t-idea')
+        content = parser.get_content()
+        self.assertTrue(content.startswith('Health researchers'))
+
     def test_longer_meta_description(self):
         html_doc = """
         <meta property="og:description" content="aaaa" />

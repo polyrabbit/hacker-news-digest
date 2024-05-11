@@ -15,14 +15,17 @@ logger = logging.getLogger(__name__)
 
 
 # dispatcher
-def parser_factory(url):
+def parser_factory(url, use_jina=False):
     """
         Returns the extracted object, which should have at least two
         methods `get_content` and `get_illustration`
     """
     if not url.startswith('http'):
         url = 'http://' + url
-    resp = session.get(url)
+    headers = None
+    if use_jina:
+        headers = {'x-respond-with': 'html'}
+    resp = session.get(url, headers=headers)
     # Some sites like science.org forbid us by responding 403, but still have meta description tags, so donot raise here
     # resp.raise_for_status()
 
@@ -43,6 +46,13 @@ def parser_factory(url):
             logger.exception('Failed to parse this pdf file, %s', resp.url)
     elif ct.startswith('text') or 'html' in ct or 'xml' in ct or 'charset' in ct:
         logger.info('Get an %s to parse', ct)
-        return HtmlContentExtractor(resp.text, resp.url)
+        p = HtmlContentExtractor(resp.text, resp.url)
+        if not use_jina and p.is_empty():
+            logger.info('%s is empty? switch to jina', resp.url)
+            try:
+                return parser_factory('https://r.jina.ai/'+url, use_jina=True)
+            except Exception as e:
+                logger.warning('jina %s throws an error: %s', 'https://r.jina.ai/'+url, e)
+        return p
 
     raise TypeError(f'I have no idea how the {ct} is formatted')
