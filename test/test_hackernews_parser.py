@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime, timedelta
 
 from hacker_news.algolia_api import get_news
+from hacker_news.news import News
 from hacker_news.parser import HackerNewsParser
 
 
@@ -52,3 +53,7 @@ class TestHackerNewsParser(unittest.TestCase):
         date = news_list[0].submit_time.date()
         for news in news_list:
             self.assertEqual(date, news.submit_time.date())
+
+    def test_maybe_jobs_post(self):
+        news = News(title='MixRank (YC S11) Is Hiring Software Engineers and Founders Globally')
+        self.assertTrue(news.is_hiring_job())

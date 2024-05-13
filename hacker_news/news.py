@@ -80,6 +80,9 @@ class News:
         except:
             return 0
 
+    def is_hiring_job(self) -> bool:
+        return self.get_score() == 0 and not self.author and 'YC ' in self.title
+
     def slug(self):
         return slugify(self.title or 'no title')
 
@@ -130,7 +133,8 @@ class News:
         if not openai.api_key:
             logger.info("OpenAI API key is not set")
             return ''
-        if self.get_score() < config.openai_score_threshold:  # Avoid expensive openai
+        if (self.get_score() < config.openai_score_threshold # Avoid expensive openai
+                and not self.is_hiring_job()):
             logger.info("Score %d is too small, ignore openai", self.get_score())
             return ''
 

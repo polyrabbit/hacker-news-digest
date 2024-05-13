@@ -79,45 +79,38 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
         # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
         kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
 
-    if config.openai_model.startswith('text-'):
-        prompt = (f'Use third person mood to summarize the following article delimited by triple backticks in 2 concise English sentences. Ensure the summary does not exceed 100 characters.\n'
-                  f'```{content.strip(".")}.```')
-        resp = openai.Completion.create(
-            prompt=prompt,
-            **kwargs
-        )
-        answer = resp['choices'][0]['text'].strip()
-    else:
-        resp = openai.ChatCompletion.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": sys_prompt
-                },
-                {'role': 'user', 'content': content},
-            ],
-            **kwargs)
-        message = resp["choices"][0]["message"]
-        if message.get('function_call'):
-            json_str = message['function_call']['arguments']
-            if resp["choices"][0]['finish_reason'] == 'length':
-                json_str += '"}'  # best effort to save truncated answers
-            try:
-                answer = json.loads(json_str)
-            except JSONDecodeError as e:
-                logger.warning(f'Failed to decode answer from openai, will fallback to plain text, error: {e}')
-                return ''  # Let fallback code kicks in
-        else:
-            answer = message['content'].strip()
+    resp = openai.ChatCompletion.create(
+        messages=[
+            {
+                "role": "system",
+                "content": sys_prompt
+            },
+            {'role': 'user', 'content': content},
+        ],
+        **kwargs)
     logger.info(f'content: {content}')
     logger.info(f'took {time.time() - start_time}s to generate: '
                 # Default str(resp) prints \u516c
                 f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
+    if 'error' in resp:
+        raise Exception(f'error message: {resp["error"].get("message")}, code: {resp["error"].get("code")}')
+    message = resp["choices"][0]["message"]
+    if message.get('function_call'):
+        json_str = message['function_call']['arguments']
+        if resp["choices"][0]['finish_reason'] == 'length':
+            json_str += '"}'  # best effort to save truncated answers
+        try:
+            answer = json.loads(json_str)
+        except JSONDecodeError as e:
+            logger.warning(f'Failed to decode answer from openai, will fallback to plain text, error: {e}')
+            return ''  # Let fallback code kicks in
+    else:
+        answer = message['content'].strip()
     # Gemma sometimes returns "**Summary:**\n\nXXX\n\n**Key points:**\n\nXXX", extract the summary part
     for line in answer.split('\n'):
         if not line.strip():
             continue
-        if 'summary' in line.lower() and len(line) <= 100:
+        if 'summary' in line.lower() and line.strip()[-1] == ':':
             continue
         answer = line
         break
