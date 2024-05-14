@@ -27,7 +27,8 @@ def parser_factory(url, use_jina=False):
         headers = {'x-respond-with': 'html'}
     resp = session.get(url, headers=headers)
     # Some sites like science.org forbid us by responding 403, but still have meta description tags, so donot raise here
-    # resp.raise_for_status()
+    if use_jina:  # Switch to origin url
+        resp.raise_for_status()
 
     if EmbeddableExtractor.is_embeddable(url):
         logger.info('Get an embeddable to parse(%s)', resp.url)

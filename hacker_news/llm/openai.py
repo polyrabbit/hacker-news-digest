@@ -88,10 +88,10 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
             {'role': 'user', 'content': content},
         ],
         **kwargs)
-    logger.info(f'content: {content}')
-    logger.info(f'took {time.time() - start_time}s to generate: '
-                # Default str(resp) prints \u516c
-                f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
+    logger.warning(f'content: {content}')  # for syslog
+    logger.warning(f'took {time.time() - start_time}s to generate: '
+                   # Default str(resp) prints \u516c
+                   f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
     if 'error' in resp:
         raise Exception(f'error message: {resp["error"].get("message")}, code: {resp["error"].get("code")}')
     message = resp["choices"][0]["message"]
@@ -123,7 +123,9 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
 
 
 def summarize_by_openai_family(content: str) -> str:
-    return call_openai_family(content, "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 100 characters. Provide response in plain text format without any Markdown formatting.")
+    return call_openai_family(content,
+                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 100 "
+                              "characters. Provide response in plain text format without any Markdown formatting.")
 
 
 def translate_by_openai_family(content: str, lang: str) -> str:
