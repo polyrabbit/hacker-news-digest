@@ -12,6 +12,7 @@ from .pdf import PdfExtractor
 __all__ = ['ParseError', 'parser_factory']
 
 logger = logging.getLogger(__name__)
+jina_prefix = 'https://r.jina.ai/'
 
 
 # dispatcher
@@ -29,6 +30,8 @@ def parser_factory(url, use_jina=False):
     # Some sites like science.org forbid us by responding 403, but still have meta description tags, so donot raise here
     if use_jina:  # Switch to origin url
         resp.raise_for_status()
+        url = url.removeprefix(jina_prefix)
+        resp.url = resp.url.removeprefix(jina_prefix)
 
     if EmbeddableExtractor.is_embeddable(url):
         logger.info('Get an embeddable to parse(%s)', resp.url)
@@ -51,9 +54,9 @@ def parser_factory(url, use_jina=False):
         if not use_jina and p.is_empty():
             logger.info('%s is empty? switch to jina', resp.url)
             try:
-                return parser_factory('https://r.jina.ai/'+url, use_jina=True)
+                return parser_factory(jina_prefix+url, use_jina=True)
             except Exception as e:
-                logger.warning('jina %s throws an error: %s', 'https://r.jina.ai/'+url, e)
+                logger.warning('jina %s throws an error: %s', jina_prefix+url, e)
         return p
 
     raise TypeError(f'I have no idea how the {ct} is formatted')
