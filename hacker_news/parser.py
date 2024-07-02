@@ -64,8 +64,9 @@ class HackerNewsParser(object):
                 submit_time = self.human2datetime(submit_time)
             # In case of no comments yet
             comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comment')) or Null
+            discuss_dom = subtext_dom.find('a', string=re.compile(r'discuss')) or Null
             comment_cnt = re.search(r'\d+', comment_dom.get_text() or '0').group()
-            comment_url = self.get_comment_url(comment_dom['href'])
+            comment_url = self.get_comment_url(comment_dom['href']) or self.get_comment_url(discuss_dom['href'])
 
             items.append(News(
                 rank=rank,

@@ -237,12 +237,12 @@ and supported by community <em>donations</em>.</p></article>
     def test_link_intensive_wikipedia(self):
         parser = parser_factory('https://en.wikipedia.org/wiki/Google_Sidewiki')
         content = parser.get_content()
-        self.assertTrue(content.startswith('Google Sidewiki was a web annotation tool from Google'))
+        self.assertTrue(content.startswith('Google Sidewiki was a web annotation tool from Google'), msg=content[:100])
 
     def test_dynamic_js_page(self):
         parser = parser_factory('https://www.science.org/content/article/u-s-wants-change-how-researchers-get-access-huge-trove-health-data-many-don-t-idea')
         content = parser.get_content()
-        self.assertTrue(content.startswith('Health researchers'))
+        self.assertTrue(content.startswith('Health researchers'), msg=content[:100])
 
     def test_longer_meta_description(self):
         html_doc = """

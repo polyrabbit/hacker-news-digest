@@ -109,7 +109,7 @@ def gen_feed(news_list):
                      (
                              ' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
                      (
-                         ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url and news.comment_url else '')),
+                         ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url else '')),
                  author={
                      'name': news.author,
                      'uri': news.author_link
