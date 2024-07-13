@@ -5,7 +5,7 @@ chardet==5.2.0
 Flask==2.3.3
 lxml==4.9.3
 null==0.6.1
-pdfminer==20191125
+pdfminer.six==20240706
 requests==2.31.0
 mock==5.1.0
 werkzeug==2.3.7

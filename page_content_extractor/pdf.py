@@ -45,17 +45,17 @@ class PdfExtractor(object):
         partial_summaries = []
         len_of_summary = 0
         for p in self.get_paragraphs():
-            # if is_paragraph(p):  # eligible to be a paragraph
-            if len(tokenize(p)) > 20 and p.count('.') < 10:  # table of contents has many '...' or '. . .'
-                if len_of_summary + len(p) >= max_length:
-                    for word in tokenize(p):
-                        partial_summaries.append(escape(word))
-                        len_of_summary += len(word)
-                        if len_of_summary > max_length:
-                            return ' '.join(partial_summaries)
-                else:
-                    partial_summaries.append(p)
-                    len_of_summary += len(p)
+            if not self.is_normal_paragraph(p):
+                continue
+            if len_of_summary + len(p) >= max_length:
+                for word in tokenize(p):
+                    partial_summaries.append(escape(word))
+                    len_of_summary += len(word)
+                    if len_of_summary > max_length:
+                        return ' '.join(partial_summaries)
+            else:
+                partial_summaries.append(p)
+                len_of_summary += len(p)
         return ' '.join(partial_summaries)
 
     def get_paragraphs(self):
@@ -74,16 +74,30 @@ class PdfExtractor(object):
         for page in PDFPage.get_pages(pdf_fp):
             interpreter.process_page(page)
             for line in output_fp.getvalue().split('\n'):
-                if line.strip() and line.strip().isprintable():  # avoid handling \x01\x02...
+                line = line.strip()
+                if line and line.isprintable() and line.lower() != 'abstract':  # avoid handling \x01\x02...
                     has_began = True
                     p.append(line.strip())
                 elif has_began:  # end one paragraph
-                    yield ' '.join(p)
+                    yield '\n'.join(p)
                     has_began = False
                     p = []
             output_fp.seek(0)
         if p:
             yield ' '.join(p)
+
+    def is_normal_paragraph(self, p):  # eligible to be a paragraph
+        ascii_words = []
+        for line in p.split('\n'):
+            line = line.strip()
+            if line.count('.') > 10:  # table of contents has many '...' or '. . .'
+                return False
+            tokens = line.split(' ')
+            for tok in tokens:
+                tok = tok.strip()
+                if tok.isalnum() or tok in ('.', ','):
+                    ascii_words.append(tok)
+        return len(ascii_words) > 20
 
     def get_illustration(self):
         return None
