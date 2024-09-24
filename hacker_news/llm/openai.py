@@ -18,6 +18,8 @@ def context_limit():
         return 128 * 1024
     if '32k' in model or 'mistral-7b' in model:
         return 32 * 1024
+    if '16k' in model:
+        return 16 * 1024
     if 'gemma' in model or 'llama' in model or '8192' in model:
         return 8 * 1024
     return 4096
@@ -28,6 +30,8 @@ def model_family() -> Model:
         return Model.LLAMA
     if 'gemma' in config.openai_model:
         return Model.GEMMA
+    if 'step' in config.openai_model:
+        return Model.STEP
     return Model.OPENAI
 
 

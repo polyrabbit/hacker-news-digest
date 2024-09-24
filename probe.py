@@ -19,8 +19,8 @@ def probe_hn_summary():
     body = resp.text
 
     assert "Hacker News" in body, '"Hacker News" not in response'
-    llm_summaries = body.count("OpenAI") + body.count("Gemma") + body.count("Llama")
-    assert llm_summaries > 5, "Too few OpenAI summaries, only got %d" % llm_summaries
+    llm_summaries = body.count("OpenAI") + body.count("Gemma") + body.count("Llama")+ body.count("Step")
+    assert llm_summaries > 5, "Too few LLM summaries, only got %d" % llm_summaries
     logger.info(f'OpenAI summaries {llm_summaries} times')
 
     pattern = r'Last updated: <span>(.*?)<\/span>'

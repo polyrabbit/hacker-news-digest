@@ -19,6 +19,7 @@ class Model(Enum):
     EMBED = 'Embed'
     TRANSFORMER = 'GoogleT5'
     LLAMA = 'Llama'
+    STEP = 'Step'
     GEMMA = 'Gemma'
     OPENAI = 'OpenAI'
 
@@ -29,7 +30,7 @@ class Model(Enum):
         return self in (Model.LLAMA, Model.TRANSFORMER)
 
     def is_finally(self) -> bool:  # already best, no need to try other models
-        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA)
+        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP)
 
     def need_escape(self):
         return self in (Model.OPENAI,)
@@ -112,7 +113,7 @@ def expire():
 
         stmt = delete(Summary).where(
             Summary.access < datetime.utcnow() - timedelta(seconds=CONTENT_TTL),
-            Summary.model.not_in((Model.OPENAI.value, Model.TRANSFORMER.value, Model.LLAMA.value)))
+            Summary.model.in_((Model.PREFIX.value, Model.FULL.value, Model.EMBED.value)))
         result = session.execute(stmt)
         cost = (time.time() - start) * 1000
         logger.info(f'evicted {result.rowcount} full content items, cost(ms): {cost:.2f}')
