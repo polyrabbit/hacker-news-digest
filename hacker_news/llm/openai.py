@@ -20,9 +20,9 @@ def context_limit():
         return 32 * 1024
     if '16k' in model:
         return 16 * 1024
-    if 'gemma' in model or 'llama' in model or '8192' in model:
-        return 8 * 1024
-    return 4096
+    # if 'gemma' in model or 'llama' in model or '8192' in model:
+    #     return 8 * 1024
+    return 8 * 1024
 
 
 def model_family() -> Model:
@@ -83,6 +83,7 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
         # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
         kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
 
+    logger.warning(f'content: {content}')  # for syslog
     resp = openai.ChatCompletion.create(
         messages=[
             {
@@ -92,7 +93,6 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
             {'role': 'user', 'content': content},
         ],
         **kwargs)
-    logger.warning(f'content: {content}')  # for syslog
     logger.warning(f'took {time.time() - start_time}s to generate: '
                    # Default str(resp) prints \u516c
                    f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
@@ -128,7 +128,7 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
 
 def summarize_by_openai_family(content: str) -> str:
     return call_openai_family(content,
-                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 100 "
+                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 200 "
                               "characters. Provide response in plain text format without any Markdown formatting.")
 
 
