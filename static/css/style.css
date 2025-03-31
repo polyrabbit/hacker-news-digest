@@ -44,8 +44,10 @@
     outline: none;
 }
 
-.post-item .post-meta > span {
-    margin-right: 10px;
+.post-meta > span:not(:last-of-type)::after {
+    content: '|';
+    margin: 0 4px;
+    color: #ddd;
 }
 
 .post-item .post-meta img {

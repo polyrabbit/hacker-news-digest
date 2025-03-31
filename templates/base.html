@@ -161,18 +161,8 @@
                     <span class="last-updated"
                           data-submitted="{{ news.submit_time.strftime("%Y-%m-%dT%H:%M:%SZ") }}"><span>{{ news.submit_time.replace(microsecond=0) }} UTC</span></span>
                 </span>
-                {% if news.comment_url %}
-                    <span class="comment" title="Comments">
-                        <a href="{{ news.comment_url }}" rel="comment" target="_blank">
-                            <i class="fa fa-comments"></i>
-                            <span>
-                                {{ news.comment_cnt }}
-                            </span>
-                        </a>
-                    </span>
-                {% endif %}
                 {% if news.comhead %}
-                    <span class="host" title="Host">
+                    <span class="host" title="Site">
                         {% if news.favicon %}
                             <img src="{{ news.favicon }}" class="favicon img-circle" loading="lazy"
                                  onerror="favicon_fall_back(this);" alt="{{ news.favicon }}"/>
@@ -188,12 +178,24 @@
                         {{ news.summarized_by.value }}
                     </span>
                 </span>
-                <a class="share-icon" href="{{ path }}#{{ news.slug() }}">
-                    <i class="fa fa-share-square-o"></i>
-                    <span>
-                        Share
+                <span class="share-icon" title="Share">
+                    <a href="{{ path }}#{{ news.slug() }}">
+                        <i class="fa fa-share-square-o"></i>
+                        <span>
+                            Share
+                        </span>
+                    </a>
+                </span>
+                {% if news.comment_url %}
+                    <span class="comment" title="Comments">
+                        <a href="{{ news.comment_url }}" rel="comment" target="_blank">
+                            <i class="fa fa-comments"></i>
+                            <span>
+                                {{ news.comment_cnt }}
+                            </span>
+                        </a>
                     </span>
-                </a>
+                {% endif %}
             </div>
 
             <div class="post-summary">
