@@ -13,7 +13,7 @@ on:
     types: [ generate-gh-pages ]
 
     schedule:
-    - cron: "*/20 * * * *"
+    - cron: "*/15 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -40,6 +40,7 @@ jobs:
     steps:
       - name: My Host
         run: |
+          date
           sudo apt install -y -qq moreutils  # https://unix.stackexchange.com/questions/26728/prepending-a-timestamp-to-each-line-of-output-from-a-command
           echo -e "free -h:\n`free -h`" | ts
           echo
@@ -51,7 +52,7 @@ jobs:
           echo
           echo "nproc: `nproc`" | ts
           echo
-          echo -e "curl -s ifconfig.me/all:\n`curl -s ifconfig.me/all`" | ts
+          echo -e "curl -s ifconfig.me/all:\n`curl -s --max-time 30 ifconfig.me/all`" | ts
 
       - name: Export vars to env
         env:

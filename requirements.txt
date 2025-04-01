@@ -17,6 +17,7 @@ openai==0.28.1
 torch==2.1.0
 bert-extractive-summarizer==0.10.1
 transformers==4.36.0
+numpy==1.26.4
 python-dotenv==1.0.0
 python_slugify==8.0.1
 sqlalchemy==2.0.21

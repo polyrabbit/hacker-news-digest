@@ -35,6 +35,13 @@ jobs:
           python-version: 3.9
           cache: 'pip'
 
+      - name: Python Runtime Cache
+        id: python-runtime-cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+
       - name: Install Python Dependencies
         run: pip install --upgrade -r requirements.txt
 
