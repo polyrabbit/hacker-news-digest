@@ -44,6 +44,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: pip install --upgrade -r requirements.txt
+        continue-on-error: true
 
       - name: Blog
         run: python probe.py blog
