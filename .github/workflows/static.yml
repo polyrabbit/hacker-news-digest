@@ -92,6 +92,7 @@ jobs:
 
       - name: Install Python Dependencies
         run: pip install --upgrade -r requirements.txt
+        continue-on-error: true
 
       - name: Download Page Artifact
         uses: dawidd6/action-download-artifact@v3
