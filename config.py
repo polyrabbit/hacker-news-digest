@@ -81,5 +81,7 @@ openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)
 local_llm_score_threshold = 10
 logger.info(f'Use openai model {openai_model}')
 
+disable_translation = os.getenv('DISABLE_TRANSLATION') == '1'
+
 output_dir = os.path.join(os.path.dirname(__file__), 'output/')
 image_dir = os.path.join(output_dir, 'image/')

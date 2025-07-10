@@ -147,7 +147,7 @@ class News:
             return ''
 
     def translate_summary(self, summary: str):
-        if not summary:
+        if not summary or config.disable_translation:
             return
         try:
             if db.translation.exists(summary, 'zh'):

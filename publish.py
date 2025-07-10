@@ -76,12 +76,31 @@ def gen_page(news_list, path, lang='en'):
     directory = os.path.dirname(static_page)
     os.makedirs(directory, exist_ok=True)
     start = time.time()
+    daily_links = get_daily_links()
     rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang,
+                               daily_links=daily_links,
                                path=urljoin(config.site + '/', path.rstrip('index.html')))
     with open(static_page, "w") as fp:
         fp.write(rendered)
     cost = (time.time() - start) * 1000
     logger.info(f'Written {len(rendered)} bytes to {static_page}, cost(ms): {cost:.2f}')
+
+
+def get_daily_links():
+    daily_dir = os.path.join(config.output_dir, 'daily')
+    if not os.path.exists(daily_dir):
+        return []
+    links = []
+    for name in os.listdir(daily_dir):
+        if os.path.isdir(os.path.join(daily_dir, name)):
+            try:
+                datetime.strptime(name, '%Y-%m-%d')
+                links.append(name)
+            except ValueError:
+                continue  # Ignore directories that are not in 'YYYY-MM-DD' format
+    links.sort(reverse=True)
+    return links
+
 
 
 def gen_feed(news_list):

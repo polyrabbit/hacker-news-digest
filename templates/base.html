@@ -72,6 +72,20 @@
         <div class="collapse navbar-collapse" id="hn-menu">
             <ul class="nav navbar-nav nav-pills">
                 {% block nav_links %} {% endblock %}
+                <li class="daily-dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Archive<span class="caret"></span></a>
+                    <ul class="dropdown-menu" id="daily-links-menu">
+                        {% for link in daily_links %}
+                            <li {% if loop.index > 10 %}class="extra-link" style="display: none;"{% endif %}>
+                                <a href="{{ config.site }}/daily/{{ link }}">{{ link }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if daily_links|length > 10 %}
+                            <li class="divider"></li>
+                            <li><a href="#" id="more-daily-links">More...</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
                 <li class="sort-dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
                         Sort

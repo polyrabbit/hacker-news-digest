@@ -150,6 +150,18 @@ $(function () {
     setupSortHandlers();
     setupFilterHandlers();
 
+    // Reset daily links dropdown on open
+    $('.daily-dropdown').on('show.bs.dropdown', function () {
+        $('#daily-links-menu .extra-link').hide();
+        $('#more-daily-links').parent().show();
+    });
+
+    $('#more-daily-links').click(function (e) {
+        $('#daily-links-menu .extra-link').show();
+        $(this).parent().hide();
+        return false;
+    });
+
     const urlParams = new URLSearchParams(window.location.hash.substring(1));
 
     // Filter first

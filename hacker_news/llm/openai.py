@@ -32,6 +32,8 @@ def model_family() -> Model:
         return Model.GEMMA
     if 'step' in config.openai_model:
         return Model.STEP
+    if 'qwen' in config.openai_model:
+        return Model.QWEN
     return Model.OPENAI
 
 
@@ -110,6 +112,9 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
             return ''  # Let fallback code kicks in
     else:
         answer = message['content'].strip()
+    if '</think>' in answer:
+        # A reasoning model
+        answer = answer.split('</think>', 1)[-1].strip()
     # Gemma sometimes returns "**Summary:**\n\nXXX\n\n**Key points:**\n\nXXX", extract the summary part
     for line in answer.split('\n'):
         if not line.strip():
