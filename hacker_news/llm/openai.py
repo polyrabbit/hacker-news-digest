@@ -22,6 +22,8 @@ def context_limit():
         return 16 * 1024
     # if 'gemma' in model or 'llama' in model or '8192' in model:
     #     return 8 * 1024
+    if 'groq' in openai.api_base:
+        return 6000  # tokens per minute (TPM) limit: 6000
     return 8 * 1024
 
 
@@ -42,7 +44,10 @@ def sanitize_for_openai(text, overhead):
 
     limit = context_limit()
     # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
-    if len(text) > limit * 2:
+    if model_family() in [Model.LLAMA, Model.GEMMA, Model.QWEN]:
+        if len(text) > (limit - overhead) * 4:
+            text = text[:int((limit - overhead) * 4)]
+    elif len(text) > limit * 2:
         try:
             enc = tiktoken.encoding_for_model(config.openai_model)  # We have openai compatible apis now
         except KeyError:
