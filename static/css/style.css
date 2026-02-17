@@ -152,3 +152,128 @@ footer li, footer li a {
         animation: octocat-wave 560ms ease-in-out
     }
 }
+
+/* Theme toggle icon */
+#theme-toggle a {
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+/* Dark mode */
+html[data-theme="dark"] body {
+    background-color: #1a1a1a;
+    color: #d4d4d4;
+}
+
+html[data-theme="dark"] .navbar {
+    border-color: #333;
+}
+
+html[data-theme="dark"] .navbar-brand,
+html[data-theme="dark"] .navbar-brand:hover {
+    color: #e0e0e0;
+}
+
+html[data-theme="dark"] .navbar-toggle .icon-bar {
+    background-color: #aaa;
+}
+
+html[data-theme="dark"] .nav > li > a {
+    color: #ccc;
+}
+
+html[data-theme="dark"] .nav > li > a:hover,
+html[data-theme="dark"] .nav > li > a:focus {
+    color: #fff;
+}
+
+html[data-theme="dark"] .post-item {
+    border-bottom-color: #333;
+}
+
+html[data-theme="dark"] .post-item .post-title h3 a {
+    color: #6db3f2;
+}
+
+html[data-theme="dark"] .post-item .post-title a:visited {
+    color: #8a7eb8;
+}
+
+html[data-theme="dark"] .post-item .post-meta span {
+    color: #999;
+}
+
+html[data-theme="dark"] .post-item .post-meta a {
+    color: #999;
+}
+
+html[data-theme="dark"] .post-meta > span:not(:last-of-type)::after {
+    color: #444;
+}
+
+html[data-theme="dark"] .post-item .post-summary {
+    color: #ccc;
+}
+
+html[data-theme="dark"] .post-item .post-summary pre {
+    background-color: #2a2a2a;
+    color: #ccc;
+}
+
+html[data-theme="dark"] .post-item .post-summary .feature-image img {
+    border-color: #333;
+}
+
+html[data-theme="dark"] .dropdown-menu {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+html[data-theme="dark"] .dropdown-menu > li > a {
+    color: #ccc;
+}
+
+html[data-theme="dark"] .dropdown-menu > li > a:hover,
+html[data-theme="dark"] .dropdown-menu > li > a:focus {
+    background-color: #383838;
+    color: #fff;
+}
+
+html[data-theme="dark"] .dropdown-menu .divider {
+    background-color: #444;
+}
+
+html[data-theme="dark"] footer li,
+html[data-theme="dark"] footer li a {
+    color: #999;
+}
+
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-dialog {
+    background-color: #1a1a1a;
+}
+
+html[data-theme="dark"] .modal .modal-dialog img {
+    background-color: #1a1a1a;
+}
+
+html[data-theme="dark"] .github-corner svg {
+    fill: #c44; color: #1a1a1a;
+}
+
+html[data-theme="dark"] .navbar-collapse {
+    border-color: #333;
+}
+
+html[data-theme="dark"] .tooltip-inner {
+    background-color: #444;
+    color: #ddd;
+}
+
+html[data-theme="dark"] .tooltip.top .tooltip-arrow {
+    border-top-color: #444;
+}
+
+html[data-theme="dark"] .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: #444;
+}

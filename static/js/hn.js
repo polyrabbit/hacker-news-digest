@@ -1,3 +1,21 @@
+// Theme toggle
+(function() {
+    var theme = document.documentElement.getAttribute('data-theme') || 'light';
+    // Set the correct icon: show moon when light (click to go dark), sun when dark (click to go light)
+    var icon = document.querySelector('#theme-toggle i');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'fa fa-sun-o' : 'fa fa-moon-o';
+    }
+})();
+$('#theme-toggle').click(function(e) {
+    e.preventDefault();
+    var current = document.documentElement.getAttribute('data-theme') || 'light';
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    $(this).find('i').toggleClass('fa-moon-o fa-sun-o');
+});
+
 let last_sort_by = 'rank';
 
 function updateUrlHash(newParams) {
