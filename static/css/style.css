@@ -187,6 +187,19 @@ html[data-theme="dark"] .nav > li > a:focus {
     color: #fff;
 }
 
+html[data-theme="dark"] .nav .open>a,
+html[data-theme="dark"] .nav .open>a:hover,
+html[data-theme="dark"] .nav .open>a:focus {
+    background-color: #383838;
+    border-color: #444;
+}
+
+html[data-theme="dark"] .navbar-default .navbar-nav>.open>a,
+html[data-theme="dark"] .navbar-default .navbar-nav>.open>a:hover,
+html[data-theme="dark"] .navbar-default .navbar-nav>.open>a:focus {
+    background-color: #383838;
+    border-color: #444;
+}
 html[data-theme="dark"] .post-item {
     border-bottom-color: #333;
 }
