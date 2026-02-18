@@ -15,6 +15,13 @@
         <link rel="manifest" href="/static/manifest.json">
         <link href="/static/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" integrity="sha512-YTuMx+CIxXa1l+j5aDPm98KFbVcYFNhlr2Auha3pwjHCF1lLbY9/ITQQlsUzdM1scW45kHC5KNib4mNa1IFvJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script>
+            // Apply saved theme immediately to prevent flash of wrong theme
+            (function() {
+                var theme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            })();
+        </script>
         <script type="text/javascript">
             // handle Ads inserted by ISP
             if (window !== top) top.location.href = window.location.href;
@@ -136,6 +143,11 @@
                             <a role="menuitem" href="/zh.html">中文</a>
                         </li>
                     </ul>
+                </li>
+                <li id="theme-toggle" title="Toggle dark mode">
+                    <a href="#">
+                        <i class="fa fa-moon-o"></i>
+                    </a>
                 </li>
             </ul>
         </div>
