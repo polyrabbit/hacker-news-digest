@@ -1,7 +1,7 @@
 {
   "name": "Hacker News",
   "short_name": "HackerNews",
-  "descriptions": "Hacker News Summarized by ChatGPT",
+  "descriptions": "Hacker News Summary",
   "start_url": "/?utm_source=pwa",
   "background_color": "#fff",
   "display": "minimal-ui",

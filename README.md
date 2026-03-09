@@ -56,7 +56,7 @@ performs the following periodic actions:
 
 ## Localization
 
-Translation is also performed by ChatGPT, with a single extra step in the prompt. Currently supported languages:
+Translation is also performed by LLM, with a single extra step in the prompt. Currently supported languages:
 
 * [中文翻译](https://hackernews.betacat.io/zh.html)
 
