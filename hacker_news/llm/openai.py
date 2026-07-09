@@ -89,6 +89,8 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
     if model_family() == Model.GEMMA:
         # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
         kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
+    elif model_family() in (Model.STEP, Model.QWEN):
+        kwargs['reasoning_format'] = 'hidden'
 
     logger.warning(f'content: {content}')  # for syslog
     resp = openai.ChatCompletion.create(
@@ -138,7 +140,7 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
 
 def summarize_by_openai_family(content: str) -> str:
     return call_openai_family(content,
-                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 200 "
+                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 250 "
                               "characters. Provide response in plain text format without any Markdown formatting.")
 
 
