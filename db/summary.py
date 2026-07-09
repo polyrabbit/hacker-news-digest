@@ -30,7 +30,7 @@ class Model(Enum):
     def local_llm(self):
         return self in (Model.LLAMA, Model.TRANSFORMER)
 
-    def is_finally(self) -> bool:  # already best, no need to try other models
+    def is_final(self) -> bool:  # already good enough, no need to try other models
         return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP, Model.QWEN)
 
     def need_escape(self):

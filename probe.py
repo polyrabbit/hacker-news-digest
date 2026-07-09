@@ -4,11 +4,11 @@ import logging
 import re
 from datetime import datetime, timedelta
 
+from db.summary import Model
 from page_content_extractor.http import session
 
 parser = argparse.ArgumentParser(description='Probe betacat.io sites')
 parser.add_argument("site", choices=['hn', 'hn-zh', 'blog'], help="Specify site to probe")
-args = parser.parse_args()
 logger = logging.getLogger(__name__)
 
 
@@ -19,9 +19,13 @@ def probe_hn_summary():
     body = resp.text
 
     assert "Hacker News" in body, '"Hacker News" not in response'
-    llm_summaries = body.count("OpenAI") + body.count("Gemma") + body.count("Llama")+ body.count("Step")
-    assert llm_summaries > 5, "Too few LLM summaries, only got %d" % llm_summaries
-    logger.info(f'OpenAI summaries {llm_summaries} times')
+    final_models = tuple(model for model in Model if model.is_final())
+    final_model_names = ', '.join(model.value for model in final_models)
+    final_summaries = sum(body.count(model.value) for model in final_models)
+    assert final_summaries > 5, (
+        f"Too few final summaries, only got {final_summaries}, counted models: {final_model_names}"
+    )
+    logger.info(f'Final summaries {final_summaries} times')
 
     pattern = r'Last updated: <span>(.*?)<\/span>'
     matches = re.search(pattern, body)
@@ -52,7 +56,8 @@ def probe_blog():
     assert '喵叔没话说' in body
 
 
-if __name__ == '__main__':
+def main():
+    args = parser.parse_args()
     if args.site == 'blog':
         probe_blog()
     elif args.site == 'hn-zh':
@@ -61,3 +66,7 @@ if __name__ == '__main__':
         probe_hn_summary()
     else:
         assert False
+
+
+if __name__ == '__main__':
+    main()

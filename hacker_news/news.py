@@ -87,8 +87,8 @@ class News:
         return slugify(self.title or 'no title')
 
     def summarize(self, content=None) -> (str, Model):
-        # settled summary
-        if self.cache.get_summary_model().is_finally():
+        # final summary
+        if self.cache.get_summary_model().is_final():
             logger.info(f"Cache hit for {self.url}, model {self.cache.model}")
             return self.cache.summary, self.cache.get_summary_model()
         if content is None:
