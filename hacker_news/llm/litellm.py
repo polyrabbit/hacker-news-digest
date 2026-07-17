@@ -4,7 +4,6 @@ import re
 import time
 
 import config
-from hacker_news.llm.openai import sanitize_for_openai
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +18,48 @@ def _import_litellm():
         )
 
 
-def call_litellm(content: str, sys_prompt: str) -> str:
+def _truncate_content(text: str, max_chars: int = 30000) -> str:
+    """Simple content truncation. Unlike sanitize_for_openai, this doesn't
+    depend on the openai SDK's global state (api_base)."""
+    text = text.replace('```', ' ').strip()
+    if len(text) > max_chars:
+        text = text[:max_chars]
+    return text.strip('.').strip()
+
+
+def _clean_summary(answer: str) -> str:
+    """Clean up a summarization response (English-only output expected)."""
+    if '</think>' in answer:
+        answer = answer.split('</think>', 1)[-1].strip()
+    for line in answer.split('\n'):
+        if not line.strip():
+            continue
+        if 'summary' in line.lower() and line.strip()[-1] == ':':
+            continue
+        answer = line
+        break
+    answer = re.sub(r'^[^a-zA-Z0-9]+', '', answer)
+    answer = answer.replace('**', ' ')
+    answer = re.sub(r'^summary:?', '', answer, flags=re.IGNORECASE)
+    return answer.strip()
+
+
+def _clean_translation(answer: str) -> str:
+    """Clean up a translation response (preserves non-Latin characters)."""
+    if '</think>' in answer:
+        answer = answer.split('</think>', 1)[-1].strip()
+    answer = answer.replace('**', ' ')
+    return answer.strip()
+
+
+def call_litellm(content: str, sys_prompt: str, clean_fn=None) -> str:
     litellm = _import_litellm()
 
     if not config.litellm_model:
         raise ValueError("LITELLM_MODEL environment variable is not set")
 
     start_time = time.time()
-    content = sanitize_for_openai(content, overhead=200)
+    content = _truncate_content(content)
 
     kwargs = {
         'model': config.litellm_model,
@@ -78,28 +111,23 @@ def call_litellm(content: str, sys_prompt: str) -> str:
         logger.warning('LiteLLM returned empty content')
         return ''
 
-    if '</think>' in answer:
-        answer = answer.split('</think>', 1)[-1].strip()
-    for line in answer.split('\n'):
-        if not line.strip():
-            continue
-        if 'summary' in line.lower() and line.strip()[-1] == ':':
-            continue
-        answer = line
-        break
-    answer = re.sub(r'^[^a-zA-Z0-9]+', '', answer)
-    answer = answer.replace('**', ' ')
-    answer = re.sub(r'^summary:?', '', answer, flags=re.IGNORECASE)
-    return answer.strip()
+    if clean_fn:
+        return clean_fn(answer)
+    return answer
 
 
 def summarize_by_litellm(content: str) -> str:
     return call_litellm(
         content,
         "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 250 "
-        "characters. Provide response in plain text format without any Markdown formatting."
+        "characters. Provide response in plain text format without any Markdown formatting.",
+        clean_fn=_clean_summary,
     )
 
 
 def translate_by_litellm(content: str, lang: str) -> str:
-    return call_litellm(content, f"You are a helpful translator. Translate user's input into {lang}.")
+    return call_litellm(
+        content,
+        f"You are a helpful translator. Translate user's input into {lang}.",
+        clean_fn=_clean_translation,
+    )

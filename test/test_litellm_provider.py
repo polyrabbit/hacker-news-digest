@@ -42,8 +42,7 @@ class LiteLLMProviderTestCase(TestCase):
         config.litellm_model = "openai/gpt-4o-mini"
         config.litellm_api_key = ""
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_basic_summarize(self, _mock_sanitize):
+    def test_basic_summarize(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("Scientists discovered a new particle.")):
             from hacker_news.llm.litellm import summarize_by_litellm
@@ -53,8 +52,7 @@ class LiteLLMProviderTestCase(TestCase):
             call_kwargs = litellm.completion.call_args[1]
             self.assertEqual(call_kwargs["model"], "openai/gpt-4o-mini")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_translate_system_prompt(self, _mock_sanitize):
+    def test_translate_system_prompt(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("Translated text")):
             from hacker_news.llm.litellm import translate_by_litellm
@@ -62,16 +60,14 @@ class LiteLLMProviderTestCase(TestCase):
             sys_msg = litellm.completion.call_args[1]["messages"][0]
             self.assertIn("simplified Chinese", sys_msg["content"])
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_drop_params_always_true(self, _mock_sanitize):
+    def test_drop_params_always_true(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("ok")):
             from hacker_news.llm.litellm import call_litellm
             call_litellm("content", "system prompt")
             self.assertTrue(litellm.completion.call_args[1]["drop_params"])
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_api_key_forwarded(self, _mock_sanitize):
+    def test_api_key_forwarded(self):
         import config
         config.litellm_api_key = "sk-test-key"
         import litellm
@@ -80,30 +76,26 @@ class LiteLLMProviderTestCase(TestCase):
             call_litellm("content", "prompt")
             self.assertEqual(litellm.completion.call_args[1]["api_key"], "sk-test-key")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_api_key_omitted_when_empty(self, _mock_sanitize):
+    def test_api_key_omitted_when_empty(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("ok")):
             from hacker_news.llm.litellm import call_litellm
             call_litellm("content", "prompt")
             self.assertNotIn("api_key", litellm.completion.call_args[1])
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_empty_content_returns_empty(self, _mock_sanitize):
+    def test_empty_content_returns_empty(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_empty_response()):
             from hacker_news.llm.litellm import call_litellm
             self.assertEqual(call_litellm("content", "prompt"), "")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_no_choices_returns_empty(self, _mock_sanitize):
+    def test_no_choices_returns_empty(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_no_choices_response()):
             from hacker_news.llm.litellm import call_litellm
             self.assertEqual(call_litellm("content", "prompt"), "")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_think_tags_stripped(self, _mock_sanitize):
+    def test_think_tags_stripped(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("<think>reasoning</think>The actual summary.")):
             from hacker_news.llm.litellm import call_litellm
@@ -111,8 +103,7 @@ class LiteLLMProviderTestCase(TestCase):
             self.assertNotIn("think", result)
             self.assertIn("actual summary", result)
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_auth_error_raises(self, _mock_sanitize):
+    def test_auth_error_raises(self):
         import litellm
         with patch.object(litellm, "completion",
                           side_effect=litellm.AuthenticationError(message="Invalid key", model="test", llm_provider="openai")):
@@ -120,8 +111,7 @@ class LiteLLMProviderTestCase(TestCase):
             with self.assertRaises(litellm.AuthenticationError):
                 call_litellm("content", "prompt")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_rate_limit_raises(self, _mock_sanitize):
+    def test_rate_limit_raises(self):
         import litellm
         with patch.object(litellm, "completion",
                           side_effect=litellm.RateLimitError(message="Rate limited", model="test", llm_provider="openai")):
@@ -129,8 +119,7 @@ class LiteLLMProviderTestCase(TestCase):
             with self.assertRaises(litellm.RateLimitError):
                 call_litellm("content", "prompt")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_timeout_raises(self, _mock_sanitize):
+    def test_timeout_raises(self):
         import litellm
         with patch.object(litellm, "completion",
                           side_effect=litellm.Timeout(message="Timed out", model="test", llm_provider="openai")):
@@ -145,8 +134,7 @@ class LiteLLMProviderTestCase(TestCase):
         with self.assertRaises(ValueError):
             call_litellm("content", "prompt")
 
-    @patch("hacker_news.llm.litellm.sanitize_for_openai", side_effect=lambda c, **kw: c)
-    def test_markdown_stripped(self, _mock_sanitize):
+    def test_markdown_stripped(self):
         import litellm
         with patch.object(litellm, "completion", return_value=_mock_response("**Bold** summary.")):
             from hacker_news.llm.litellm import call_litellm
