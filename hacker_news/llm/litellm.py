@@ -75,6 +75,8 @@ def call_litellm(content: str, sys_prompt: str, clean_fn=None) -> str:
     }
     if config.litellm_api_key:
         kwargs['api_key'] = config.litellm_api_key
+    if config.litellm_api_base:
+        kwargs['api_base'] = config.litellm_api_base
 
     try:
         resp = litellm.completion(**kwargs)
