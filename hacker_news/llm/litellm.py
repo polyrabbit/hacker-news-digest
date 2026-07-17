@@ -9,8 +9,21 @@ from hacker_news.llm.openai import sanitize_for_openai
 logger = logging.getLogger(__name__)
 
 
+def _import_litellm():
+    try:
+        import litellm
+        return litellm
+    except ImportError:
+        raise ImportError(
+            "litellm is required. Install it with: pip install 'litellm>=1.83.0'"
+        )
+
+
 def call_litellm(content: str, sys_prompt: str) -> str:
-    import litellm
+    litellm = _import_litellm()
+
+    if not config.litellm_model:
+        raise ValueError("LITELLM_MODEL environment variable is not set")
 
     start_time = time.time()
     content = sanitize_for_openai(content, overhead=200)
@@ -30,14 +43,41 @@ def call_litellm(content: str, sys_prompt: str) -> str:
     if config.litellm_api_key:
         kwargs['api_key'] = config.litellm_api_key
 
-    resp = litellm.completion(**kwargs)
+    try:
+        resp = litellm.completion(**kwargs)
+    except litellm.AuthenticationError as e:
+        logger.error(f'LiteLLM authentication failed: {e}')
+        raise
+    except litellm.NotFoundError as e:
+        logger.error(f'LiteLLM model not found: {e}')
+        raise
+    except litellm.RateLimitError as e:
+        logger.warning(f'LiteLLM rate limited: {e}')
+        raise
+    except litellm.Timeout as e:
+        logger.error(f'LiteLLM request timed out: {e}')
+        raise
+    except litellm.APIConnectionError as e:
+        logger.error(f'LiteLLM connection error: {e}')
+        raise
+
     resp_dict = resp.model_dump()
 
     logger.warning(f'took {time.time() - start_time}s to generate: '
                    f'{json.dumps(resp_dict, sort_keys=True, indent=2, ensure_ascii=False)}')
 
-    message = resp_dict['choices'][0]['message']
-    answer = message.get('content', '').strip()
+    choices = resp_dict.get('choices', [])
+    if not choices:
+        logger.error('LiteLLM returned empty choices')
+        return ''
+
+    message = choices[0].get('message', {})
+    answer = (message.get('content') or '').strip()
+
+    if not answer:
+        logger.warning('LiteLLM returned empty content')
+        return ''
+
     if '</think>' in answer:
         answer = answer.split('</think>', 1)[-1].strip()
     for line in answer.split('\n'):
