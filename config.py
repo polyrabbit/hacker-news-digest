@@ -81,6 +81,14 @@ openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)
 local_llm_score_threshold = 10
 logger.info(f'Use openai model {openai_model}')
 
+litellm_model = os.getenv('LITELLM_MODEL') or ''
+litellm_api_key = os.getenv('LITELLM_API_KEY') or ''
+litellm_api_base = os.getenv('LITELLM_API_BASE') or ''
+if litellm_model:
+    logger.info(f'Use litellm model {litellm_model}')
+if litellm_api_base:
+    logger.info(f'Use litellm api base {litellm_api_base}')
+
 disable_translation = os.getenv('DISABLE_TRANSLATION') == '1'
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output/')

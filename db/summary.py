@@ -23,6 +23,7 @@ class Model(Enum):
     GEMMA = 'Gemma'
     QWEN = 'Qwen'
     OPENAI = 'OpenAI'
+    LITELLM = 'LiteLLM'
 
     def can_truncate(self):
         return self not in (Model.OPENAI, Model.EMBED)
@@ -31,10 +32,10 @@ class Model(Enum):
         return self in (Model.LLAMA, Model.TRANSFORMER)
 
     def is_final(self) -> bool:  # already good enough, no need to try other models
-        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP, Model.QWEN)
+        return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP, Model.QWEN, Model.LITELLM)
 
     def need_escape(self):
-        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.QWEN)
+        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.QWEN, Model.LITELLM)
 
     @classmethod
     def from_value(cls, value):

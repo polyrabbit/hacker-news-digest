@@ -12,6 +12,7 @@ import db.summary
 from db.summary import Model
 from hacker_news.llm.coze import summarize_by_coze
 from hacker_news.llm.openai import summarize_by_openai_family, model_family, translate_by_openai_family
+from hacker_news.llm.litellm import summarize_by_litellm, translate_by_litellm
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
 
@@ -107,6 +108,9 @@ class News:
                 f'No need to summarize since we have a small text of size {len(content)}')
             return content, Model.FULL
 
+        summary = self.summarize_by_litellm_provider(content)
+        if summary:
+            return summary, Model.LITELLM
         summary = self.summarize_by_openai(content)
         if summary:
             return summary, model_family()
@@ -123,6 +127,34 @@ class News:
         else:
             logger.info("Score %d is too small, ignore local llm", self.get_score())
         return content, Model.PREFIX
+
+    def summarize_by_litellm_provider(self, content):
+        if not config.litellm_model:
+            return ''
+        try:
+            summary = summarize_by_litellm(content)
+            self.translate_by_litellm_provider(summary)
+            return summary
+        except Exception as e:
+            logger.exception(f'Failed to summarize using litellm, {e}')
+            return ''
+
+    def translate_by_litellm_provider(self, summary: str):
+        if not summary or config.disable_translation:
+            return
+        try:
+            if db.translation.exists(summary, 'zh'):
+                return
+            trans = translate_by_litellm(summary, 'simplified Chinese')
+            for char in trans:
+                if '一' <= char <= '鿿':
+                    break
+            else:
+                logger.info(f'No Chinese chars in translation: {trans}')
+                return
+            db.translation.add(summary, trans, 'zh')
+        except Exception as e:
+            logger.exception(f'Failed to translate using litellm, {e}')
 
     def summarize_by_coze(self, content):
         if self.get_score() < config.local_llm_score_threshold:

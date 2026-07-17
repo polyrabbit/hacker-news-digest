@@ -25,3 +25,4 @@ psycopg2==2.9.9
 humanize==4.8.0
 llama-cpp-python==0.2.11
 tiktoken==0.5.2
+litellm>=1.83.0,<2.0
