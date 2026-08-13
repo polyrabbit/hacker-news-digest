@@ -54,31 +54,17 @@ disable_summary_cache = os.getenv('DISABLE_SUMMARY_CACHE') == '1'
 disable_translation_cache = os.getenv('DISABLE_TRANSLATION_CACHE') == '1'
 force_fetch_feature_image = os.getenv('FORCE_FETCH_FEATURE_IMAGE') == '1'
 
-disable_llama = os.getenv('DISABLE_LLAMA') == '1'
-llama_model = os.getenv('LLAMA_MODEL_PATH') or os.path.expanduser('~/.cache/huggingface/hub/models_llama-2-7b-chat.Q6_K.gguf')
-logger.info(f'Use llama model {llama_model}')
-
-disable_transformer = os.getenv('DISABLE_TRANSFORMER') == '1'
-transformer_model = os.getenv('TRANSFORMER_MODEL') or 't5-large'
-logger.info(f'Use transformer model {transformer_model}')
-
-
-def coze_enabled():
-    return coze_api_endpoint and coze_api_key and coze_bot_id
-
-
-coze_api_endpoint = os.getenv('COZE_API_ENDPOINT')
-coze_api_key = os.getenv('COZE_API_KEY')
-coze_bot_id = os.getenv('COZE_BOT_ID')
-logger.info(f'Coze api {"enabled" if coze_enabled() else "disabled"}')
+disable_local_qwen = os.getenv('DISABLE_LOCAL_QWEN') == '1'
+local_qwen_path = os.getenv('LOCAL_QWEN_PATH')
+logger.info(f'Local Qwen model {local_qwen_path or "disabled (LOCAL_QWEN_PATH is not set)"}')
 
 openai_keys = os.getenv('OPENAI_API_KEY').split(',') if os.getenv('OPENAI_API_KEY') else [None]
 openai.api_key = random.choice(openai_keys)  # Round-robin available keys
 openai_key_index = openai_keys.index(openai.api_key)
 logger.info(f'Use openai api key #{openai_key_index}')
 openai_model = os.getenv('OPENAI_MODEL') or 'gpt-3.5-turbo'
-openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 20)
-local_llm_score_threshold = 10
+openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 10)
+local_llm_score_threshold = 5
 logger.info(f'Use openai model {openai_model}')
 
 disable_translation = os.getenv('DISABLE_TRANSLATION') == '1'

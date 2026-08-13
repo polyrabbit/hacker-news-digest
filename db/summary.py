@@ -17,8 +17,8 @@ class Model(Enum):
     PREFIX = 'Prefix'
     FULL = 'Full'
     EMBED = 'Embed'
-    TRANSFORMER = 'GoogleT5'
     LLAMA = 'Llama'
+    LOCAL = 'LocalLLM'
     STEP = 'Step'
     GEMMA = 'Gemma'
     QWEN = 'Qwen'
@@ -28,13 +28,13 @@ class Model(Enum):
         return self not in (Model.OPENAI, Model.EMBED)
 
     def local_llm(self):
-        return self in (Model.LLAMA, Model.TRANSFORMER)
+        return self is Model.LOCAL
 
     def is_final(self) -> bool:  # already good enough, no need to try other models
         return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP, Model.QWEN)
 
     def need_escape(self):
-        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.QWEN)
+        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.LOCAL, Model.QWEN)
 
     @classmethod
     def from_value(cls, value):

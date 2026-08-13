@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup as BS
-from null import Null
 
 from config import sites_for_users
 from hacker_news.news import News
@@ -54,19 +53,25 @@ class HackerNewsParser(object):
             comhead = self.parse_comhead(url)
 
             # pop up user first, so everything left has a pattern
-            author_dom = (subtext_dom.find('a', href=re.compile(r'^user', re.I)) or Null).extract()
-            author = author_dom.text.strip() or None
-            author_link = author_dom['href'] or None
+            author_dom = subtext_dom.find('a', href=re.compile(r'^user', re.I))
+            if author_dom:
+                author_dom.extract()
+            author = author_dom.get_text(strip=True) if author_dom else None
+            author_link = author_dom.get('href') if author_dom else None
             score_human = subtext_dom.find(string=re.compile(r'\d+.+point')) or '0'
             score = re.search(r'\d+', score_human).group() or None
             submit_time = subtext_dom.find(string=re.compile(r'\d+ \w+ ago')) or None
             if submit_time:
                 submit_time = self.human2datetime(submit_time)
             # In case of no comments yet
-            comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comment')) or Null
-            discuss_dom = subtext_dom.find('a', string=re.compile(r'discuss')) or Null
-            comment_cnt = re.search(r'\d+', comment_dom.get_text() or '0').group()
-            comment_url = self.get_comment_url(comment_dom['href']) or self.get_comment_url(discuss_dom['href'])
+            comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comment'))
+            discuss_dom = subtext_dom.find('a', string=re.compile(r'discuss'))
+            comment_cnt = re.search(r'\d+', comment_dom.get_text() if comment_dom else '0').group()
+            comment_url = (
+                self.get_comment_url(comment_dom.get('href')) if comment_dom else None
+            ) or (
+                self.get_comment_url(discuss_dom.get('href')) if discuss_dom else None
+            )
 
             items.append(News(
                 rank=rank,

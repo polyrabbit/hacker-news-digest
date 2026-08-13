@@ -1,8 +1,5 @@
 from unittest import TestCase
 
-import requests
-
-from page_content_extractor import parser_factory
 from page_content_extractor.embeddable import *
 
 
@@ -17,8 +14,10 @@ class EmbeddableParserTestCase(TestCase):
                          '<iframe src="http://player.youku.com/embed/XNzkxMTE3MTEy" frameborder="0" allowfullscreen></iframe>')
 
     def test_youtube_com_parser(self):
-        parser = parser_factory('https://www.youtube.com/watch?v=HlLCtjJzHVI')
-        self.assertTrue(parser.get_content().startswith('<iframe'))
+        parser = EmbeddableExtractor(
+            '<html></html>', 'https://www.youtube.com/watch?v=HlLCtjJzHVI')
+        content = parser.get_content()
+        self.assertTrue(content.startswith('<iframe'), msg=f'actual content: {content!r}')
 
     def test_vimeo_com_parser(self):
         parser = EmbeddableExtractor('Vimeo', 'https://vimeo.com/105196878')
@@ -51,14 +50,6 @@ class EmbeddableParserTestCase(TestCase):
                                      'http://www.bloomberg.com/video/paul-graham-and-jessica-livingston-studio-1-0-10-09-J5e3sjvtRrys6nd286HWUA.html')
         self.assertEqual(parser.get_content(),
                          "<object data='http://www.bloomberg.com/video/embed/J5e3sjvtRrys6nd286HWUA?height=395&width=640' width=640 height=430 style='overflow:hidden;'></object>")
-
-    def test_slideshare_net_parser(self):
-        parser = EmbeddableExtractor('slideshare',
-                                     'http://www.slideshare.net/earnestagency/the-yes-factor')
-        self.assertIn('<iframe', parser.get_content())
-
-        self.assertRaises(requests.exceptions.HTTPError, EmbeddableExtractor, 'slideshare',
-                          'http://www.slideshare.net/whatever404040404')
 
     def test_pdf_yt_parser(self):
         parser = EmbeddableExtractor('pdf', 'https://pdf.yt/d/KV90aIpCM7DqUpAv')

@@ -14,19 +14,22 @@ class TestHackerNewsParser(unittest.TestCase):
     def test_parsed_score(self):
         """Every score should be a digit"""
         news_list = self.hn.parse_news_list()
-        self.assertGreater(len(news_list), 0)
+        self.assertGreater(
+            len(news_list), 0,
+            msg=f'actual news count={len(news_list)}, first items={news_list[:3]!r}')
 
         has_score = False
         has_submit_time = False
         for news in news_list:
-            self.assertGreater(len(news.title), 0)
-            self.assertGreater(len(news.url), 0)
+            self.assertGreater(len(news.title), 0, msg=f'actual news: {news!r}')
+            self.assertGreater(len(news.url), 0, msg=f'actual news: {news!r}')
             if news.score is not None and news.score.isdigit():
                 has_score = True
             if news.submit_time is not None and isinstance(news.submit_time, datetime):
                 has_submit_time = True
-        self.assertEqual(has_score, True)
-        self.assertEqual(has_submit_time, True)
+        details = f'actual news count={len(news_list)}, first items={news_list[:3]!r}'
+        self.assertTrue(has_score, msg=details)
+        self.assertTrue(has_submit_time, msg=details)
 
     def test_parse_comhead(self):
         # test removed www
@@ -47,9 +50,13 @@ class TestHackerNewsParser(unittest.TestCase):
 
     def test_algolia_api(self):
         news_list = get_news(0)
-        self.assertEqual(len(news_list), 0)
+        self.assertEqual(
+            len(news_list), 0,
+            msg=f'actual news count={len(news_list)}, first items={news_list[:3]!r}')
         news_list = get_news(1)
-        self.assertGreater(len(news_list), 0)
+        self.assertGreater(
+            len(news_list), 0,
+            msg=f'actual news count={len(news_list)}, first items={news_list[:3]!r}')
         date = news_list[0].submit_time.date()
         for news in news_list:
             self.assertEqual(date, news.submit_time.date())

@@ -13,8 +13,13 @@ class PdfParserTestCase(TestCase):
             parser = PdfExtractor(fp.read())
             self.assertIsNone(parser.get_illustration())
             content = parser.get_content()
-            self.assertRegex(content, '^Systems code is often written in low-level languages')  # Should be no errors
-            self.assertTrue(' We introduce code-pointer' in content)  # space between paragraphs
+            self.assertRegex(
+                content,
+                '^Systems code is often written in low-level languages',
+                msg=f'actual content ({len(content)} chars): {content[:500]!r}')
+            self.assertTrue(
+                ' We introduce code-pointer' in content,
+                msg=f'actual content ({len(content)} chars): {content[:500]!r}')
 
     def test_no_hang_for_large_pdf(self):
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/pldi24.pdf')
@@ -22,7 +27,10 @@ class PdfParserTestCase(TestCase):
             parser = PdfExtractor(fp.read())
             self.assertIsNone(parser.get_illustration())
             content = parser.get_content()  # Should not hang
-            self.assertRegex(content, '^We show that synthesizing recursive functional programs using ')  # No title or authors
+            self.assertRegex(
+                content,
+                '^We show that synthesizing recursive functional programs using ',
+                msg=f'actual content ({len(content)} chars): {content[:500]!r}')  # No title or authors
 
     # def test_text_order(self):
     #     parser = PdfExtractor(open('/tmp/fm_21-76_us_army_survival_manual_2006.pdf', 'rb').read())

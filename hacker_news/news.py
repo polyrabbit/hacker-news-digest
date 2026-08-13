@@ -10,7 +10,6 @@ from slugify import slugify
 import config
 import db.summary
 from db.summary import Model
-from hacker_news.llm.coze import summarize_by_coze
 from hacker_news.llm.openai import summarize_by_openai_family, model_family, translate_by_openai_family
 from page_content_extractor import parser_factory
 from page_content_extractor.webimage import WebImage
@@ -114,20 +113,12 @@ class News:
             if Model.from_value(self.cache.model).local_llm() and self.cache.summary:
                 logger.info(f'Cache hit for {self.url}, model {self.cache.model}')
                 return self.cache.summary, self.cache.get_summary_model()
-            summary = self.summarize_by_llama(content)
+            summary = self.summarize_by_local_qwen(content)
             if summary:
-                return summary, Model.LLAMA
-            summary = self.summarize_by_transformer(content)
-            if summary:
-                return summary, Model.TRANSFORMER
+                return summary, Model.LOCAL
         else:
             logger.info("Score %d is too small, ignore local llm", self.get_score())
         return content, Model.PREFIX
-
-    def summarize_by_coze(self, content):
-        if self.get_score() < config.local_llm_score_threshold:
-            return ''
-        return summarize_by_coze(content)
 
     def summarize_by_openai(self, content):
         if not openai.api_key:
@@ -204,25 +195,23 @@ class News:
             self.img_id = fname
         self.cache.image_name = self.img_id  # tried but not found
 
-    def summarize_by_llama(self, content):
-        if config.disable_llama:
-            logger.info("LLaMA is disabled by env DISABLE_LLAMA=1")
+    def summarize_by_local_qwen(self, content):
+        if config.disable_local_qwen:
+            logger.info("Local Qwen is disabled by env DISABLE_LOCAL_QWEN=1")
+            return ''
+        if not config.local_qwen_path:
+            logger.info("Local Qwen is disabled because LOCAL_QWEN_PATH is not set")
+            return ''
+        if not os.path.isfile(config.local_qwen_path):
+            logger.warning("Local Qwen model does not exist: %s", config.local_qwen_path)
             return ''
 
         start_time = time.time()
-        from hacker_news.llm.llama import summarize_by_llama
-        resp = summarize_by_llama(content)
-        logger.info(f'took {time.time() - start_time}s to generate: {resp}')
-        return resp['choices'][0]['text'].strip()
-
-    def summarize_by_transformer(self, content):
-        if config.disable_transformer:
-            logger.warning("Transformer is disabled by env DISABLE_TRANSFORMER=1")
+        try:
+            from hacker_news.llm.qwen import summarize_by_local_qwen
+            summary = summarize_by_local_qwen(content)
+        except Exception:
+            logger.exception('Failed to summarize using local Qwen')
             return ''
-
-        start_time = time.time()
-        # Too time-consuming to init t5 model, so lazy load here until we have to
-        from hacker_news.llm.google_t5 import summarize_by_t5
-        summary = summarize_by_t5(content)
         logger.info(f'took {time.time() - start_time}s to generate: {summary}')
         return summary

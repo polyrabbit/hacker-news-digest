@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup as BS, Tag, NavigableString
 from markupsafe import escape
-from null import Null
 
 import config
 from .utils import tokenize, string_inclusion_ratio
@@ -56,7 +55,7 @@ class HtmlContentExtractor(object):
         self.doc = BS(html, features="lxml")
 
         self.title = (self.doc.title.string if self.doc.title else '') or ''
-        self.article = Null
+        self.article = self.doc
         self.url = url
         # call it before purge
         self.get_favicon_url()

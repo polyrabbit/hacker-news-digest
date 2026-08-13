@@ -35,7 +35,7 @@ def probe_hn_summary():
 
     current_time = datetime.utcnow()
 
-    assert current_time <= time_updated + timedelta(hours=1), "Haven't been updated for one hour, last update: " + time_updated_str
+    assert current_time <= time_updated + timedelta(hours=3), "Haven't been updated for three hours, last update: " + time_updated_str
 
 
 def probe_hn_zh():

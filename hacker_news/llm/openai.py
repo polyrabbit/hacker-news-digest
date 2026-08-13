@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 def context_limit():
     model = config.openai_model
+    if 'cloudflare.com' in (openai.api_base or '').lower():
+        return 32 * 1024
     if '128k' in model:
         return 128 * 1024
     if '32k' in model or 'mistral-7b' in model:

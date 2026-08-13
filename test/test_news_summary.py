@@ -9,8 +9,8 @@ import config
 import db
 from db.engine import session_scope
 from db.summary import Model
-from hacker_news.llm.coze import summarize_by_coze
 from hacker_news.llm.openai import summarize_by_openai_family
+from hacker_news.llm import qwen
 from hacker_news.news import News
 
 
@@ -30,32 +30,15 @@ class NewsSummaryTestCase(TestCase):
         self.assertEqual(summary, content)
         self.assertEqual(summarized_by, Model.EMBED)
 
-    @unittest.skipIf(config.disable_transformer, 'transformer is disabled')
-    def test_summarize_by_transformer(self):
+    @unittest.skipUnless(not config.disable_local_qwen and config.local_qwen_path and
+                         os.path.isfile(config.local_qwen_path),
+                         'Local Qwen model is not installed or disabled')
+    def test_summarize_by_local_qwen(self):
         news = News(score='11')
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
         with open(fpath, 'r') as fp:
             content = fp.read()
-        summary = news.summarize_by_transformer(content)
-        self.assertGreater(len(summary), 80)
-        self.assertLess(len(summary), config.summary_size * 2)
-
-    @unittest.skipIf(config.disable_llama, 'llama is disabled')
-    def test_summarize_by_llama(self):
-        news = News(score='11')
-        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
-        with open(fpath, 'r') as fp:
-            content = fp.read()
-        summary = news.summarize_by_llama(content)
-        self.assertGreater(len(summary), 80)
-        self.assertLess(len(summary), config.summary_size * 2)
-
-    @unittest.skipUnless(config.coze_enabled(), 'coze is disabled')
-    def test_summarize_by_coze(self):
-        fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
-        with open(fpath, 'r') as fp:
-            content = fp.read()
-        summary = summarize_by_coze(content)
+        summary = news.summarize_by_local_qwen(content)
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
 
@@ -65,10 +48,11 @@ class NewsSummaryTestCase(TestCase):
         with open(fpath, 'r') as fp:
             content = fp.read()
         summary = summarize_by_openai_family(content)
-        self.assertIn('elnet', summary)
-        self.assertFalse(summary.startswith(': '))
-        self.assertGreater(len(summary), 80)
-        self.assertLess(len(summary), config.summary_size * 2)
+        self.assertIn('elnet', summary, msg=f'actual summary: {summary!r}')
+        self.assertFalse(summary.startswith(': '), msg=f'actual summary: {summary!r}')
+        self.assertGreater(len(summary), 80, msg=f'actual summary: {summary!r}')
+        self.assertLess(len(summary), config.summary_size * 2,
+                        msg=f'actual summary: {summary!r}')
 
     def test_parse_step_answer(self):
         news = News('The guide to software development with Guix')
@@ -101,7 +85,7 @@ class NewsSummaryTestCase(TestCase):
         news = News(url='http://www.thehistoryblog.com/archives/67581')
         try:
             news.cache = db.summary.put(
-                db.Summary(news.url, 'wonderful summary', Model.TRANSFORMER))
+                db.Summary(news.url, 'wonderful summary', Model.QWEN))
             content = 'The website is temporarily unable to service your request as it exceeded resource limit. Please try again later.'  # when site is overcrowded by HN users
             summary, summarized_by = news.summarize(content)
             self.assertEqual('wonderful summary', summary)
