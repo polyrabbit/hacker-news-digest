@@ -153,14 +153,13 @@ jobs:
         if: ${{ success() }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v4
         continue-on-error: true  # tolerate cloudflare api failure
         if: ${{ success() }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: hndigest
-          directory: 'output'
+          command: pages deploy output --project-name=hndigest
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Report All Success
