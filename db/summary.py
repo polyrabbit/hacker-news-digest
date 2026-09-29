@@ -78,6 +78,8 @@ def get(url) -> Summary:
         return Summary(url)
     with session_scope() as session:
         summary = session.get(Summary, url)  # Try to leverage the identity map cache
+        if summary is not None:
+            session.expunge(summary)
     return summary or Summary(url)
 
 

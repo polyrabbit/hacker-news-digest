@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, mapped_column, Session
 import config
 
 logger = logging.getLogger(__name__)
-engine = create_engine(config.DATABASE_URL, echo=config.DATABASE_ECHO_SQL)  # lazy connection
+engine = create_engine(config.DATABASE_URL, echo=config.DATABASE_ECHO_SQL, pool_pre_ping=True)  # lazy connection
 
 session = Session(engine)
 
