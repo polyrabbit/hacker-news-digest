@@ -38,9 +38,9 @@ setcron:
 
 minify_static:
 	@which minify > /dev/null || { sudo apt-get update; sudo apt-get install --no-install-recommends --yes minify; }
-	minify -v --mime=text/html --html-keep-document-tags --html-keep-quotes --html-keep-end-tags -r output --match='index' -o .
-	minify -v --mime=text/css -r output --match='style' -o .
-	minify -v --mime=application/javascript -r output --match='hn' -o .
+	minify -v --type=text/html --html-keep-document-tags --html-keep-quotes --html-keep-end-tags -r output --match='index' -o .
+	minify -v --type=text/css -r output --match='style' -o .
+	minify -v --type=application/javascript -r output --match='hn' -o .
 
 cssname = $(shell md5sum static/css/style.css | cut -c1-10)
 jsname = $(shell md5sum static/js/hn.js | cut -c1-10)
