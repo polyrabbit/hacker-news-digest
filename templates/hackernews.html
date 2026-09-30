@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 
-{% set title = 'Hacker News Summary'|translate(lang) -%}
+{% set title = 'Hacker News Summary'|translate(lang) ~ (' - ' ~ date if date else '') -%}
 {% set site = 'hackernews' -%}
 {% set description = 'Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News posts, providing a seamless news scanning experience.' -%}
 
 {% block head %}
     <meta name="description" content="{{ description }}">
-    <link rel="canonical" href="https://hackernews.betacat.io/"/>
+    <link rel="canonical" href="{{ path }}"/>
+    {% if not date %}
+    <link rel="alternate" hreflang="en" href="{{ config.site }}/"/>
+    <link rel="alternate" hreflang="zh" href="{{ config.site }}/zh"/>
+    {% endif %}
     <meta name="twitter:card" content="summary"/>
     <meta name="twitter:title" content="{{ title }}"/>
     <meta name="twitter:description" content="{{ description }}"/>

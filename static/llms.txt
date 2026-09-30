@@ -1,0 +1,18 @@
+# Hacker News Summary
+
+> Hacker News article summaries based on extracted source text, with images from the original articles, refreshed every 20 minutes.
+
+A scoring algorithm identifies and extracts the main text of linked web pages, then an AI model summarizes the extracted text. Images are selected from the original pages.
+
+Each story links to the original article and its Hacker News discussion, with points, comment count and a short summary of the article content.
+
+## Pages
+
+- [Front page](https://hackernews.betacat.io/): current Hacker News front page with a summary for each story
+- [Chinese front page](https://hackernews.betacat.io/zh): Chinese translations of article titles and summaries
+- [Sitemap](https://hackernews.betacat.io/sitemap.xml): front pages and daily archives of top stories for each UTC day, at `/daily/YYYY-MM-DD/`
+- [Atom feed](https://hackernews.betacat.io/feed.xml): latest stories with summaries
+
+## Optional
+
+- [Source code](https://github.com/polyrabbit/hacker-news-digest)

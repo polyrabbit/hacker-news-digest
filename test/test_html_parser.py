@@ -225,7 +225,8 @@ and supported by community <em>donations</em>.</p></article>
         self.assertTrue(a.endswith('by community donations.'), msg=f'actual content: {a!r}')
 
     def test_ask_hn_include_content(self):
-        parser = parser_factory('https://news.ycombinator.com/item?id=36317509')
+        with open(os.path.join(os.path.dirname(__file__), 'fixtures/ask_hn.html'), encoding='utf-8') as fp:
+            parser = HtmlContentExtractor(fp.read())
         content = parser.get_content()
         self.assertTrue(
             content.startswith('I have expertise in web backend and infrastructure development, '),

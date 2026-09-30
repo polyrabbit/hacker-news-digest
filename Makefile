@@ -17,7 +17,7 @@ gh_home_page:
 	rm -rf output/static
 	python publish.py home
 	cp -r static output/static
-	cp static/ads.txt output/ads.txt
+	cp static/ads.txt static/robots.txt static/llms.txt static/404.html output/
 	ln -sf index.html output/hackernews  # backward compatibility
 	ln -sf feed.xml output/feed
 	ln -sf static/favicon.ico output/favicon.ico

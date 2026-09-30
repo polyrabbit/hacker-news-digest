@@ -46,6 +46,7 @@ def gen_frontpage():
     gen_page(news_list, 'index.html', 'en')
     gen_page(news_list, 'zh.html', 'zh')
     gen_feed(news_list)
+    gen_sitemap()
 
 
 def gen_daily():
@@ -64,11 +65,11 @@ def gen_daily():
         for i, item in enumerate(items):
             item.rank = i
             item.pull_content()
-        gen_page(items, f'daily/{date.strftime("%Y-%m-%d")}/index.html')
+        gen_page(items, f'daily/{date.strftime("%Y-%m-%d")}/index.html', date=date)
 
 
 # Generate GitHub pages
-def gen_page(news_list, path, lang='en'):
+def gen_page(news_list, path, lang='en', date=None):
     if not news_list:
         return  # no overwrite
     template = environment.get_template('hackernews.html')
@@ -78,8 +79,9 @@ def gen_page(news_list, path, lang='en'):
     start = time.time()
     daily_links = get_daily_links()
     rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang,
-                               daily_links=daily_links,
-                               path=urljoin(config.site + '/', path.rstrip('index.html')))
+                               daily_links=daily_links, date=date,
+                               # Pretty URL served by Pages: zh.html -> zh, daily/x/index.html -> daily/x/
+                               path=urljoin(config.site + '/', path.removesuffix('.html').removesuffix('index')))
     with open(static_page, "w") as fp:
         fp.write(rendered)
     cost = (time.time() - start) * 1000
@@ -102,13 +104,22 @@ def get_daily_links():
     return links
 
 
+def gen_sitemap():
+    paths = ['/', '/zh'] + [f'/daily/{link}/' for link in get_daily_links()]
+    with open(os.path.join(config.output_dir, 'sitemap.xml'), 'w') as fp:
+        fp.write('<?xml version="1.0" encoding="UTF-8"?>\n'
+                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+        fp.writelines(f'<url><loc>{config.site}{p}</loc></url>\n' for p in paths)
+        fp.write('</urlset>\n')
+    logger.info(f'Written {len(paths)} urls to sitemap.xml')
+
 
 def gen_feed(news_list):
     start = time.time()
     feed = AtomFeed('Hacker News Summary',
                     updated=datetime.utcnow(),
                     feed_url=f'{config.site}/feed.xml',
-                    url={config.site},
+                    url=config.site,
                     author={
                         'name': 'polyrabbit',
                         'uri': 'https://github.com/polyrabbit/'}

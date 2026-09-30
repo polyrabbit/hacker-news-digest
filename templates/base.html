@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="{{ lang }}">
 <head>
     {% block head %}
         <title>{{ title }}</title>
@@ -84,7 +84,7 @@
                     <ul class="dropdown-menu" id="daily-links-menu">
                         {% for link in daily_links %}
                             <li {% if loop.index > 10 %}class="extra-link" style="display: none;"{% endif %}>
-                                <a href="{{ config.site }}/daily/{{ link }}">{{ link }}</a>
+                                <a href="{{ config.site }}/daily/{{ link }}/">{{ link }}</a>
                             </li>
                         {% endfor %}
                         {% if daily_links|length > 10 %}
@@ -279,7 +279,7 @@
                         <a role="menuitem" href="/">English</a>
                     </li>
                     <li role="presentation">
-                        <a role="menuitem" href="/zh.html">中文</a>
+                        <a role="menuitem" href="/zh">中文</a>
                     </li>
                 </ul>
             </li>

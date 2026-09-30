@@ -5,6 +5,8 @@ import unittest
 from unittest import TestCase, mock
 
 import openai
+from sqlalchemy import delete
+
 import config
 import db
 from db.engine import session_scope
@@ -92,7 +94,7 @@ class NewsSummaryTestCase(TestCase):
             self.assertEqual(news.cache.get_summary_model(), summarized_by)
         finally:
             with session_scope() as session:
-                session.delete(news.cache)
+                session.execute(delete(db.Summary).where(db.Summary.url == news.url))
 
     @mock.patch.object(News, 'parser')
     def test_all_from_cache(self, mock_news_parser):
@@ -114,5 +116,5 @@ class NewsSummaryTestCase(TestCase):
             self.assertFalse(mock_news_parser.called)
         finally:
             with session_scope() as session:
-                session.delete(news.cache)
+                session.execute(delete(db.Summary).where(db.Summary.url == news.url))
                 pathlib.Path(os.path.join(config.image_dir, db_summary.image_name)).unlink()
