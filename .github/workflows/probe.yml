@@ -43,6 +43,8 @@ jobs:
           key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
       - name: Install Python Dependencies
+        env:
+          CMAKE_ARGS: -DGGML_NATIVE=OFF
         run: python -m pip install --upgrade -r requirements.txt
 
       - name: Blog

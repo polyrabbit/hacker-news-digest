@@ -85,6 +85,8 @@ jobs:
             ${{ runner.os }}-huggingface
 
       - name: Install Python Dependencies
+        env:
+          CMAKE_ARGS: -DGGML_NATIVE=OFF
         run: python -m pip install --upgrade -r requirements.txt
 
       - name: Download Page Artifact
@@ -132,6 +134,7 @@ jobs:
         if: ${{ github.event_name == 'push' || endswith(github.run_id, '3') || endswith(github.run_id, '6') || endswith(github.run_id, '9') }}
 
       - name: Generate Home Page
+        id: generate_home_page
         run: make gh_home_page
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -155,7 +158,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         continue-on-error: true  # tolerate cloudflare api failure
-        if: ${{ success() }}
+        if: ${{ !cancelled() && steps.generate_home_page.outcome == 'success' }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
