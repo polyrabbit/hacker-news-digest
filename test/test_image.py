@@ -27,14 +27,13 @@ class WebImageTestCase(TestCase):
 
     @mock.patch('page_content_extractor.webimage.session')
     def test_fetched_only_once(self, mock_requests):
-        mock_requests.get.return_value.content = ''
         node = mock.Mock()
         node.attrs = {'src': 'https://avatars1.githubusercontent.com/u/2657334',
                       'whatever': 'whatever'}
 
         for _ in range(10):
             WebImage.from_node('https://github.com/polyrabbit/', node).is_candidate
-        self.assertEqual(mock_requests.get.call_count, 1)
+        self.assertEqual(mock_requests.stream.call_count, 1)
 
     @mock.patch('page_content_extractor.webimage.urljoin', autospec=True)
     def test_no_src(self, mock_urljoin):
@@ -48,8 +47,9 @@ class WebImageTestCase(TestCase):
         node.attrs = {
             'src': 'https://camo.githubusercontent.com/75937896097d5a7022f8fafc71251e456a0e8d95b2a0b82e44c35a1b84368dc6/68747470733a2f2f61736369696e656d612e6f72672f612f3538393634302e737667',
         }
-        mock_requests.get.return_value.url = node.attrs['src']
-        mock_requests.get.return_value.headers = {'Content-Type': 'image/svg+xml;charset=utf-8'}
+        resp = mock_requests.stream.return_value.__enter__.return_value
+        resp.url = node.attrs['src']
+        resp.headers = {'Content-Type': 'image/svg+xml;charset=utf-8'}
         img = WebImage.from_node('', node)
         self.assertEqual(img.uniq_name(), 'd41d8cd98f00b204e9800998ecf8427e.svg')
 

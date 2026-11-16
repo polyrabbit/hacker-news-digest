@@ -92,21 +92,22 @@ class WebImage(object):
     def raw_data(self):
         if hasattr(self, '_raw_data'):
             return self._raw_data
-        resp = session.get(self.url, headers={'Referer': self.referrer}, stream=True)
-        # meta info
-        self.url = resp.url
-        resp.raise_for_status()
-        bytes = []
-        read_bytes = 0
-        for content in resp.iter_content(1 << 20):
-            if not content:
-                break
-            bytes.append(content)
-            read_bytes += len(content)
-            if read_bytes > (17 << 20):
-                # To avoid infinite chunk response like - https://hookrace.net/time.gif
-                raise OverflowError(
-                    f'too much or infinite content - already read {read_bytes} bytes')
+        # Chrome's Accept negotiates avif, which Pillow can not decode
+        with session.stream('GET', self.url, headers={'Referer': self.referrer, 'Accept': '*/*'}) as resp:
+            # meta info
+            self.url = resp.url
+            resp.raise_for_status()
+            bytes = []
+            read_bytes = 0
+            for content in resp.iter_content():
+                if not content:
+                    break
+                bytes.append(content)
+                read_bytes += len(content)
+                if read_bytes > (17 << 20):
+                    # To avoid infinite chunk response like - https://hookrace.net/time.gif
+                    raise OverflowError(
+                        f'too much or infinite content - already read {read_bytes} bytes')
         # if anything goes wrong, do not set self._raw_data so it will try again the next time.
         self._raw_data = b''.join(bytes)
         if 'Content-Type' in resp.headers:

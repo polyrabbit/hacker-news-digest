@@ -11,10 +11,13 @@ import config
 import db.summary
 from db.summary import Model
 from hacker_news.llm.openai import summarize_by_openai_family, model_family, translate_by_openai_family
-from page_content_extractor import parser_factory
+from page_content_extractor import parser_factory, ParseError
+from page_content_extractor.html import HtmlContentExtractor
+from page_content_extractor.http import session
 from page_content_extractor.webimage import WebImage
 
 logger = logging.getLogger(__name__)
+hn_item_url = re.compile(r'https://news\.ycombinator\.com/item\?id=(\d+)')
 
 
 class News:
@@ -68,7 +71,14 @@ class News:
     def parser(self):  # lazy load
         if not hasattr(self, '_parser'):
             logger.info("#%d, fetching %s", self.rank, self.url)
-            self._parser = parser_factory(self.url)
+            if m := hn_item_url.match(self.url):  # HN throttles item pages, but its API is reliable
+                resp = session.get(f'https://hacker-news.firebaseio.com/v0/item/{m[1]}.json')
+                resp.raise_for_status()
+                if not (text := (resp.json() or {}).get('text')):  # keep the cached summary
+                    raise ParseError(f'HN item {m[1]} has no text')
+                self._parser = HtmlContentExtractor(f'<div class="toptext">{text}</div>', self.url)  # as on HN page
+            else:
+                self._parser = parser_factory(self.url)
         return self._parser
 
     def get_score(self) -> int:

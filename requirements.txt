@@ -9,7 +9,7 @@ mock==5.1.0
 werkzeug==2.3.7
 feedwerk==1.1.0
 Pillow==10.2.0
-fake-useragent==2.2.0
+curl_cffi==0.17.0
 huggingface-hub==0.36.2
 olefile
 openai==0.28.1

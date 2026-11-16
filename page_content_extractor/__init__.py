@@ -1,5 +1,6 @@
 ﻿# coding: utf-8
 import logging
+import re
 
 import humanize
 
@@ -13,6 +14,7 @@ __all__ = ['ParseError', 'parser_factory']
 
 logger = logging.getLogger(__name__)
 jina_prefix = 'https://r.jina.ai/'
+meta_charset = re.compile(rb'<meta[^>]+charset=["\']?([\w-]+)', re.I)
 
 
 # dispatcher
@@ -27,7 +29,6 @@ def parser_factory(url, use_jina=False):
     if use_jina:
         headers = {'x-respond-with': 'html'}
     resp = session.get(url, headers=headers)
-    # Some sites like science.org forbid us by responding 403, but still have meta description tags, so donot raise here
     if use_jina:  # Switch to origin url
         resp.raise_for_status()
         url = url.removeprefix(jina_prefix)
@@ -40,6 +41,10 @@ def parser_factory(url, use_jina=False):
         except Exception as e:
             logger.info('%s is not an embeddable, try another(%s)', resp.url, e)
 
+    if not resp.ok:  # Blocked by anti-bot, let jina have a try, but never take a block page as content
+        logger.info('%s is blocked(%d), switch to jina', resp.url, resp.status_code)
+        return parser_factory(jina_prefix+url, use_jina=True)
+
     # if no content-type is provided, Chrome set as a html
     ct = resp.headers.get('content-type', 'text').lower()
     if ct.startswith('application/pdf'):  # Some pdfs even have charset indicator, eg. "application/pdf; charset=utf-8"
@@ -50,6 +55,10 @@ def parser_factory(url, use_jina=False):
             logger.exception('Failed to parse this pdf file, %s', resp.url)
     elif ct.startswith('text') or 'html' in ct or 'xml' in ct or 'charset' in ct:
         logger.info('Get an %s to parse', ct)
+        # Content-Type often omits charset or carries the server default ISO-8859-1, trust the one in html
+        m = meta_charset.search(resp.content, 0, 4096)
+        if m and (resp.charset_encoding or 'iso-8859-1').lower() == 'iso-8859-1':
+            resp.encoding = m[1].decode()
         p = HtmlContentExtractor(resp.text, resp.url)
         if not use_jina and p.is_empty():
             logger.info('%s is empty? switch to jina', resp.url)

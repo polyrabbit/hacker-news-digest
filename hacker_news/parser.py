@@ -4,12 +4,12 @@ import re
 from datetime import datetime, timedelta
 from urllib.parse import urljoin, urlsplit
 
+import requests
 from bs4 import BeautifulSoup as BS
 
 from config import sites_for_users
 from hacker_news.news import News
 from page_content_extractor import ParseError
-from page_content_extractor.http import session
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,8 @@ class HackerNewsParser(object):
     end_point = 'https://news.ycombinator.com/'
 
     def parse_news_list(self):
-        resp = session.get(self.end_point)
+        # Not the impersonated session, HN throttles curl_cffi's Chrome fingerprint with 503
+        resp = requests.get(self.end_point, timeout=30)
         resp.raise_for_status()
         content = resp.text
         dom = BS(content, features="lxml")
