@@ -25,8 +25,8 @@ def _get_llm():
 
         _llm = Llama(
             model_path=config.local_qwen_path,
-            # GitHub ubuntu-latest: 4 vCPU / 16 GB RAM; keep enough headroom for the site job.
-            n_ctx=10240,
+            # A 4 vCPU runner processes only ~10 prompt tokens/s, a 6k context lets one call finish within a 20-minute run.
+            n_ctx=6144,
             n_threads=4,
             n_threads_batch=4,
             use_mmap=True,
