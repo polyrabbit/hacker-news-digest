@@ -1,8 +1,9 @@
 import argparse
 import logging
 import os
+import shutil
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from feedwerk.atom import AtomFeed
@@ -31,11 +32,20 @@ def truncate(text):
                                end=' ...')
 
 
+PAGES = {'en': 'index.html', 'zh': 'zh.html'}
+
+
+def page_url(directory, lang):
+    # Pretty URL served by Pages: daily/x/index.html -> daily/x/, daily/x/zh.html -> daily/x/zh
+    return urljoin(config.site + '/', directory + PAGES[lang].removesuffix('.html').removesuffix('index'))
+
+
 environment = Environment(
     loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")), autoescape=True)
 environment.filters["translate"] = translate
 environment.filters["truncate"] = truncate
 environment.globals["config"] = config
+environment.globals["page_url"] = page_url
 
 
 def gen_frontpage():
@@ -43,8 +53,9 @@ def gen_frontpage():
     news_list = hn.parse_news_list()
     for news in news_list:
         news.pull_content()
-    gen_page(news_list, 'index.html', 'en')
-    gen_page(news_list, 'zh.html', 'zh')
+    for news in news_list:  # In a separate pass, so llama.cpp keeps reusing the cached translation prompt
+        news.translate()
+    gen_page(news_list)
     gen_feed(news_list)
     gen_sitemap()
 
@@ -65,36 +76,44 @@ def gen_daily():
         for i, item in enumerate(items):
             item.rank = i
             item.pull_content()
-        gen_page(items, f'daily/{date.strftime("%Y-%m-%d")}/index.html', date=date)
+        # Not translated here, as they have been translated when showing on the front page
+        gen_page(items, f'daily/{date.strftime("%Y-%m-%d")}/', date=date)
+    oldest = (datetime.utcnow() - timedelta(days=config.archive_ttl_days)).strftime('%Y-%m-%d')
+    for link in get_daily_links():
+        if link < oldest:
+            logger.info(f'Removing archive {link} older than {config.archive_ttl_days} days')
+            shutil.rmtree(os.path.join(config.output_dir, 'daily', link))
+    if links := get_daily_links():
+        # Add a stable entry to the latest archive for the app shortcut
+        with open(os.path.join(config.output_dir, 'daily', 'index.html'), 'w') as fp:
+            fp.write(f'<meta http-equiv="refresh" content="0; url={links[0]}/">')
 
 
 # Generate GitHub pages
-def gen_page(news_list, path, lang='en', date=None):
+def gen_page(news_list, directory='', date=None):
     if not news_list:
         return  # no overwrite
     template = environment.get_template('hackernews.html')
-    static_page = os.path.join(config.output_dir, path)
-    directory = os.path.dirname(static_page)
-    os.makedirs(directory, exist_ok=True)
-    start = time.time()
-    daily_links = get_daily_links()
-    rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang,
-                               daily_links=daily_links, date=date,
-                               # Pretty URL served by Pages: zh.html -> zh, daily/x/index.html -> daily/x/
-                               path=urljoin(config.site + '/', path.removesuffix('.html').removesuffix('index')))
-    with open(static_page, "w") as fp:
-        fp.write(rendered)
-    cost = (time.time() - start) * 1000
-    logger.info(f'Written {len(rendered)} bytes to {static_page}, cost(ms): {cost:.2f}')
+    os.makedirs(os.path.join(config.output_dir, directory), exist_ok=True)
+    for lang, page in PAGES.items():
+        start = time.time()
+        static_page = os.path.join(config.output_dir, directory, page)
+        rendered = template.render(news_list=news_list, last_updated=datetime.utcnow(), lang=lang,
+                                   daily_links=get_daily_links(lang), date=date, directory=directory)
+        with open(static_page, "w") as fp:
+            fp.write(rendered)
+        cost = (time.time() - start) * 1000
+        logger.info(f'Written {len(rendered)} bytes to {static_page}, cost(ms): {cost:.2f}')
 
 
-def get_daily_links():
+def get_daily_links(lang='en'):
+    """Dates having a daily page in lang, older ones were generated before Chinese pages existed."""
     daily_dir = os.path.join(config.output_dir, 'daily')
     if not os.path.exists(daily_dir):
         return []
     links = []
     for name in os.listdir(daily_dir):
-        if os.path.isdir(os.path.join(daily_dir, name)):
+        if os.path.isfile(os.path.join(daily_dir, name, PAGES[lang])):
             try:
                 datetime.strptime(name, '%Y-%m-%d')
                 links.append(name)
@@ -105,13 +124,14 @@ def get_daily_links():
 
 
 def gen_sitemap():
-    paths = ['/', '/zh'] + [f'/daily/{link}/' for link in get_daily_links()]
+    urls = [page_url('', lang) for lang in PAGES]
+    urls += [page_url(f'daily/{link}/', lang) for lang in PAGES for link in get_daily_links(lang)]
     with open(os.path.join(config.output_dir, 'sitemap.xml'), 'w') as fp:
         fp.write('<?xml version="1.0" encoding="UTF-8"?>\n'
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
-        fp.writelines(f'<url><loc>{config.site}{p}</loc></url>\n' for p in paths)
+        fp.writelines(f'<url><loc>{url}</loc></url>\n' for url in urls)
         fp.write('</urlset>\n')
-    logger.info(f'Written {len(paths)} urls to sitemap.xml')
+    logger.info(f'Written {len(urls)} urls to sitemap.xml')
 
 
 def gen_feed(news_list):

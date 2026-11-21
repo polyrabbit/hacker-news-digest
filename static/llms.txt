@@ -1,6 +1,6 @@
 # Hacker News Summary
 
-> Hacker News article summaries based on extracted source text, with images from the original articles, refreshed every 20 minutes.
+> Short AI summaries of Hacker News front page stories, with images from the original articles, kept up to date, plus daily archives and an Atom feed.
 
 A scoring algorithm identifies and extracts the main text of linked web pages, then an AI model summarizes the extracted text. Images are selected from the original pages.
 

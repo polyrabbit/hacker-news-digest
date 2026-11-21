@@ -19,7 +19,6 @@
 
 .post-item {
     border-bottom: 1px solid #dddddd;
-    height: 100% !important;
     margin: 5px;
 }
 
@@ -50,6 +49,10 @@
     color: #ddd;
 }
 
+.post-meta > span {
+    white-space: nowrap;
+}
+
 .post-item .post-meta img {
     width: 16px;
     height: 16px;
@@ -71,7 +74,7 @@
 }
 
 .post-item .post-summary .feature-image img {
-    max-width: 220px;
+    width: 220px;
     border: 1px solid #F7F7F7;
 }
 
@@ -93,10 +96,43 @@
     border: none;
 }
 
-.post-item .qrcode {
-    float: right;
+#daily-links-menu form {
+    padding: 3px 12px;
+}
+
+/* Off-screen copy of a story to render the share image */
+.share-card {
+    position: fixed;
+    top: 0;
+    left: -10000px;
+    width: 560px;
+    margin: 0;
+    padding: 4px 20px 12px;
+    border: none;
+}
+
+/* Links and model names mean nothing in an image */
+.share-card .share-icon, .share-card .summary-model {
     display: none;
-    margin-top: 5px;
+}
+
+/* The renderer drops this margin, and the image keeps its height as blank space at the bottom */
+.share-card h3 {
+    margin-bottom: 0;
+}
+
+.share-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(128, 128, 128, .3);
+    color: #888;
+}
+
+.share-footer canvas {
+    display: block;
 }
 
 .modal-dialog {
@@ -144,6 +180,10 @@ footer li, footer li a {
 }
 
 @media (max-width: 500px) {
+    .post-item .post-summary .feature-image img {
+        width: 40vw;
+    }
+
     .github-corner:hover .octo-arm {
         animation: none
     }
@@ -153,8 +193,8 @@ footer li, footer li a {
     }
 }
 
-/* Theme toggle icon */
-#theme-toggle a {
+/* Theme and language toggle icons */
+#theme-toggle a, #lang-toggle a {
     cursor: pointer;
     font-size: 1.1em;
 }
@@ -163,10 +203,6 @@ footer li, footer li a {
 html[data-theme="dark"] body {
     background-color: #1a1a1a;
     color: #d4d4d4;
-}
-
-html[data-theme="dark"] .navbar {
-    border-color: #333;
 }
 
 html[data-theme="dark"] .navbar-brand,
@@ -252,6 +288,13 @@ html[data-theme="dark"] .dropdown-menu > li > a:focus {
     color: #fff;
 }
 
+html[data-theme="dark"] #daily-picker {
+    color-scheme: dark;
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #ccc;
+}
+
 html[data-theme="dark"] .dropdown-menu .divider {
     background-color: #444;
 }
@@ -272,10 +315,6 @@ html[data-theme="dark"] .modal .modal-dialog img {
 
 html[data-theme="dark"] .github-corner svg {
     fill: #c44; color: #1a1a1a;
-}
-
-html[data-theme="dark"] .navbar-collapse {
-    border-color: #333;
 }
 
 html[data-theme="dark"] .tooltip-inner {

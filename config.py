@@ -46,6 +46,7 @@ summary_size = 400
 summary_ttl = int_env('SUMMARY_TTL_DAYS', 60) * 24 * 60 * 60
 updatable_within_days = int_env('UPDATABLE_WITHIN_DAYS', 3)
 assert updatable_within_days < summary_ttl / (24 * 60 * 60)
+archive_ttl_days = int_env('ARCHIVE_TTL_DAYS', 3 * 365)
 
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 
@@ -57,6 +58,7 @@ force_fetch_feature_image = os.getenv('FORCE_FETCH_FEATURE_IMAGE') == '1'
 disable_local_qwen = os.getenv('DISABLE_LOCAL_QWEN') == '1'
 local_qwen_path = os.getenv('LOCAL_QWEN_PATH')
 logger.info(f'Local Qwen model {local_qwen_path or "disabled (LOCAL_QWEN_PATH is not set)"}')
+disable_translation = os.getenv('DISABLE_TRANSLATION') == '1'
 
 openai_keys = os.getenv('OPENAI_API_KEY').split(',') if os.getenv('OPENAI_API_KEY') else [None]
 openai.api_key = random.choice(openai_keys)  # Round-robin available keys
@@ -66,8 +68,6 @@ openai_model = os.getenv('OPENAI_MODEL') or 'gpt-3.5-turbo'
 openai_score_threshold = int_env('OPENAI_SCORE_THRESHOLD', 10)
 local_llm_score_threshold = 5
 logger.info(f'Use openai model {openai_model}')
-
-disable_translation = os.getenv('DISABLE_TRANSLATION') == '1'
 
 output_dir = os.path.join(os.path.dirname(__file__), 'output/')
 image_dir = os.path.join(output_dir, 'image/')

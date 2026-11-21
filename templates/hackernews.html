@@ -2,15 +2,17 @@
 
 {% set title = 'Hacker News Summary'|translate(lang) ~ (' - ' ~ date if date else '') -%}
 {% set site = 'hackernews' -%}
-{% set description = 'Hacker News Summary leverages AI technology to extract summaries and illustrations from Hacker News posts, providing a seamless news scanning experience.' -%}
+{% set path = page_url(directory, lang) -%}
+{% set description = {
+    'en': 'Short AI summaries and images for Hacker News front page stories, kept up to date, with daily archives and an RSS feed.',
+    'zh': '为 Hacker News 首页文章配上 AI 生成的简短摘要和配图，持续更新，支持按日存档和 RSS 订阅。',
+}[lang] -%}
 
 {% block head %}
     <meta name="description" content="{{ description }}">
     <link rel="canonical" href="{{ path }}"/>
-    {% if not date %}
-    <link rel="alternate" hreflang="en" href="{{ config.site }}/"/>
-    <link rel="alternate" hreflang="zh" href="{{ config.site }}/zh"/>
-    {% endif %}
+    <link rel="alternate" hreflang="en" href="{{ page_url(directory, 'en') }}"/>
+    <link rel="alternate" hreflang="zh" href="{{ page_url(directory, 'zh') }}"/>
     <meta name="twitter:card" content="summary"/>
     <meta name="twitter:title" content="{{ title }}"/>
     <meta name="twitter:description" content="{{ description }}"/>
@@ -18,14 +20,5 @@
 {% endblock %}
 
 {% block nav_brand %}
-    <a class="navbar-brand" href="{{ config.site }}/">Hacker News Summary</a>
-{% endblock %}
-
-{% block nav_links %}
-    <li>
-        <a href="https://news.ycombinator.com/news" target="_blank" title="Hacker News front page">Front</a>
-    </li>
-    <li>
-        <a href="https://news.ycombinator.com/front" target="_blank" title="Hacker News front page before">Past</a>
-    </li>
+    <a class="navbar-brand" href="{{ page_url('', lang) }}">Hacker News Summary</a>
 {% endblock %}

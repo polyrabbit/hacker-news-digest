@@ -4,6 +4,11 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>404 Not Found - Hacker News Summary</title>
+    <script>
+        // A story's archive is generated the day after, until then it is on the front page
+        const archive = location.pathname.match(/^\/daily\/[\d-]+\/(zh)?$/);
+        if (archive) location.replace('/' + (archive[1] || '') + location.hash);
+    </script>
 </head>
 <body>
 <h1>404 Not Found</h1>

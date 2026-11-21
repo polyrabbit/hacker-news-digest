@@ -8,6 +8,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link rel="alternate" type="application/atom+xml" title="{{ title }}" href="/feed.xml"/>
         <link rel="shortcut icon" href="/static/favicon.ico">
+        <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
         <link rel="bookmark" href="/static/favicon.ico">
         <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
         <meta name="apple-mobile-web-app-title" content="Hacker News">
@@ -33,10 +34,6 @@
             function favicon_fall_back(img) { // If the favicon cannot be loaded, fall back to the default one
                 img.onerror = '';
                 $(img).replaceWith('<i class="fa fa-external-link"></i>');
-            }
-            function illustration_fall_back(img) { // If fetched images broken, fall back to origins
-                img.onerror = '';
-                img.src = $(img).attr('alt');
             }
         </script>
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-D9ZBQ6B4QQ"></script>
@@ -79,17 +76,18 @@
         <div class="collapse navbar-collapse" id="hn-menu">
             <ul class="nav navbar-nav nav-pills">
                 {% block nav_links %} {% endblock %}
-                <li class="daily-dropdown">
+                <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Archive<span class="caret"></span></a>
                     <ul class="dropdown-menu" id="daily-links-menu">
-                        {% for link in daily_links %}
-                            <li {% if loop.index > 10 %}class="extra-link" style="display: none;"{% endif %}>
-                                <a href="{{ config.site }}/daily/{{ link }}/">{{ link }}</a>
-                            </li>
+                        {% for link in daily_links[:7] %}
+                            <li><a href="{{ page_url('daily/' ~ link ~ '/', lang) }}">{{ link }}</a></li>
                         {% endfor %}
-                        {% if daily_links|length > 10 %}
+                        {% if daily_links %}
                             <li class="divider"></li>
-                            <li><a href="#" id="more-daily-links">More...</a></li>
+                            {# Archives are consecutive days, a date picker reaches any of them; form keeps the menu open #}
+                            <li><form onsubmit="return false"><input type="date" class="form-control" id="daily-picker" title="Pick a date"
+                                             min="{{ daily_links[-1] }}" max="{{ daily_links[0] }}"
+                                             data-url="{{ page_url('daily/DATE/', lang) }}"></form></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -100,15 +98,15 @@
                     </a>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-hn-rank">HN rank</a>
+                                                   data-sort="rank">HN rank</a>
                         </li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-score">Points</a>
+                                                   data-sort="score">Points</a>
                         </li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-comments">Comments</a></li>
+                                                   data-sort="comments">Comments</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="#"
-                                                   id="sort-by-submit-time">Submit time</a>
+                                                   data-sort="time">Submit time</a>
                         </li>
                     </ul>
                 </li>
@@ -130,20 +128,11 @@
                                                    data-top="-1">All</a></li>
                     </ul>
                 </li>
-                <!-- <li class="translate-dropdown" title="{{ 'Translate'|translate(lang) }}">
-                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
-                        {{ 'Translate'|translate(lang) }}
-                        <span class="caret"></span>
+                <li id="lang-toggle" title="{{ 'English' if lang == 'zh' else '中文' }}">
+                    <a href="{{ page_url(directory, 'en' if lang == 'zh' else 'zh') }}">
+                        <i class="fa fa-language"></i>
                     </a>
-                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu2">
-                        <li role="presentation">
-                            <a role="menuitem" href="/">English</a>
-                        </li>
-                        <li role="presentation">
-                            <a role="menuitem" href="/zh.html">中文</a>
-                        </li>
-                    </ul>
-                </li> -->
+                </li>
                 <li id="theme-toggle" title="Toggle Dark Mode">
                     <a href="#">
                         <i class="fa fa-moon-o"></i>
@@ -154,7 +143,6 @@
     </nav>
     {% for news in news_list %}
         <article class="post-item" data-rank="{{ news.rank }}">
-            <div class="qrcode"></div>
             <div class="post-title">
                 <h3 id="{{ news.slug() }}">
                     <a target="_blank" class="post-url"
@@ -205,7 +193,8 @@
                     </span>
                 </span>
                 <span class="share-icon" title="Share">
-                    <a href="{{ path }}#{{ news.slug() }}">
+                    {# The archive is a story's permanent home, 404.html covers the day before it is generated #}
+                    <a href="{{ page_url('daily/' ~ news.submit_time.strftime('%Y-%m-%d') ~ '/', lang) }}#{{ news.slug() }}">
                         <i class="fa fa-share-square-o"></i>
                         <span>
                             Share
@@ -229,21 +218,23 @@
                     <a class="feature-image" href="/image/{{ news.img_id }}">
                         {# Thanks to http://loading.io/ for the spinner #}
                         <img class="img-rounded" src="/image/{{ news.img_id }}"
-                             alt="{{ news.image.url }}" onerror="illustration_fall_back(this);"
-                             style="{{ news.image.get_size_style(220) }}"
+                             alt="{{ news.image.url }}"
+                             {% if news.image.width %}style="aspect-ratio: {{ news.image.width }} / {{ news.image.height }};"{% endif %}
                              loading="lazy"/>
                     </a>
                 {% endif %}
                 {% if news.summary %}
+                    {% set summary = news.summary|translate(lang) -%}
+                    {# Only original texts of non-LLM summaries are trusted HTML, translations are not #}
+                    {% set trusted = summary == news.summary and not news.summarized_by.need_escape() -%}
                     <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
-                        {% if news.summarized_by.is_final() and news.summary|translate(lang)|length > config.summary_size %}
-                         title="{{ news.summary|translate(lang)|trim }}"
+                        {% if news.summarized_by.is_final() and summary|length > config.summary_size %}
+                         title="{{ summary|trim }}"
                         {% endif %}>
-                        {% set summary = news.summary|translate(lang) -%}
 {#                        {% if news.summarized_by.can_truncate() %}#}
                             {% set summary = summary|truncate -%}
 {#                        {% endif %}#}
-                        {% if not news.summarized_by.need_escape() %}
+                        {% if trusted %}
                             {% set summary = summary|safe -%}
                         {% endif %}
                         {{ summary }}
@@ -276,10 +267,10 @@
                 </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
                     <li role="presentation">
-                        <a role="menuitem" href="/">English</a>
+                        <a role="menuitem" href="{{ page_url(directory, 'en') }}">English</a>
                     </li>
                     <li role="presentation">
-                        <a role="menuitem" href="/zh">中文</a>
+                        <a role="menuitem" href="{{ page_url(directory, 'zh') }}">中文</a>
                     </li>
                 </ul>
             </li>
@@ -323,12 +314,11 @@
 </div>
 <!-- End of the modal dialog -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/humanize-duration/3.27.3/humanize-duration.min.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/jquery.scrollup/2.4.0/jquery.scrollUp.min.js"></script>
 <script src="/static/js/hn.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.4.26/dist/index.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.7.0/dist/index.js" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
 </body>
 </html>

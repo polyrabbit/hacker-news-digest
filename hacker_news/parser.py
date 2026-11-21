@@ -1,7 +1,7 @@
 # coding: utf-8
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import urljoin, urlsplit
 
 import requests
@@ -61,9 +61,9 @@ class HackerNewsParser(object):
             author_link = author_dom.get('href') if author_dom else None
             score_human = subtext_dom.find(string=re.compile(r'\d+.+point')) or '0'
             score = re.search(r'\d+', score_human).group() or None
-            submit_time = subtext_dom.find(string=re.compile(r'\d+ \w+ ago')) or None
-            if submit_time:
-                submit_time = self.human2datetime(submit_time)
+            # The age span carries the exact UTC time, while its text is only like '1 day ago'
+            age_dom = subtext_dom.find('span', class_='age')
+            submit_time = datetime.fromisoformat(age_dom['title'].split()[0]) if age_dom else None
             # In case of no comments yet
             comment_dom = subtext_dom.find('a', string=re.compile(r'\d+.+comment'))
             discuss_dom = subtext_dom.find('a', string=re.compile(r'discuss'))
@@ -98,21 +98,3 @@ class HackerNewsParser(object):
             return None
         return 'https://news.ycombinator.com/item?id=%s' % re.search(r'\d+', path).group()
 
-    def human2datetime(self, text):
-        """Convert human readable time strings to datetime
-        >>> self.human2datetime('2 minutes ago')
-        datetime.datetime(2015, 11, 1, 14, 42, 24, 910863)
-
-        """
-        day_ago = hour_ago = minute_ago = 0
-        m = re.search(r'(?P<day>\d+) day', text, re.I)
-        if m:
-            day_ago = int(m.group('day'))
-        m = re.search(r'(?P<hour>\d+) hour', text, re.I)
-        if m:
-            hour_ago = int(m.group('hour'))
-        m = re.search(r'(?P<minute>\d+) minute', text, re.I)
-        if m:
-            minute_ago = int(m.group('minute'))
-        return datetime.utcnow() - \
-            timedelta(days=day_ago, hours=hour_ago, minutes=minute_ago)

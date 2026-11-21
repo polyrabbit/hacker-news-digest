@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from hacker_news.algolia_api import get_news
 from hacker_news.news import News
@@ -43,10 +43,6 @@ class TestHackerNewsParser(unittest.TestCase):
                          'github.com/polyrabbit')
         self.assertEqual(self.hn.parse_comhead('github.com/'),
                          'github.com')
-
-    def test_parse_datetime(self):
-        self.assertAlmostEqual(self.hn.human2datetime('2 minutes ago').timestamp(),
-                               (datetime.utcnow() - timedelta(minutes=2)).timestamp(), delta=1)
 
     def test_algolia_api(self):
         news_list = get_news(0)

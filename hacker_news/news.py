@@ -9,8 +9,10 @@ from slugify import slugify
 
 import config
 import db.summary
+import db.translation
 from db.summary import Model
-from hacker_news.llm.openai import summarize_by_openai_family, model_family, translate_by_openai_family
+from hacker_news.llm import qwen
+from hacker_news.llm.openai import summarize_by_openai_family, model_family
 from page_content_extractor import parser_factory, ParseError
 from page_content_extractor.html import HtmlContentExtractor
 from page_content_extractor.http import session
@@ -140,49 +142,29 @@ class News:
             return ''
 
         try:
-            sum = summarize_by_openai_family(content)
-            self.translate_summary(sum)
-            return sum
+            return summarize_by_openai_family(content)
         except Exception as e:
             logger.exception(f'Failed to summarize using openai, key #{config.openai_key_index}, {e}')  # Make this error explicit in the log
             return ''
 
-    def translate_summary(self, summary: str):
-        if not summary or config.disable_translation:
+    def translate(self):
+        if config.disable_translation or not local_qwen_ready():
             return
-        try:
-            if db.translation.exists(summary, 'zh'):
-                return
-            trans = translate_by_openai_family(summary, 'simplified Chinese')
-            for char in trans:
-                if '\u4e00' <= char <= '\u9fff':
-                    break
-            else:
-                logger.info(f'No Chinese chars in translation: {trans}')
-                return
-            db.translation.add(summary, trans, 'zh')
-        except Exception as e:
-            logger.exception(f'Failed to translate summary using openai, key #{config.openai_key_index}, {e}')
-
-    def parse_title_translation(self, title):
-        # Somehow, openai always return the original title
-        title_cn = title.removesuffix('。').removesuffix('.')
-        match = re.search(r'^"[^"]+"[^"]+“([^”]+)”', title_cn)
-        if match:  # clean path
-            return match.group(1).strip()
-        match = re.search(r'(.*)\(Note.*\)$', title_cn)
-        if match:
-            return match.group(1).strip()
-
-        parts = re.split(r'的中文翻译(?:[为是])?(?:：)?', title_cn, maxsplit=1)
-        if len(parts) > 1 and parts[1].strip():
-            title_cn = parts[1].strip().strip(':').strip('：').strip()
-        else:
-            title_cn = parts[0].strip()
-        quote = ('"', '“', '”', '《', '》')  # they are used interchangeably
-        while title_cn and title_cn[0] in quote and title_cn[-1] in quote:
-            title_cn = title_cn[1:-1].strip()
-        return title_cn.removesuffix('。').removesuffix('.').strip()
+        # Prefix is raw page text and Embed is an iframe, only titles are worth translating for them
+        summary = '' if self.summarized_by in (Model.PREFIX, Model.EMBED) else self.summary
+        missing = {text for text in (self.title, summary) if text and not db.translation.exists(text, 'zh')}
+        if not missing:
+            return
+        start_time = time.time()
+        try:  # Always translate both, as the title gives the summary context and vice versa
+            translations = qwen.translate_by_local_qwen(self.title, summary)
+        except Exception:
+            logger.exception('Failed to translate using local Qwen')
+            return
+        logger.info(f'took {time.time() - start_time}s to translate: {translations}')
+        for source, target in zip((self.title, summary), translations):
+            if source in missing:  # keep existing ones stable
+                db.translation.add(source, target, 'zh')
 
     def fetch_feature_image(self):
         if config.force_fetch_feature_image:
@@ -206,22 +188,26 @@ class News:
         self.cache.image_name = self.img_id  # tried but not found
 
     def summarize_by_local_qwen(self, content):
-        if config.disable_local_qwen:
-            logger.info("Local Qwen is disabled by env DISABLE_LOCAL_QWEN=1")
+        if not local_qwen_ready():
             return ''
-        if not config.local_qwen_path:
-            logger.info("Local Qwen is disabled because LOCAL_QWEN_PATH is not set")
-            return ''
-        if not os.path.isfile(config.local_qwen_path):
-            logger.warning("Local Qwen model does not exist: %s", config.local_qwen_path)
-            return ''
-
         start_time = time.time()
         try:
-            from hacker_news.llm.qwen import summarize_by_local_qwen
-            summary = summarize_by_local_qwen(content)
+            summary = qwen.summarize_by_local_qwen(content)
         except Exception:
             logger.exception('Failed to summarize using local Qwen')
             return ''
         logger.info(f'took {time.time() - start_time}s to generate: {summary}')
         return summary
+
+
+def local_qwen_ready():
+    if config.disable_local_qwen:
+        logger.info("Local Qwen is disabled by env DISABLE_LOCAL_QWEN=1")
+        return False
+    if not config.local_qwen_path:
+        logger.info("Local Qwen is disabled because LOCAL_QWEN_PATH is not set")
+        return False
+    if not os.path.isfile(config.local_qwen_path):
+        logger.warning("Local Qwen model does not exist: %s", config.local_qwen_path)
+        return False
+    return True

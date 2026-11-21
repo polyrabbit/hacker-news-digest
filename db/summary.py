@@ -34,7 +34,7 @@ class Model(Enum):
         return self in (Model.EMBED, Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.STEP, Model.QWEN)
 
     def need_escape(self):
-        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.LOCAL, Model.QWEN)
+        return self in (Model.OPENAI, Model.GEMMA, Model.LLAMA, Model.LOCAL, Model.QWEN, Model.STEP)
 
     @classmethod
     def from_value(cls, value):

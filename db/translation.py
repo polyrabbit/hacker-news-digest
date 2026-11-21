@@ -37,6 +37,8 @@ def get(text, to_lang):
 
 
 def exists(text, to_lang) -> bool:
+    if config.disable_translation_cache:
+        return False  # translate again and overwrite
     text = text[:Translation.source.type.length]
     stmt = select(Translation).where(Translation.source == text, Translation.language == to_lang)
     with session_scope(defer_commit=True) as session:

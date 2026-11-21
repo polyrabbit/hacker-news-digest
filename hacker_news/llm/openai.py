@@ -144,7 +144,3 @@ def summarize_by_openai_family(content: str) -> str:
     return call_openai_family(content,
                               "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 250 "
                               "characters. Provide response in plain text format without any Markdown formatting.")
-
-
-def translate_by_openai_family(content: str, lang: str) -> str:
-    return call_openai_family(content, f"You are a helpful translator. Translate user's input into {lang}.")

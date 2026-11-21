@@ -1,17 +1,33 @@
 {
   "name": "Hacker News",
   "short_name": "HackerNews",
-  "descriptions": "Hacker News Summary",
+  "description": "Hacker News Summary",
   "start_url": "/?utm_source=pwa",
   "background_color": "#fff",
-  "display": "minimal-ui",
+  "display": "standalone",
   "scope": "/",
   "icons": [
     {
-      "src": "/static/icon-200.png",
+      "src": "/static/icon-192.png",
       "type": "image/png",
-      "sizes": "200x200",
-      "purpose": "any maskable"
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/static/icon-512-maskable.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Archive",
+      "url": "/daily/?utm_source=pwa"
     }
   ]
 }

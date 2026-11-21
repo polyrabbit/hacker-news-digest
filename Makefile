@@ -17,7 +17,7 @@ gh_home_page:
 	rm -rf output/static
 	python publish.py home
 	cp -r static output/static
-	cp static/ads.txt static/robots.txt static/llms.txt static/404.html output/
+	cp static/ads.txt static/robots.txt static/llms.txt static/404.html static/sw.js output/
 	ln -sf index.html output/hackernews  # backward compatibility
 	ln -sf feed.xml output/feed
 	ln -sf static/favicon.ico output/favicon.ico
@@ -52,5 +52,6 @@ output/static/js/hn.$(jsname).js: output/static/js/hn.js
 	cp output/static/js/hn.js output/static/js/hn.$(jsname).js
 
 hash_static: output/static/css/style.$(cssname).css output/static/js/hn.$(jsname).js output/index.html
-	find output -name '*.html' -print0 | xargs -0 sed -i 's/style\.css/style.$(cssname).css/g'
-	find output -name '*.html' -print0 | xargs -0 sed -i 's/hn\.js/hn.$(jsname).js/g'
+	# Also rewrite stale hashes in archives, as old hashed files are gone with output/static
+	find output -name '*.html' -print0 | xargs -0 sed -i 's/style\(\.[0-9a-f]\{10\}\)\?\.css/style.$(cssname).css/g'
+	find output -name '*.html' -print0 | xargs -0 sed -i 's/hn\(\.[0-9a-f]\{10\}\)\?\.js/hn.$(jsname).js/g'

@@ -13,7 +13,7 @@ from db.engine import session_scope
 from db.summary import Model
 from hacker_news.llm.openai import summarize_by_openai_family
 from hacker_news.llm import qwen
-from hacker_news.news import News
+from hacker_news.news import News, local_qwen_ready
 
 
 class NewsSummaryTestCase(TestCase):
@@ -32,9 +32,7 @@ class NewsSummaryTestCase(TestCase):
         self.assertEqual(summary, content)
         self.assertEqual(summarized_by, Model.EMBED)
 
-    @unittest.skipUnless(not config.disable_local_qwen and config.local_qwen_path and
-                         os.path.isfile(config.local_qwen_path),
-                         'Local Qwen model is not installed or disabled')
+    @unittest.skipUnless(local_qwen_ready(), 'Local Qwen model is not installed or disabled')
     def test_summarize_by_local_qwen(self):
         news = News(score='11')
         fpath = os.path.join(os.path.dirname(__file__), 'fixtures/telnet.txt')
@@ -43,6 +41,13 @@ class NewsSummaryTestCase(TestCase):
         summary = news.summarize_by_local_qwen(content)
         self.assertGreater(len(summary), 80)
         self.assertLess(len(summary), config.summary_size * 2)
+
+    @unittest.skipUnless(local_qwen_ready(), 'Local Qwen model is not installed or disabled')
+    def test_translate_by_local_qwen(self):
+        title, summary = qwen.translate_by_local_qwen('Show HN: A tiny Lisp for microcontrollers',
+                                                      'It runs in 2 KB of RAM and boots in 10 ms.')
+        self.assertTrue(title.startswith('Show HN'), msg=title)
+        self.assertRegex(summary, '[\u4e00-\u9fff]')
 
     @unittest.skipUnless(openai.api_key, 'openai families are disabled')
     def test_summarize_by_openai_family(self):
@@ -55,32 +60,6 @@ class NewsSummaryTestCase(TestCase):
         self.assertGreater(len(summary), 80, msg=f'actual summary: {summary!r}')
         self.assertLess(len(summary), config.summary_size * 2,
                         msg=f'actual summary: {summary!r}')
-
-    def test_parse_step_answer(self):
-        news = News('The guide to software development with Guix')
-        self.assertEqual(news.parse_title_translation('"Guix软件开发指南"的中文翻译。'),
-                         'Guix软件开发指南')
-        self.assertEqual(news.parse_title_translation("《使用Guix进行软件开发的指南》的中文翻译。"),
-                         '使用Guix进行软件开发的指南')
-        self.assertEqual(news.parse_title_translation(
-            '"The guide to software development with Guix"的中文翻译为:"使用Guix进行软件开发的指南"。'),
-            '使用Guix进行软件开发的指南')
-
-        self.assertEqual(
-            news.parse_title_translation('Weird GPT-4 behavior for the specific string “ davidjl”'),
-            'Weird GPT-4 behavior for the specific string “ davidjl”')
-        self.assertEqual(news.parse_title_translation(
-            '“Infinite Mac：在Web浏览器上发布经典的Macintosh系统和软件。”'),
-            'Infinite Mac：在Web浏览器上发布经典的Macintosh系统和软件')
-        self.assertEqual(
-            news.parse_title_translation('“马克·扎克伯格谈论苹果的Vision Pro头戴式耳机”'),
-            '马克·扎克伯格谈论苹果的Vision Pro头戴式耳机')
-        self.assertEqual(news.parse_title_translation(
-            '"Ask HN: Is it time to resurrect a Usenet clone? | Hacker News" 的中文翻译是“问 HN：是时候复活一个 Usenet 克隆了吗？| 黑客新闻”。'),
-            '问 HN：是时候复活一个 Usenet 克隆了吗？| 黑客新闻')
-        self.assertEqual(news.parse_title_translation(
-            '我从OpenSnitch这个夏天学到了什么？(Note: This sentence is already in English and does not need to be translated.)'),
-            '我从OpenSnitch这个夏天学到了什么？')
 
     # Avoid OpenAI summary overwritten by later shorter error message
     def test_fallback_when_new_fetch_failed(self):

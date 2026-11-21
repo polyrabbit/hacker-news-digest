@@ -154,6 +154,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         if: ${{ success() }}
+        continue-on-error: true  # tolerate github pages api failure, or the next run starts from an older artifact
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
