@@ -9,12 +9,22 @@
     background-color: transparent;
 }
 
+/* Line up with the content edge, which also leaves room for the archive date on 360px phones */
+.navbar-toggle {
+    margin-right: 0;
+}
+
 .navbar-toggle .icon-bar {
     background-color: #888;
 }
 
 .navbar-brand {
     padding-left: 0;
+}
+
+.navbar-brand small {
+    color: #777;
+    font-size: 70%;
 }
 
 .post-item {
@@ -151,16 +161,30 @@ footer li, footer li a {
     color: #777;
 }
 
-#scrollUp {
+/* Day arrows flank the scroll-up button, the older day sits in the corner like a next page */
+#scrollUp, .day-nav {
     bottom: 10px;
     right: 12px;
-    opacity: 0.4;
-    filter: alpha(opacity=40);
 }
 
-#scrollUp:hover {
+.day-nav {
+    position: fixed;
+    z-index: 1;
+    display: flex;
+    gap: 6px;
+}
+
+.day-nav .older {
+    order: 1;
+}
+
+.day-nav a, #scrollUp {
+    color: inherit;
+    opacity: 0.4;
+}
+
+.day-nav a:hover, #scrollUp:hover {
     opacity: 1;
-    filter: alpha(opacity=100);
 }
 
 .github-corner:hover .octo-arm {
@@ -208,6 +232,10 @@ html[data-theme="dark"] body {
 html[data-theme="dark"] .navbar-brand,
 html[data-theme="dark"] .navbar-brand:hover {
     color: #e0e0e0;
+}
+
+html[data-theme="dark"] .navbar-brand small {
+    color: #999;
 }
 
 html[data-theme="dark"] .navbar-toggle .icon-bar {
@@ -285,6 +313,10 @@ html[data-theme="dark"] .dropdown-menu > li > a {
 html[data-theme="dark"] .dropdown-menu > li > a:hover,
 html[data-theme="dark"] .dropdown-menu > li > a:focus {
     background-color: #383838;
+    color: #fff;
+}
+
+html[data-theme="dark"] .dropdown-menu > .active > a {
     color: #fff;
 }
 

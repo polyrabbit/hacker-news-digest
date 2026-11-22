@@ -80,13 +80,13 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Archive<span class="caret"></span></a>
                     <ul class="dropdown-menu" id="daily-links-menu">
                         {% for link in daily_links[:7] %}
-                            <li><a href="{{ page_url('daily/' ~ link ~ '/', lang) }}">{{ link }}</a></li>
+                            <li{% if link == date|string %} class="active"{% endif %}><a href="{{ page_url('daily/' ~ link ~ '/', lang) }}">{{ link }}</a></li>
                         {% endfor %}
                         {% if daily_links %}
                             <li class="divider"></li>
                             {# Archives are consecutive days, a date picker reaches any of them; form keeps the menu open #}
                             <li><form onsubmit="return false"><input type="date" class="form-control" id="daily-picker" title="Pick a date"
-                                             min="{{ daily_links[-1] }}" max="{{ daily_links[0] }}"
+                                             min="{{ daily_links[-1] }}" max="{{ daily_links[0] }}" value="{{ date or '' }}"
                                              data-url="{{ page_url('daily/DATE/', lang) }}"></form></li>
                         {% endif %}
                     </ul>
@@ -140,6 +140,19 @@
                 </li>
             </ul>
         </div>
+    </nav>
+    {# Neighbours come from the published dates, so missing and pruned days are skipped #}
+    {% set older = daily_links|select('lt', date|string)|max if date else daily_links|first %}
+    {% set newer = daily_links|select('gt', date|string)|min if date %}
+    <nav class="day-nav">
+        {% if date %}
+            <a class="newer" rel="prev" href="{{ page_url('daily/' ~ newer ~ '/' if newer else '', lang) }}"
+               title="{{ 'Archive of ' ~ newer if newer else 'Front page' }}"><i class="fa fa-chevron-circle-left fa-3x"></i></a>
+        {% endif %}
+        {% if older %}
+            <a class="older" rel="next" href="{{ page_url('daily/' ~ older ~ '/', lang) }}"
+               title="Archive of {{ older }}"><i class="fa fa-chevron-circle-right fa-3x"></i></a>
+        {% endif %}
     </nav>
     {% for news in news_list %}
         <article class="post-item" data-rank="{{ news.rank }}">

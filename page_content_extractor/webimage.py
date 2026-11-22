@@ -9,7 +9,7 @@ from functools import lru_cache
 from hashlib import md5
 from urllib.parse import urlparse, urljoin, unquote
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from page_content_extractor.http import session
 from . import imgsz
@@ -21,10 +21,12 @@ class WebImage(object):
     MIN_PX = 100
     MIN_BYTES_SIZE = 4000
     MAX_BYTES_SIZE = 10 * 1024 * 1024  # we have compression now
+    MAX_WIDTH = 1200  # Wide enough for a sharp 600px preview on 2x screens
     SCALE_FROM_IMG_TO_TEXT = 22 * 22
     content_type = ''
     width = 0
     height = 0
+    compressed = False
 
     def __init__(self, src='', referrer='', **attrs):
         # e.g. http://www.washingtonpost.com/sf/investigative/2014/09/06/stop-and-seize/
@@ -166,19 +168,29 @@ class WebImage(object):
         return self.MIN_BYTES_SIZE < len(self.raw_data) < self.MAX_BYTES_SIZE
 
     def try_compress(self):
-        if self.suffix.lower() in ('.svg', '.webp', '.gif'):  # PIL doesnot recognize svg
+        if self.compressed:  # Instances are cached, and encoding again would lose quality and change the file name
             return
         out = io.BytesIO()
         try:
             img = Image.open(io.BytesIO(self.raw_data))
-            img.save(out, format='webp', optimize=True, quality=50)
-            if len(self.raw_data) <= len(out.getbuffer()):
-                logger.info(f'got a bigger webp, src: {self.url}')
+            # Leave animations and high bit depth images (which RGB would clip) as they are.
+            # The extra frames of MPO photos are only previews, so those are fine.
+            if getattr(img, 'is_animated', False) and img.format != 'MPO' or img.mode.startswith(('I', 'F')):
                 return
-            self.raw_data = out.getbuffer()
-            self.suffix = '.webp'
+            # Convert before resizing, as palette images resize poorly.
+            # Only RGB profiles still match the converted pixels.
+            icc_profile = img.info.get('icc_profile') if img.mode in ('RGB', 'RGBA') else None
+            img = ImageOps.exif_transpose(img).convert('RGBA' if img.has_transparency_data else 'RGB')
+            img.thumbnail((self.MAX_WIDTH, img.height))
+            img.save(out, format='webp', quality=50, icc_profile=icc_profile)
         except Exception as e:
-            logger.warning(f'{self.url}, {e}')
+            logger.info(f'Cannot compress {self.url}, {e}')  # e.g. SVG
+            return
+        if len(out.getbuffer()) >= len(self.raw_data):
+            logger.info(f'got a bigger webp, src: {self.url}')
+            return
+        self.raw_data, self.suffix, self.compressed = out.getvalue(), '.webp', True
+        self.width, self.height = img.size  # EXIF rotation may have swapped them
 
     def uniq_name(self):
         fname = md5(self.raw_data).hexdigest()

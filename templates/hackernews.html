@@ -20,5 +20,5 @@
 {% endblock %}
 
 {% block nav_brand %}
-    <a class="navbar-brand" href="{{ page_url('', lang) }}">Hacker News Summary</a>
+    <a class="navbar-brand" href="{{ page_url('', lang) }}">Hacker News Summary{% if date %} <small>{{ date }}</small>{% endif %}</a>
 {% endblock %}

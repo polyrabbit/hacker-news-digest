@@ -143,6 +143,8 @@ $.scrollUp({
     scrollTrigger: '<i class="fa fa-chevron-circle-up fa-3x" id="scrollUp"></i>',
     scrollTitle: 'Scroll to top'
 });
+// Sit between the day arrows; archives rendered before them keep it floating alone
+$('#scrollUp').appendTo('.day-nav').css('position', '');
 // submit time humanize
 $('.last-updated').each((index, item) => {
     $(item).find('span').text(humanizeDuration(new Date() - new Date($(item).data('submitted')), {

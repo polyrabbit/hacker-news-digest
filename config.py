@@ -46,7 +46,7 @@ summary_size = 400
 summary_ttl = int_env('SUMMARY_TTL_DAYS', 60) * 24 * 60 * 60
 updatable_within_days = int_env('UPDATABLE_WITHIN_DAYS', 3)
 assert updatable_within_days < summary_ttl / (24 * 60 * 60)
-archive_ttl_days = int_env('ARCHIVE_TTL_DAYS', 3 * 365)
+archive_ttl_days = int_env('ARCHIVE_TTL_DAYS', 5 * 365)
 
 sites_for_users = ('github.com', 'medium.com', 'twitter.com')
 
