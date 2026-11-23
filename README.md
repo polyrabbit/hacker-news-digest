@@ -37,17 +37,14 @@ Emoji explained:
 
 ## How it works
 
-[Hacker News Summary](https://hackernews.betacat.io/) is a static site hosted on GitHub Pages. It
-performs the following periodic actions:
+[Hacker News Summary](https://hackernews.betacat.io/) is a static site hosted on GitHub Pages. A [GitHub Actions workflow](.github/workflows/static.yml) periodically performs the following actions:
 
-1. Parsing the Hacker News page to obtain a list of news articles
+1. Parsing the Hacker News page to obtain a list of news articles.
 2. Extracting the main content from each news article using
-   a [score algorithm](%5Btutorial%5D%20How-to-extract-main-content-from-web-pages-using-Machine-Learning.ipynb)
-3. Finding the most suitable illustration for each article and making a local copy
-4. Generating summaries of the article's content using OpenAI API or invoking a local model as a
-   fallback when the API is unavailable
-5. Rendering a template that incorporates the illustrations and summaries, and deploying it to
-   GitHub Pages
+   a [score algorithm](%5Btutorial%5D%20How-to-extract-main-content-from-web-pages-using-Machine-Learning.ipynb).
+3. Finding the most suitable illustration for each article and making a local copy.
+4. Generating summaries of the article's content using OpenAI API, or falling back to a local model.
+5. Rendering a template that incorporates the illustrations and summaries, and deploying it to GitHub Pages.
 
 ## Localization
 

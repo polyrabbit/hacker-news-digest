@@ -12,7 +12,7 @@ import db.summary
 import db.translation
 from db.summary import Model
 from hacker_news.llm import qwen
-from hacker_news.llm.openai import summarize_by_openai_family, model_family
+from hacker_news.llm.openai import summarize_by_openai_family, translate_by_openai_family, model_family
 from page_content_extractor import parser_factory, ParseError
 from page_content_extractor.html import HtmlContentExtractor
 from page_content_extractor.http import session
@@ -148,23 +148,32 @@ class News:
             return ''
 
     def translate(self):
-        if config.disable_translation or not local_qwen_ready():
+        if config.disable_translation:
             return
         # Prefix is raw page text and Embed is an iframe, only titles are worth translating for them
         summary = '' if self.summarized_by in (Model.PREFIX, Model.EMBED) else self.summary
         missing = {text for text in (self.title, summary) if text and not db.translation.exists(text, 'zh')}
         if not missing:
             return
-        start_time = time.time()
-        try:  # Always translate both, as the title gives the summary context and vice versa
-            translations = qwen.translate_by_local_qwen(self.title, summary)
-        except Exception:
-            logger.exception('Failed to translate using local Qwen')
-            return
-        logger.info(f'took {time.time() - start_time}s to translate: {translations}')
-        for source, target in zip((self.title, summary), translations):
-            if source in missing:  # keep existing ones stable
-                db.translation.add(source, target, 'zh')
+        # The API is faster and better, the slow local Qwen only covers its failures, e.g. running out of quota
+        translators = [translate_by_openai_family] if openai.api_key else []
+        if local_qwen_ready():
+            translators.append(qwen.translate_by_local_qwen)
+        for translate in translators:
+            start_time = time.time()
+            try:  # Always translate both, as the title gives the summary context and vice versa
+                translations = translate(self.title, summary)
+            except Exception:
+                logger.exception(f'Failed to {translate.__name__}')
+                continue
+            logger.info(f'took {time.time() - start_time}s to {translate.__name__}: {translations}')
+            for source, target in zip((self.title, summary), translations):
+                # Empty if the answer is cut off or malformed, leave it to the next translator
+                if target and source in missing:  # keep existing ones stable
+                    db.translation.add(source, target, 'zh')
+                    missing.discard(source)
+            if not missing:
+                return
 
     def fetch_feature_image(self):
         if config.force_fetch_feature_image:

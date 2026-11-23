@@ -8,6 +8,7 @@ import openai
 import tiktoken
 import config
 from db.summary import Model
+from hacker_news.llm import translation
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,8 @@ def model_family() -> Model:
         return Model.STEP
     if 'qwen' in config.openai_model:
         return Model.QWEN
+    if 'glm' in config.openai_model:
+        return Model.GLM
     return Model.OPENAI
 
 
@@ -46,7 +49,7 @@ def sanitize_for_openai(text, overhead):
 
     limit = context_limit()
     # one token generally corresponds to ~4 characters, from https://platform.openai.com/tokenizer
-    if model_family() in [Model.LLAMA, Model.GEMMA, Model.QWEN]:
+    if model_family() in [Model.LLAMA, Model.GEMMA, Model.QWEN, Model.GLM]:
         if len(text) > (limit - overhead) * 4:
             text = text[:int((limit - overhead) * 4)]
     elif len(text) > limit * 2:
@@ -64,6 +67,25 @@ def sanitize_title(title):
     return title.replace('"', "'").replace('\n', ' ').strip()
 
 
+def create_chat_completion(messages: list[dict], **kwargs):
+    family = model_family()
+    if family == Model.GEMMA:
+        # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
+        kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
+    elif family in (Model.STEP, Model.QWEN):
+        kwargs['reasoning_format'] = 'hidden'
+    elif family == Model.GLM:
+        # Thinking adds no value to summaries or translations, but costs latency and output tokens
+        kwargs['chat_template_kwargs'] = {'enable_thinking': False}
+    resp = openai.ChatCompletion.create(model=config.openai_model, messages=messages,
+                                        stream=False, n=1, timeout=30,
+                                        # The http timeout, the default 600s may stall a whole run
+                                        request_timeout=60, **kwargs)
+    if 'error' in resp:
+        raise Exception(f'error message: {resp["error"].get("message")}, code: {resp["error"].get("code")}')
+    return resp
+
+
 def call_openai_family(content: str, sys_prompt: str) -> str:
     start_time = time.time()
 
@@ -79,36 +101,17 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
     #          f'3 - Provide a Chinese translation of sentence: "{title}".\n' \
     #          f'```{content.strip(".")}.```'
 
-    kwargs = {'model': config.openai_model,
-              # one token generally corresponds to ~4 characters
-              # 'max_tokens': int(config.summary_size / 4),
-              'stream': False,
-              'temperature': 0,
-              'n': 1,  # only one choice
-              "frequency_penalty": 1,  # Avoid token repetition
-              "presence_penalty": 1,
-              'timeout': 30}
-    if model_family() == Model.GEMMA:
-        # Gemma outputs weird words like Kün/viciss/▁purcha/▁xPos/▁Gorb
-        kwargs['logit_bias'] = {200507: -100, 225856: -100, 6204: -100, 232014: -100, 172406: -100}
-    elif model_family() in (Model.STEP, Model.QWEN):
-        kwargs['reasoning_format'] = 'hidden'
-
     logger.warning(f'content: {content}')  # for syslog
-    resp = openai.ChatCompletion.create(
-        messages=[
-            {
-                "role": "system",
-                "content": sys_prompt
-            },
-            {'role': 'user', 'content': content},
-        ],
-        **kwargs)
+    resp = create_chat_completion([{'role': 'system', 'content': sys_prompt},
+                                   {'role': 'user', 'content': content}],
+                                  # one token generally corresponds to ~4 characters
+                                  # max_tokens=int(config.summary_size / 4),
+                                  temperature=0,
+                                  frequency_penalty=1,  # Avoid token repetition
+                                  presence_penalty=1)
     logger.warning(f'took {time.time() - start_time}s to generate: '
                    # Default str(resp) prints \u516c
                    f'{json.dumps(resp.to_dict_recursive(), sort_keys=True, indent=2, ensure_ascii=False)}')
-    if 'error' in resp:
-        raise Exception(f'error message: {resp["error"].get("message")}, code: {resp["error"].get("code")}')
     message = resp["choices"][0]["message"]
     if message.get('function_call'):
         json_str = message['function_call']['arguments']
@@ -142,5 +145,14 @@ def call_openai_family(content: str, sys_prompt: str) -> str:
 
 def summarize_by_openai_family(content: str) -> str:
     return call_openai_family(content,
-                              "You are a helpful summarizer. Please think step by step to summarize all user's input in 2 concise English sentences. Ensure the summary does not exceed 250 "
+                              "You are a helpful summarizer. Please think step by step to summarize the following article in 2 concise English sentences. Ensure the summary does not exceed 250 "
                               "characters. Provide response in plain text format without any Markdown formatting.")
+
+
+def translate_by_openai_family(title: str, summary: str = '') -> tuple[str, str]:
+    resp = create_chat_completion(translation.messages(title, summary),
+                                  temperature=0.2, top_p=0.8, max_tokens=512)
+    choice = resp['choices'][0]
+    if choice['finish_reason'] != 'stop':
+        return '', ''  # cut off, retry next time
+    return translation.parse(choice['message'].get('content'))

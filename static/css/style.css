@@ -131,6 +131,11 @@
     margin-bottom: 0;
 }
 
+/* Leave only the footer's margin above the divider, matching its padding below */
+.share-card .post-summary {
+    margin-bottom: 0;
+}
+
 .share-footer {
     display: flex;
     justify-content: space-between;
