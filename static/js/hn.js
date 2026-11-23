@@ -159,6 +159,54 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip({html: true});
 });
 
+// Poll the front page and notify stories that newly reach HOT points, off until the user turns it on
+const notifyToggle = $('#notify-toggle'), HOT = 10;
+if (!('Notification' in window && 'serviceWorker' in navigator && 'showNotification' in ServiceWorkerRegistration.prototype)) {
+    notifyToggle.remove();
+} else if (notifyToggle.length) {
+    const hotStories = doc => $(doc).find('.post-item').filter((i, item) => sortKeys.score(item) >= HOT);
+    // Stories are keyed by URL, which survives title edits; those already on screen need no notification
+    const notified = new Set(hotStories(document).find('.post-url').map((i, a) => a.getAttribute('href')).get());
+    // Read the choice on every use, so turning it off in one tab silences all tabs
+    const active = () => localStorage.getItem('notify') === 'on' && Notification.permission === 'granted';
+    const render = () => notifyToggle.find('a')
+        .attr('title', Notification.permission === 'denied'
+            ? 'Notifications are blocked by your browser, allow them in the site settings to get notified'
+            : active() ? `You will be notified when a story reaches ${HOT} points, click to stop`
+            : `Click to get notified when a story reaches ${HOT} points while this page is open`)
+        .find('i').attr('class', active() ? 'fa fa-bell-o' : 'fa fa-bell-slash-o');
+    notifyToggle.click(e => {
+        e.preventDefault();
+        const on = !active();
+        localStorage.setItem('notify', on ? 'on' : 'off');
+        // Prompts only while undecided, and browsers only prompt from a click
+        if (on) Notification.requestPermission().then(render);
+        else render();
+    });
+    // Another tab may change the choice or the permission
+    $(window).on('storage focus', render);
+    render();
+    navigator.serviceWorker.ready.then(registration => setInterval(async () => {
+        // Logged at the verbose level, so the console stays quiet unless someone is debugging
+        if (!active()) return console.debug('Story poll skipped, notifications are off');
+        const html = await fetch(location.pathname, {cache: 'no-store'}).then(response => response.text());
+        if (!active()) return;  // Turned off while fetching
+        const hot = hotStories(new DOMParser().parseFromString(html, 'text/html'));
+        const fresh = hot.filter((i, item) => !notified.has($(item).find('.post-url').attr('href')));
+        console.debug(`Story poll found ${hot.length} stories over ${HOT} points, ${fresh.length} to notify`);
+        fresh.each((i, item) => {
+            const link = $(item).find('.post-url'), url = link.attr('href'), id = $(item).find('h3').attr('id');
+            registration.showNotification(link.text().trim(), {
+                body: $(item).find('.summary-text').text().trim(),
+                icon: '/static/icon-192.png',
+                tag: url,  // Tabs polling the same story share one notification
+                // A query unique to the story makes a tab already on this page reload, so a newly listed story shows up
+                data: `${location.pathname}?utm_source=notification&utm_content=${id}#${id}`,
+            }).then(() => notified.add(url), console.warn);
+        });
+    }, 10 * 60 * 1000));
+}
+
 // feature-image modal
 function PreviewImage(src) {
     $('#img-preview-modal img').attr('src', src);

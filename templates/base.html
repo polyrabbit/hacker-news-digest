@@ -128,16 +128,25 @@
                                                    data-top="-1">All</a></li>
                     </ul>
                 </li>
-                <li id="lang-toggle" title="{{ 'English' if lang == 'zh' else '中文' }}">
-                    <a href="{{ page_url(directory, 'en' if lang == 'zh' else 'zh') }}">
-                        <i class="fa fa-language"></i>
+                {# Titles sit on the links, so they also name the icon-only links for screen readers #}
+                <li id="lang-toggle">
+                    <a href="{{ page_url(directory, 'en' if lang == 'zh' else 'zh') }}" title="{{ 'English' if lang == 'zh' else '中文' }}">
+                        <i class="fa fa-language" aria-hidden="true"></i>
                     </a>
                 </li>
-                <li id="theme-toggle" title="Toggle Dark Mode">
-                    <a href="#">
-                        <i class="fa fa-moon-o"></i>
+                <li id="theme-toggle">
+                    <a href="#" title="Toggle Dark Mode">
+                        <i class="fa fa-moon-o" aria-hidden="true"></i>
                     </a>
                 </li>
+                {# Archives never change, only the front page is worth polling #}
+                {% if not date %}
+                    <li id="notify-toggle">
+                        <a href="#">
+                            <i class="fa fa-bell-slash-o" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </nav>

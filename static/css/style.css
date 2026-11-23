@@ -222,8 +222,8 @@ footer li, footer li a {
     }
 }
 
-/* Theme and language toggle icons */
-#theme-toggle a, #lang-toggle a {
+/* Navbar toggle icons */
+#theme-toggle a, #lang-toggle a, #notify-toggle a {
     cursor: pointer;
     font-size: 1.1em;
 }
