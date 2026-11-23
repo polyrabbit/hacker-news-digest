@@ -13,12 +13,23 @@ self.addEventListener('activate', event => event.waitUntil(
 
 self.addEventListener('fetch', event => {
     const request = event.request;
-    if (request.method !== 'GET') return;
+    // Requests bypassing caches, like the story poller, go straight to the network
+    if (request.method !== 'GET' || request.cache === 'no-store') return;
     if (request.mode === 'navigate') {
         event.respondWith(networkFirst(event));
     } else if (ASSET_HOSTS.includes(new URL(request.url).host)) {
         event.respondWith(staleWhileRevalidate(event));
     }
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const url = new URL(event.notification.data, location.origin).href;
+    // Jump to the story in a tab already on that page, or open one
+    event.waitUntil(clients.matchAll({type: 'window'}).then(tabs => {
+        const tab = tabs.find(client => pageKey(client.url) === pageKey(url));
+        return tab ? tab.focus().then(tab => tab.navigate(url)) : clients.openWindow(url);
+    }));
 });
 
 // Pages and assets the page loaded before this worker took control
