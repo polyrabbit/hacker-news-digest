@@ -195,6 +195,7 @@ if (!('Notification' in window && 'serviceWorker' in navigator && 'showNotificat
         const fresh = hot.filter((i, item) => !notified.has($(item).find('.post-url').attr('href')));
         console.debug(`Story poll found ${hot.length} stories over ${HOT} points, ${fresh.length} to notify`);
         fresh.each((i, item) => {
+            $(item).find('[hidden]').remove();  // English originals of a translated page, text() would join them in
             const link = $(item).find('.post-url'), url = link.attr('href'), id = $(item).find('h3').attr('id');
             registration.showNotification(link.text().trim(), {
                 body: $(item).find('.summary-text').text().trim(),
@@ -206,6 +207,14 @@ if (!('Notification' in window && 'serviceWorker' in navigator && 'showNotificat
         });
     }, 10 * 60 * 1000));
 }
+
+// Each translated field of a story is rendered next to its hidden English original, so flipping both swaps languages.
+// Only direct children, as a trusted HTML summary may carry lang attributes of its own
+$('.original-toggle button').click(function () {
+    const showOriginal = $(this).attr('aria-pressed') !== 'true';
+    $(this).attr('aria-pressed', showOriginal).closest('.post-item')
+        .find('.post-url > [lang], .post-summary > [lang]').prop('hidden', (i, hidden) => !hidden);
+});
 
 // feature-image modal
 function PreviewImage(src) {
@@ -228,8 +237,28 @@ $('.feature-image img').on('error', imageFallBack).filter((i, img) => img.comple
 setTimeout(() => {
     $('.post-item img').attr('loading', 'eager');
 }, 30 * 1000);
-// Share a story as an image card, laid out at a fixed width and rendered sharp for phones
-$('.share-icon > a').click(function () {
+// Flip the Share menu leftwards when it would run off the right edge, as on phones
+$('.share-icon').on('shown.bs.dropdown', function () {
+    const menu = $('.dropdown-menu', this).removeClass('dropdown-menu-right');
+    menu.toggleClass('dropdown-menu-right', menu[0].getBoundingClientRect().right > document.documentElement.clientWidth);
+});
+
+// Copy a story as its title, as shown, over its link, flashing the result on the Share toggle.
+// The click goes on to close the menu. Without a usable clipboard, e.g. denied or missing, the text is left to copy by hand
+$('.share-icon .copy-link').click(function (e) {
+    e.preventDefault();
+    const text = `${$(this).closest('.post-item').find('.post-url')[0].innerText.trim()}\n${this.href}`;
+    const label = $(this).closest('.share-icon').find('[data-toggle] > span');
+    Promise.resolve().then(() => navigator.clipboard.writeText(text)).then(() => {
+        clearTimeout(label.data('timer'));
+        label.text(`${this.dataset.copied} ✓`).data('timer', setTimeout(() => label.text('Share'), 1500));
+    }, () => prompt('', text));
+});
+
+// Share a story as an image card, laid out at a fixed width and rendered sharp for phones.
+// Archives generated before the Share menu still carry a plain Share link
+$('.share-icon .share-image, .share-icon:not(.dropdown) > a').click(function (e) {
+    e.preventDefault();
     const card = $(this).closest('.post-item').clone().addClass('share-card').appendTo('body');
     const time = card.find('.last-updated');
     time.text(time.data('submitted').slice(0, 10));  // A relative time goes stale in an image
@@ -243,5 +272,4 @@ $('.share-icon > a').click(function () {
         backgroundColor: getComputedStyle(document.body).backgroundColor,
         timeout: 3000,
     })).then(PreviewImage).finally(() => card.remove());
-    return false;
 });

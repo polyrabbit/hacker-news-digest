@@ -63,6 +63,24 @@
     white-space: nowrap;
 }
 
+/* Plain like its neighbours, lit while the original shows */
+.post-meta .original-toggle button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.post-meta .original-toggle button[aria-pressed="true"] {
+    color: #fd6c6c;
+}
+
+/* Bootstrap's display of an embed summary would override the hidden attribute */
+.post-summary > [hidden] {
+    display: none;
+}
+
 .post-item .post-meta img {
     width: 16px;
     height: 16px;
@@ -110,30 +128,36 @@
     padding: 3px 12px;
 }
 
-/* Off-screen copy of a story to render the share image */
+/* Off-screen copy of a story to render the share image, with even 20px edges once the title's leading is counted */
 .share-card {
     position: fixed;
     top: 0;
     left: -10000px;
     width: 560px;
     margin: 0;
-    padding: 4px 20px 12px;
+    padding: 16px 20px 20px;
     border: none;
 }
 
-/* Links and model names mean nothing in an image */
-.share-card .share-icon, .share-card .summary-model {
+/* Links, toggles and model names mean nothing in an image */
+.share-card .share-icon, .share-card .summary-model, .share-card .original-toggle {
     display: none;
 }
 
-/* The renderer drops this margin, and the image keeps its height as blank space at the bottom */
+/* The renderer drops margins collapsing out of the title but keeps the height they add, so space the meta with padding instead */
 .share-card h3 {
+    margin: 0;
+    padding-bottom: 2px;
+}
+
+/* Leave only the footer's margin above the divider; with the text's leading it matches the padding below */
+.share-card .post-summary {
     margin-bottom: 0;
 }
 
-/* Leave only the footer's margin above the divider, matching its padding below */
-.share-card .post-summary {
-    margin-bottom: 0;
+/* Line the image up with the first line of the summary */
+.share-card .post-summary .feature-image {
+    margin-top: 10px;
 }
 
 .share-footer {
@@ -141,7 +165,7 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 12px;
-    padding-top: 12px;
+    padding-top: 14px;
     border-top: 1px solid rgba(128, 128, 128, .3);
     color: #888;
 }

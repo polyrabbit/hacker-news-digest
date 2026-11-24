@@ -26,8 +26,9 @@ class Translation(Base):
 def get(text, to_lang):
     if to_lang == 'en':
         return text  # shortcut
-    text = text[:Translation.source.type.length]
-    stmt = select(Translation).where(Translation.source == text, Translation.language == to_lang)
+    # Truncate only the key, a miss returns the full text so callers can tell it is untranslated
+    key = text[:Translation.source.type.length]
+    stmt = select(Translation).where(Translation.source == key, Translation.language == to_lang)
     with session_scope(defer_commit=True) as session:  # Ok to batch it
         trans = session.scalars(stmt).first()
         if trans:

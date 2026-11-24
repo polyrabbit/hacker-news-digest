@@ -163,12 +163,30 @@
                title="Archive of {{ older }}"><i class="fa fa-chevron-circle-right fa-3x"></i></a>
         {% endif %}
     </nav>
+    {# A summary in one language, only the original of a non-LLM summary is trusted HTML #}
+    {% macro summary_div(news, summary, lang=none, hidden=false) %}
+        <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
+            {% if lang %} lang="{{ lang }}"{% endif %}{% if hidden %} hidden{% endif %}
+            {% if news.summarized_by.is_final() and summary|length > config.summary_size %}
+             title="{{ summary|trim }}"
+            {% endif %}>
+            {% set trusted = summary == news.summary and not news.summarized_by.need_escape() -%}
+            {{ summary|truncate|safe if trusted else summary|truncate }}
+        </div>
+    {% endmacro %}
     {% for news in news_list %}
+        {# Translated pages embed the English original of each translated field, hidden until its toggle flips them #}
+        {% set translated_title = news.title|translate(lang) -%}
+        {% set translated_summary = news.summary and news.summary|translate(lang) -%}
         <article class="post-item" data-rank="{{ news.rank }}">
             <div class="post-title">
                 <h3 id="{{ news.slug() }}">
-                    <a target="_blank" class="post-url"
-                       href="{{ news.url }}">{{ news.title|translate(lang) }}
+                    <a target="_blank" class="post-url" href="{{ news.url }}">
+                        {%- if translated_title != news.title -%}
+                            <span lang="{{ lang }}">{{ translated_title }}</span><span lang="en" hidden>{{ news.title }}</span>
+                        {%- else -%}
+                            {{ news.title }}
+                        {%- endif %}
                     </a>
                 </h3>
             </div>
@@ -208,21 +226,44 @@
                         <span>{{ news.comhead }}</span>
                     </span>
                 {% endif %}
-                <span class="summary-model" title="Summary Model">
-                    <i class="fa fa-quote-left"></i>
+                {# Only LLM summaries need escaping, the rest are quoted from the page #}
+                {% set by_llm = news.summarized_by.need_escape() -%}
+                <span class="summary-model" title="{{ 'Summarized by ' ~ news.summarized_by.value if by_llm else 'Quoted from the page' }}">
+                    <i class="fa {{ 'fa-magic' if by_llm else 'fa-quote-left' }}"></i>
                     <span>
                         {{ news.summarized_by.value }}
                     </span>
                 </span>
-                <span class="share-icon" title="Share">
-                    {# The archive is a story's permanent home, 404.html covers the day before it is generated #}
-                    <a href="{{ page_url('daily/' ~ news.submit_time.strftime('%Y-%m-%d') ~ '/', lang) }}#{{ news.slug() }}">
+                {# The archive is a story's permanent home, 404.html covers the day before it is generated #}
+                {% set share_url = page_url('daily/' ~ news.submit_time.strftime('%Y-%m-%d') ~ '/', lang) ~ '#' ~ news.slug() %}
+                <span class="share-icon dropdown">
+                    <a href="#" title="Share" data-toggle="dropdown" role="button" aria-haspopup="true">
                         <i class="fa fa-share-square-o"></i>
                         <span>
                             Share
                         </span>
                     </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li role="presentation">
+                            <a role="menuitem" href="{{ share_url }}" class="copy-link" data-copied="{{ '已复制' if lang == 'zh' else 'Copied' }}">
+                                <i class="fa fa-link fa-fw"></i> {{ '复制链接' if lang == 'zh' else 'Copy link' }}
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a role="menuitem" href="{{ share_url }}" class="share-image">
+                                <i class="fa fa-picture-o fa-fw"></i> {{ '生成分享图' if lang == 'zh' else 'Share as image' }}
+                            </a>
+                        </li>
+                    </ul>
                 </span>
+                {% if translated_title != news.title or translated_summary != news.summary %}
+                    <span class="original-toggle">
+                        <button type="button" title="English original" aria-pressed="false">
+                            <i class="fa fa-language" aria-hidden="true"></i>
+                            English
+                        </button>
+                    </span>
+                {% endif %}
                 {% if news.comment_url %}
                     <span class="comment" title="Comments">
                         <a href="{{ news.comment_url }}" rel="comment" target="_blank">
@@ -245,22 +286,11 @@
                              loading="lazy"/>
                     </a>
                 {% endif %}
-                {% if news.summary %}
-                    {% set summary = news.summary|translate(lang) -%}
-                    {# Only original texts of non-LLM summaries are trusted HTML, translations are not #}
-                    {% set trusted = summary == news.summary and not news.summarized_by.need_escape() -%}
-                    <div class="{% if news.summary.startswith('<iframe') %}embed-responsive embed-responsive-16by9 {% else %}summary-text{% endif %}"
-                        {% if news.summarized_by.is_final() and summary|length > config.summary_size %}
-                         title="{{ summary|trim }}"
-                        {% endif %}>
-{#                        {% if news.summarized_by.can_truncate() %}#}
-                            {% set summary = summary|truncate -%}
-{#                        {% endif %}#}
-                        {% if trusted %}
-                            {% set summary = summary|safe -%}
-                        {% endif %}
-                        {{ summary }}
-                    </div>
+                {% if translated_summary != news.summary %}
+                    {{ summary_div(news, translated_summary, lang) }}
+                    {{ summary_div(news, news.summary, 'en', hidden=true) }}
+                {% elif news.summary %}
+                    {{ summary_div(news, news.summary) }}
                 {% endif %}
                 <div style="clear: both;"></div>
             </div>
