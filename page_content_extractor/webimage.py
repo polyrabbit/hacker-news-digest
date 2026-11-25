@@ -147,10 +147,10 @@ class WebImage(object):
     def to_text_len(self):
         return self.img_area_px / self.scale
 
-    def get_size_style(self, width):
+    def get_size_attrs(self, width):
         if self.width == 0:
             return ''
-        return f'width: {width}px; height: {math.ceil(self.height * (width / self.width))}px;'
+        return f'width="{width}" height="{math.ceil(self.height * (width / self.width))}"'
 
     # See https://github.com/grangier/python-goose
     def check_dimension(self, width, height):

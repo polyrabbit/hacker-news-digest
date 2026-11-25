@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 from feedwerk.atom import AtomFeed
 from jinja2 import Environment, FileSystemLoader, filters
+from markupsafe import Markup
 
 import config
 import db.translation
@@ -40,12 +41,18 @@ def page_url(directory, lang):
     return urljoin(config.site + '/', directory + PAGES[lang].removesuffix('.html').removesuffix('index'))
 
 
+def story_url(news, lang):
+    # The archive is a story's permanent home, 404.html covers the day before it is generated
+    return f"{page_url(f'daily/{news.submit_time:%Y-%m-%d}/', lang)}#{news.slug()}"
+
+
 environment = Environment(
     loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates/")), autoescape=True)
 environment.filters["translate"] = translate
 environment.filters["truncate"] = truncate
 environment.globals["config"] = config
 environment.globals["page_url"] = page_url
+environment.globals["story_url"] = story_url
 
 
 def gen_frontpage():
@@ -144,28 +151,26 @@ def gen_feed(news_list):
                         'name': 'polyrabbit',
                         'uri': 'https://github.com/polyrabbit/'}
                     )
-    for i, news in enumerate(news_list):
+    for news in news_list:
         if news.get_score() <= config.openai_score_threshold:
             # RSS readers doesnot update their content, so wait until we have a better summary, to provide a consistent view to users
             continue
-        img_tag = ''
+        summary = truncate(news.summary) if news.summarized_by.can_truncate() else news.summary
+        if not news.summarized_by.need_escape():
+            summary = Markup(summary)  # Quoted page HTML, trusted as on the web page
+        content = Markup('{} <a href="{}">[summary]</a>').format(summary, story_url(news, 'en'))
         if news.image:
-            img_tag = f'<img src="{news.image.url}" style="{news.image.get_size_style(220)}" /><br />'
+            content = Markup('<img src="{}" {}><br>').format(news.image.url, Markup(news.image.get_size_attrs(220))) + content
+        if news.comment_url:
+            content += Markup(' <a href="{}">[comments]</a>').format(news.comment_url)
         feed.add(news.title,
-                 content='%s%s%s%s' % (
-                     img_tag,
-                     # not None
-                     truncate(news.summary) if news.summarized_by.can_truncate() else news.summary,
-                     (
-                             ' <a href="%s" target="_blank">[summary]</a>' % f'{config.site}/#{news.slug()}'),
-                     (
-                         ' <a href="%s" target="_blank">[comments]</a>' % news.comment_url if news.comment_url else '')),
+                 content=str(content),  # A plain string, for Markup would skip XML escaping
                  author={
                      'name': news.author,
                      'uri': news.author_link
                  } if news.author_link else (),
                  url=news.url,
-                 updated=news.submit_time, )
+                 updated=news.submit_time)
     rendered = feed.to_string()
     output_path = os.path.join(config.output_dir, "feed.xml")
     with open(output_path, "w") as fp:

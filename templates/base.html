@@ -234,8 +234,7 @@
                         {{ news.summarized_by.value }}
                     </span>
                 </span>
-                {# The archive is a story's permanent home, 404.html covers the day before it is generated #}
-                {% set share_url = page_url('daily/' ~ news.submit_time.strftime('%Y-%m-%d') ~ '/', lang) ~ '#' ~ news.slug() %}
+                {% set share_url = story_url(news, lang) %}
                 <span class="share-icon dropdown">
                     <a href="#" title="Share" data-toggle="dropdown" role="button" aria-haspopup="true">
                         <i class="fa fa-share-square-o"></i>
@@ -312,9 +311,9 @@
 
     <footer>
         <ul class="list-inline text-center">
-            <li class="dropdown" title="{{ 'Translate'|translate(lang) }}">
+            <li class="dropdown" title="Translate">
                 <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="#">
-                    {{ 'Translate'|translate(lang) }}
+                    Translate
                     <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
@@ -346,6 +345,8 @@
             <li>
                 <a href="mailto:mcxin.221+hndigest@gmail.com?subject={{ title }} feedback">Contact</a>
             </li>
+            |
+            <li data-toggle="tooltip" title="Summarizing Hacker News since September 2014">Since 2014</li>
             {% if last_updated %}
                 |
                 <li class="last-updated"
