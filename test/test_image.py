@@ -28,7 +28,7 @@ class WebImageTestCase(TestCase):
     @mock.patch('page_content_extractor.webimage.session')
     def test_fetched_only_once(self, mock_requests):
         node = mock.Mock()
-        node.attrs = {'src': 'https://avatars1.githubusercontent.com/u/2657334',
+        node.attrs = {'src': 'https://user-images.githubusercontent.com/2657334/screenshot.png',
                       'whatever': 'whatever'}
 
         for _ in range(10):

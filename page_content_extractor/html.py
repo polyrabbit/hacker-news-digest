@@ -1,4 +1,5 @@
 # coding: utf-8
+import itertools
 import logging
 import re
 from collections import defaultdict
@@ -151,15 +152,11 @@ class HtmlContentExtractor(object):
 
     def get_meta_image(self):
         if not hasattr(self, '_meta_images'):
-            # <meta property="og:image" content="..."/>
-            meta_images = self.doc.find_all('meta', property=re.compile('og:image$', re.I))
+            # <meta property="og:image" content="..."/>, not og:image:alt or og:image:width
+            meta_images = self.doc.find_all('meta', property=re.compile(r'^og:image(:url|:secure_url)?$', re.I))
             # <meta name="twitter:image:src" content="..."/>
-            meta_images.extend(self.doc.find_all('meta', attrs={'name': re.compile('twitter:image', re.I)}))
-            image_src = []
-            for img in meta_images:
-                if img.get('content', None):
-                    image_src.append(img.get('content'))
-            self._meta_images = image_src
+            meta_images += self.doc.find_all('meta', attrs={'name': re.compile(r'^twitter:image(:src)?$', re.I)})
+            self._meta_images = list(dict.fromkeys(img['content'] for img in meta_images if img.get('content')))
         return self._meta_images
 
     # debugging purpose
@@ -374,20 +371,18 @@ class HtmlContentExtractor(object):
         return smr
 
     def get_illustration(self):
-        for img_node in self.article.find_all('img') + self.doc.find_all('img'):
-            img = WebImage.from_node(self.url, img_node)
-            if img.is_candidate:
-                logger.info(f'Found a top image(width={img.width} height={img.height}) {img.url}')
-                return img
-        # Only as a fallback, github use user's avatar as their meta_images
-        if self.get_meta_image():
-            for img_src in self.get_meta_image():
-                img = WebImage.from_attrs(src=img_src, referrer=self.url)
-                if img.is_candidate:
-                    logger.info(f'Found a meta image(width={img.width} height={img.height}) {img.url}')
-                    return img
-        logger.info('No top image is found on %s', self.url)
-        return None
+        # The author picks the share preview, which beats guessing among the pictures in the article,
+        # while pictures elsewhere on the page are mostly decorations, e.g. logos and author photos.
+        # The parent comes after, for a cover beside the text the article node may stop at.
+        nodes = dict.fromkeys(self.article.find_all('img') + (self.article.parent or self.article).find_all('img'))
+        imgs = itertools.chain((WebImage.from_attrs(src=src, referrer=self.url) for src in self.get_meta_image()),
+                               (WebImage.from_node(self.url, node) for node in nodes))
+        # A try may download a whole image, so give up early on pages full of them
+        if img := next((img for img in itertools.islice(imgs, 10) if img.is_candidate), None):
+            logger.info(f'Found a top image(width={img.width} height={img.height}) {img.url}')
+        else:
+            logger.info('No top image is found on %s', self.url)
+        return img
 
     def get_favicon_url(self):
         if not hasattr(self, '_favicon_url'):

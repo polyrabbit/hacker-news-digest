@@ -282,9 +282,10 @@ and supported by community <em>donations</em>.</p></article>
         <meta property="og:image" content="{src}" />
         <meta name="twitter:image" content="{src}" />
         <meta property="og:image:alt" content=":newspaper:" />
+        <meta name="twitter:image:alt" content=":newspaper:" />
         """
         parser = HtmlContentExtractor(html_doc)
-        self.assertEqual([src, src, src], parser.get_meta_image())
+        self.assertEqual([src], parser.get_meta_image())
 
     def test_no_double_punish_on_negative_node(self):
         html_doc = f"""

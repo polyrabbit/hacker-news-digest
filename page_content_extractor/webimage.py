@@ -47,9 +47,9 @@ class WebImage(object):
         if self.url.startswith('data:image/'):
             logger.info('Image is encoded in base64, too short')
             return False
-        attr_str = '%s %s %s %s' % (' '.join(self.attrs.get('class', [])),
-                                    self.attrs.get('id', ''), self.attrs.get('alt', ''),
-                                    urlparse(self.url).path.lower())
+        url = urlparse(self.url.lower())  # the host tells too, e.g. avatars.githubusercontent.com
+        attr_str = '%s %s %s %s%s' % (' '.join(self.attrs.get('class', [])),
+                                      self.attrs.get('id', ''), self.attrs.get('alt', ''), url.netloc, url.path)
         if 'avatar' in attr_str or 'spinner' in attr_str:
             logger.info('Maybe this is an avatar/spinner(%s)', self.url)
             return False
@@ -236,6 +236,8 @@ class WebImage(object):
         for key, value in list(node.attrs.items()):
             # convert SRC to src, and list to tuple because list is unhashable
             attrs[key.lower()] = tuple(value) if isinstance(value, list) else value
+        if attrs.get('data-src'):  # lazy loaded images hold a placeholder in src
+            attrs['src'] = attrs['data-src']
         return cls.from_attrs(**attrs)
 
     @classmethod
