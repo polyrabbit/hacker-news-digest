@@ -29,6 +29,7 @@ negative_patt = re.compile(r'comment|combx|disqus|foot|header|menu|rss|button|hi
                            'shoutbox|sidebar|sponsor|vote|meta|shar|ad-', re.IGNORECASE)
 positive_patt = re.compile(r'article|entry|post|abstract|main|content|toptext|'
                            'section|text|preview|view|story-body', re.IGNORECASE)
+hidden_style = re.compile(r'(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)\b', re.IGNORECASE)
 
 
 def tag_equal(self, other):
@@ -101,7 +102,7 @@ class HtmlContentExtractor(object):
     def set_article_tag_point(self, doc):
         for node in doc.find_all('article'):
             # Should be less than most titles but better than short ones
-            node.score = node.score or 0 + self.calc_effective_text_len(node) * 2
+            node.score = (node.score or 0) + self.calc_effective_text_len(node) * 2
             self.set_node_factor(node, 'article', 2)
 
     def calc_node_score(self, node, depth=.1):
@@ -228,11 +229,9 @@ class HtmlContentExtractor(object):
         for tname in ignored_tags:
             for d in self.doc.find_all(tname):
                 d.extract()  # decompose calls extract with some more steps
-        # obvious hidden ones
-        hidden_styles = ('[style~="display:none"]', '[style~="display: none"]', '[style~="visibility:hidden"]', '[style~="visibility: hidden"]')
-        for style in hidden_styles:
-            for hidden in self.doc.select(style):
-                hidden.extract()
+        # Keep the words on both sides of a line break apart
+        for br in self.doc.find_all('br'):
+            br.replace_with('\n')
         for style_links in self.doc.find_all('link', attrs={'type': 'text/css'}):
             style_links.extract()
 
@@ -311,6 +310,10 @@ class HtmlContentExtractor(object):
 
             for child in node.children:
                 if isinstance(child, Tag):
+                    # Skip what the page hides, e.g. hidden="" or style="display: none;", though not the article
+                    # itself, as some pages reveal it by scripts
+                    if child.has_attr('hidden') or hidden_style.search(child.get('style', '')):
+                        continue
                     # if self.summary_begun:  # http://v2ex.com/t/152930
                     if is_meta_tag(child) and \
                             1.0 * self.calc_effective_text_len(
@@ -322,15 +325,11 @@ class HtmlContentExtractor(object):
                         #  High possibility this is a code block, no need to summarize code to save OpenAI tokens
                         continue
                     if child.name in block_tags:
-                        # Ignore too many links and too short paragraphs
-                        if (self.is_link_intensive(child) or len(tokenize(child.text)) < 15) \
+                        # Ignore navigation-like blocks, but short paragraphs and list items may hold the key facts
+                        if self.is_link_intensive(child) \
                                 and 1.0 * self.calc_effective_text_len(child) / self.calc_effective_text_len(self.article) < .3:
                             continue
-                        child_summary = summarize(child, max_length).strip()
-                        if len(tokenize(child_summary)) < 15 and \
-                                1.0 * self.calc_effective_text_len(
-                            child) / self.calc_effective_text_len(
-                            self.article) < .3:
+                        if not (child_summary := summarize(child, max_length).strip()):
                             continue
                         # Put a space between two blocks
                         partial_summaries.append(' ')  # http://paulgraham.com/know.html

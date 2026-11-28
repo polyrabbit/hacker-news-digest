@@ -96,8 +96,9 @@ class PageContentExtractorTestCase(TestCase):
         <p>While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.  We’ve been working hard to help develop this new, efficient and compatible standard as part of the IETF HTTPbis Working Group. It’s called, for obvious reasons, HTTP/2 – and it’s available now, built into the new Internet Explorer starting with the <a href="http://preview.windows.com">Windows 10 Technical Preview</a>.</p>
         """
         self.assertEqual(HtmlContentExtractor(html_doc).get_content(300),
-                         '''Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999. It’s been a while, so it’s due.
- While there have been lot of efforts to streamline Web architecture over the years, none have been on the scale of HTTP/2.''')
+                         '''Ready to speed things up?
+ Here at Microsoft, we’re rolling out support in Internet Explorer for the first significant rework of the Hypertext Transfer Protocol since 1999. It’s been a while, so it’s due.
+ While there have been lot of efforts to streamline Web architecture over the years, none have been''')
 
     def test_get_content_word_cut(self):
         html_doc = '<p>' + '1 ' * 500 + '</p>' + '<p>' + '2 ' * 500 + '</p>'
