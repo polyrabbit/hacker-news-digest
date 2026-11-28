@@ -1,5 +1,5 @@
 # coding: utf-8
-import logging
+import re
 from io import BytesIO, StringIO
 from urllib.parse import urljoin
 
@@ -12,34 +12,13 @@ from pdfminer.pdfpage import PDFPage
 import config
 from .utils import tokenize
 
-logger = logging.getLogger(__name__)
-
 
 class PdfExtractor(object):
 
     def __init__(self, raw_data, url=''):
         # TODO sort text according to their layouts
-        self.article = ''
         self.url = url
         self.raw_data = raw_data
-
-    def load(self, raw_data):
-        pdf_fp = BytesIO(raw_data)
-        output_fp = StringIO()
-        laparams = LAParams()
-        rsrcmgr = PDFResourceManager()
-        device = TextConverter(rsrcmgr, output_fp, laparams=laparams)
-        # Create a PDF interpreter object.
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-
-        # Process each page contained in the document.
-        for page in PDFPage.get_pages(pdf_fp):
-            interpreter.process_page(page)
-            if len(output_fp.getvalue()) > config.max_content_size:
-                logger.warning("%s too long, truncate to %d", self.url, len(output_fp.getvalue()))
-                break
-
-        self.article = output_fp.getvalue()
 
     def get_content(self, max_length=config.max_content_size):
         partial_summaries = []
@@ -70,8 +49,8 @@ class PdfExtractor(object):
         # Create a PDF interpreter object.
         interpreter = PDFPageInterpreter(rsrcmgr, device)
 
-        # Process each page contained in the document.
-        for page in PDFPage.get_pages(pdf_fp):
+        # Cap pages, as rejected paragraphs, e.g. a long table of contents, cost no content budget
+        for page in PDFPage.get_pages(pdf_fp, maxpages=30):
             interpreter.process_page(page)
             for line in output_fp.getvalue().split('\n'):
                 line = line.strip()
@@ -83,21 +62,17 @@ class PdfExtractor(object):
                     has_began = False
                     p = []
             output_fp.seek(0)
+            output_fp.truncate()  # or a shorter page leaves the tail of the last one
         if p:
             yield ' '.join(p)
 
     def is_normal_paragraph(self, p):  # eligible to be a paragraph
-        ascii_words = []
-        for line in p.split('\n'):
-            line = line.strip()
-            if line.count('.') > 10:  # table of contents has many '...' or '. . .'
-                return False
-            tokens = line.split(' ')
-            for tok in tokens:
-                tok = tok.strip()
-                if tok.isalnum() or tok in ('.', ','):
-                    ascii_words.append(tok)
-        return len(ascii_words) > 20
+        # A table of contents is either split into short blocks of titles and page numbers,
+        # or kept as one with many '...' or '. . .'
+        if any(line.count('.') > 10 for line in p.split('\n')):
+            return False
+        # Count words with punctuation too, e.g. "end.", but not numbers
+        return len(re.findall(r'[^\W\d_]+', p)) > 20
 
     def get_illustration(self):
         return None
